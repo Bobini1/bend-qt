@@ -1,8 +1,9 @@
 # Bend Qt
 
 Qt bindings for Bend 2.0.40 on Linux x86-64. The generator uses the matching,
-pinned PySide Shiboken ApiExtractor and upstream type systems. Supported build
-targets are Qt 6.10.3, 6.11.3 and 6.12.0.
+pinned PySide Shiboken ApiExtractor and upstream type systems. The initial CI
+matrix targets Qt 6.10.3, 6.11.3 and 6.12.0. These are configured build targets;
+release readiness depends on their required validation checks passing.
 
 Each generated distribution bundles its matching Qt runtime. Consumers use a
 BendHub import and `bend main.bend -o app`, without a separate binding SDK,
