@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check shared function handlers using pinned extractor data and C++ headers.
+"""Check callable overload adapters using pinned extractor data and C++ headers.
 
 The class subset is a bounded fixture, not a production class-selection policy.
 """
@@ -30,6 +30,58 @@ def check(api, version):
     assert len({item['method']['method_id'] for item in items}) == 1
     assert len({item['public'] for item in items}) == 2
     assert all(item['method']['public'] == 'QWebEnginePage.Handler.runJavaScript' for item in items)
+
+
+def check_canvas_contexts(version, qt, work):
+    if version.startswith('6.10.'):
+        return dict(available=False)
+    short = ''.join(version.split('.')[:2])
+    # Canvas uses an independent extraction on 6.11. The primary extraction
+    # omits it and cannot detect regressions in this overload's argument list.
+    api = json.loads((ROOT / ('build/qt' + short) / 'modules/CanvasPainter/scoped-api.json').read_text())
+    owners = {'QCanvasPainterWidget', 'QCanvasRhiPaintDriver'}
+    for cls in api['classes']:
+        cls['functions'] = [f for f in cls['functions'] if cls['name'] in owners and f['name'] == 'grabCanvas']
+    api['global_functions'] = []
+    generator = Generator(api, dict(minimum_qt=version,
+        qt_modules=['QtCore', 'QtGui', 'QtWidgets', 'QtCanvasPainter'], exclude_methods={}), NameLock())
+    generator.collect()
+    callbacks.prepare(generator)
+    items = [item for item in generator.callback_functions
+             if item['owner'] in owners and item['function']['name'] == 'grabCanvas']
+    assert len(items) == 2, generator.callback_excluded
+    callbacks.emit(generator)
+    emitted = '\n'.join(generator.cases)
+    explicit = not version.startswith('6.11.')
+    for item in items:
+        assert len(item['forward']) == (2 if explicit else 1)
+        assert ('context_position' in item) == explicit
+        if explicit:
+            assert item['context_position'] == 1
+        receiver = ('(r->arguments[1].word ? r->arguments[1].word : r->self)'
+                    if explicit else 'r->self')
+        assert f'callback_function_{item["method"]["method_id"]}(handler, {receiver})' in emitted
+        assert item['method']['args'][0]['function_deep_copy']
+    source = work / 'canvas-contexts.cpp'
+    source.write_text('''#include <QtCanvasPainter/QCanvasPainterWidget>
+#include <QtCanvasPainter/QCanvasRhiPaintDriver>
+#include <functional>
+void attach(QCanvasPainterWidget &widget, QCanvasRhiPaintDriver &driver,
+            const QCanvasOffscreenCanvas &canvas, QObject *context,
+            const std::function<void(const QImage &)> &callback) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
+    widget.grabCanvas(canvas, callback);
+    driver.grabCanvas(canvas, callback);
+#else
+    widget.grabCanvas(canvas, context, callback);
+    driver.grabCanvas(canvas, context, callback);
+#endif
+}
+''')
+    flags = compiler_flags(qt, 'clang++-19', ['QtCore', 'QtGui', 'QtWidgets', 'QtCanvasPainter'])
+    subprocess.run([*flags, '-fsyntax-only', str(source)], check=True)
+    return dict(available=True, native_overloads=2, explicit_context=explicit,
+                implicit_receiver_context=not explicit, callback_image_deep_copy=True)
 
 
 def main():
@@ -70,9 +122,11 @@ void attach(QWebEnginePage &page, const Compact &callback) {
 ''')
     flags = compiler_flags(args.qt_root, 'clang++-19', ['QtCore', 'QtGui', 'QtWidgets', 'QtWebEngineCore'])
     subprocess.run([*flags, '-fsyntax-only', str(source)], check=True)
+    canvas = check_canvas_contexts(version, args.qt_root, work)
     (work / 'receipt.json').write_text(json.dumps(dict(passed=True, qt=version,
         actual_extractor_overloads=2, shared_handler=1, distinct_call_adapters=2,
         forced_cpp_whitespace_variants=True, actual_cpp_overload_declarations=True,
+        canvas_contexts=canvas,
         boundary='Generator metadata and pinned C++ declarations; callback execution/lifetimes require integration tests'), indent=2) + '\n')
     print('QT_CALLBACK_SPELLINGS_OK qt=' + version + ' overloads=2 shared_handler=1 actual_cpp=1')
 

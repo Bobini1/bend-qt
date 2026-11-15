@@ -23,7 +23,10 @@ def _surface(f):
     if owner == 'QCoreApplication' and name == 'requestPermission':
         return dict(signature=('void', ['const QPermission &']), context=True)
     if owner in ('QCanvasPainterWidget', 'QCanvasRhiPaintDriver') and name == 'grabCanvas':
-        return dict(signature=('void', ['const QImage &']), context=True)
+        # Qt 6.11 takes only canvas + callback; Qt 6.12 adds a context.
+        # Without an explicit context, track the callable against its owner.
+        return dict(signature=('void', ['const QImage &']),
+                    context=any(a['type']['name'] == 'QObject' for a in f['arguments']))
     if owner == 'QHttpServer' and name == 'route':
         return dict(signature=('QString', ['const QHttpServerRequest &']), route=True)
     if owner == 'QHttpServer' and name == 'addAfterRequestHandler':
