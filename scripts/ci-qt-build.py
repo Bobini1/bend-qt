@@ -38,7 +38,9 @@ def commands(c, stage):
     manifest = release / 'runtime-release.json'
     profile = c['profile'] / 'profile.json'
     common = ['--qt-root', c['qt']]
-    py = sys.executable
+    # Runtime asset planning imports the same pinned REUSE resolver as the
+    # audit. Keep every preparation subprocess in the maintainer environment.
+    py = str(c['cache'] / 'venv/bin/python') if stage == 'prepare' else sys.executable
     if stage == 'prepare':
         return [
             [py, 'generator/qt_sources.py', *common, '--output', sources],
