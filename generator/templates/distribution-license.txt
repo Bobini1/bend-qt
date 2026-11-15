@@ -1,0 +1,21 @@
+The original Bend Qt generator and Bend glue use the MIT license below.
+Qt and bundled third-party components retain their own licenses.
+
+@MIT@
+
+Bundled components
+
+The package contains separate native modules. The Bend compiler includes the
+modules used by the application and their dependencies. Each bundled file has
+its own license expression in the runtime manifest. Original license texts,
+copyright notices and Qt software bills of materials are under notices/.
+
+Qt modules with an LGPL option may be used under that option. GPL modules
+retain their GPL terms when an application uses them. The MIT license for the
+glue does not change the terms of those modules or third-party components.
+
+Matching source locations and hashes are in notices/corresponding-sources.json.
+The runtime can be replaced through BEND_QT_RUNTIME with a complete Qt build
+matching the package's Qt version and native ABI. The package does not select
+an installed system Qt automatically. See notices/BUILDING.txt for source and
+runtime replacement instructions.

@@ -1,0 +1,10903 @@
+{
+  "commands": {
+    "glAreProgramsResidentNV": {
+      "lengths": {
+        "1": "n",
+        "2": "n"
+      },
+      "parameters": [
+        "n",
+        "programs",
+        "residences"
+      ]
+    },
+    "glAreTexturesResident": {
+      "lengths": {
+        "1": "n",
+        "2": "n"
+      },
+      "parameters": [
+        "n",
+        "textures",
+        "residences"
+      ]
+    },
+    "glAreTexturesResidentEXT": {
+      "lengths": {
+        "1": "n",
+        "2": "n"
+      },
+      "parameters": [
+        "n",
+        "textures",
+        "residences"
+      ]
+    },
+    "glAsyncCopyBufferSubDataNVX": {
+      "lengths": {
+        "1": "waitSemaphoreCount",
+        "11": "signalSemaphoreCount",
+        "12": "signalSemaphoreCount",
+        "2": "waitSemaphoreCount"
+      },
+      "parameters": [
+        "waitSemaphoreCount",
+        "waitSemaphoreArray",
+        "fenceValueArray",
+        "readGpu",
+        "writeGpuMask",
+        "readBuffer",
+        "writeBuffer",
+        "readOffset",
+        "writeOffset",
+        "size",
+        "signalSemaphoreCount",
+        "signalSemaphoreArray",
+        "signalValueArray"
+      ]
+    },
+    "glAsyncCopyImageSubDataNVX": {
+      "lengths": {
+        "1": "waitSemaphoreCount",
+        "2": "waitSemaphoreCount",
+        "21": "signalSemaphoreCount",
+        "22": "signalSemaphoreCount"
+      },
+      "parameters": [
+        "waitSemaphoreCount",
+        "waitSemaphoreArray",
+        "waitValueArray",
+        "srcGpu",
+        "dstGpuMask",
+        "srcName",
+        "srcTarget",
+        "srcLevel",
+        "srcX",
+        "srcY",
+        "srcZ",
+        "dstName",
+        "dstTarget",
+        "dstLevel",
+        "dstX",
+        "dstY",
+        "dstZ",
+        "srcWidth",
+        "srcHeight",
+        "srcDepth",
+        "signalSemaphoreCount",
+        "signalSemaphoreArray",
+        "signalValueArray"
+      ]
+    },
+    "glBindBuffersBase": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "target",
+        "first",
+        "count",
+        "buffers"
+      ]
+    },
+    "glBindBuffersRange": {
+      "lengths": {
+        "3": "count",
+        "4": "count",
+        "5": "count"
+      },
+      "parameters": [
+        "target",
+        "first",
+        "count",
+        "buffers",
+        "offsets",
+        "sizes"
+      ]
+    },
+    "glBindImageTextures": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "first",
+        "count",
+        "textures"
+      ]
+    },
+    "glBindSamplers": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "first",
+        "count",
+        "samplers"
+      ]
+    },
+    "glBindTextures": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "first",
+        "count",
+        "textures"
+      ]
+    },
+    "glBindVertexBuffers": {
+      "lengths": {
+        "2": "count",
+        "3": "count",
+        "4": "count"
+      },
+      "parameters": [
+        "first",
+        "count",
+        "buffers",
+        "offsets",
+        "strides"
+      ]
+    },
+    "glBinormal3bvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glBinormal3dvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glBinormal3fvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glBinormal3ivEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glBinormal3svEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glBufferData": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "target",
+        "size",
+        "data",
+        "usage"
+      ]
+    },
+    "glBufferDataARB": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "target",
+        "size",
+        "data",
+        "usage"
+      ]
+    },
+    "glBufferStorage": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "target",
+        "size",
+        "data",
+        "flags"
+      ]
+    },
+    "glBufferStorageEXT": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "target",
+        "size",
+        "data",
+        "flags"
+      ]
+    },
+    "glBufferSubData": {
+      "lengths": {
+        "3": "size"
+      },
+      "parameters": [
+        "target",
+        "offset",
+        "size",
+        "data"
+      ]
+    },
+    "glBufferSubDataARB": {
+      "lengths": {
+        "3": "size"
+      },
+      "parameters": [
+        "target",
+        "offset",
+        "size",
+        "data"
+      ]
+    },
+    "glClearPixelLocalStorageuiEXT": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "offset",
+        "n",
+        "values"
+      ]
+    },
+    "glClientWaitSemaphoreui64NVX": {
+      "lengths": {
+        "1": "fenceObjectCount",
+        "2": "fenceObjectCount"
+      },
+      "parameters": [
+        "fenceObjectCount",
+        "semaphoreArray",
+        "fenceValueArray"
+      ]
+    },
+    "glClipPlane": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "plane",
+        "equation"
+      ]
+    },
+    "glClipPlanef": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "p",
+        "eqn"
+      ]
+    },
+    "glClipPlanefIMG": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "p",
+        "eqn"
+      ]
+    },
+    "glClipPlanefOES": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "plane",
+        "equation"
+      ]
+    },
+    "glClipPlanex": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "plane",
+        "equation"
+      ]
+    },
+    "glClipPlanexIMG": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "p",
+        "eqn"
+      ]
+    },
+    "glClipPlanexOES": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "plane",
+        "equation"
+      ]
+    },
+    "glColor3bv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor3dv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor3fVertex3fvSUN": {
+      "lengths": {
+        "0": "3",
+        "1": "3"
+      },
+      "parameters": [
+        "c",
+        "v"
+      ]
+    },
+    "glColor3fv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor3hvNV": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor3iv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor3sv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor3ubv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor3uiv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor3usv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor3xvOES": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "components"
+      ]
+    },
+    "glColor4bv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor4dv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor4fNormal3fVertex3fvSUN": {
+      "lengths": {
+        "0": "4",
+        "1": "3",
+        "2": "3"
+      },
+      "parameters": [
+        "c",
+        "n",
+        "v"
+      ]
+    },
+    "glColor4fv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor4hvNV": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor4iv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor4sv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor4ubVertex2fvSUN": {
+      "lengths": {
+        "0": "4",
+        "1": "2"
+      },
+      "parameters": [
+        "c",
+        "v"
+      ]
+    },
+    "glColor4ubVertex3fvSUN": {
+      "lengths": {
+        "0": "4",
+        "1": "3"
+      },
+      "parameters": [
+        "c",
+        "v"
+      ]
+    },
+    "glColor4ubv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor4uiv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor4usv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glColor4xvOES": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "components"
+      ]
+    },
+    "glColorP3uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "color"
+      ]
+    },
+    "glColorP4uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "color"
+      ]
+    },
+    "glColorPointervINTEL": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "size",
+        "type",
+        "pointer"
+      ]
+    },
+    "glCompileShaderIncludeARB": {
+      "lengths": {
+        "2": "count",
+        "3": "count"
+      },
+      "parameters": [
+        "shader",
+        "count",
+        "path",
+        "length"
+      ]
+    },
+    "glCompressedMultiTexImage1DEXT": {
+      "lengths": {
+        "7": "imageSize"
+      },
+      "parameters": [
+        "texunit",
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "border",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedMultiTexImage2DEXT": {
+      "lengths": {
+        "8": "imageSize"
+      },
+      "parameters": [
+        "texunit",
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "height",
+        "border",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedMultiTexImage3DEXT": {
+      "lengths": {
+        "9": "imageSize"
+      },
+      "parameters": [
+        "texunit",
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "height",
+        "depth",
+        "border",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedMultiTexSubImage1DEXT": {
+      "lengths": {
+        "7": "imageSize"
+      },
+      "parameters": [
+        "texunit",
+        "target",
+        "level",
+        "xoffset",
+        "width",
+        "format",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedMultiTexSubImage2DEXT": {
+      "lengths": {
+        "9": "imageSize"
+      },
+      "parameters": [
+        "texunit",
+        "target",
+        "level",
+        "xoffset",
+        "yoffset",
+        "width",
+        "height",
+        "format",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedMultiTexSubImage3DEXT": {
+      "lengths": {
+        "11": "imageSize"
+      },
+      "parameters": [
+        "texunit",
+        "target",
+        "level",
+        "xoffset",
+        "yoffset",
+        "zoffset",
+        "width",
+        "height",
+        "depth",
+        "format",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedTexImage1D": {
+      "lengths": {
+        "6": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "border",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexImage1DARB": {
+      "lengths": {
+        "6": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "border",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexImage2D": {
+      "lengths": {
+        "7": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "height",
+        "border",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexImage2DARB": {
+      "lengths": {
+        "7": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "height",
+        "border",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexImage3D": {
+      "lengths": {
+        "8": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "height",
+        "depth",
+        "border",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexImage3DARB": {
+      "lengths": {
+        "8": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "height",
+        "depth",
+        "border",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexImage3DOES": {
+      "lengths": {
+        "8": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "height",
+        "depth",
+        "border",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexSubImage1D": {
+      "lengths": {
+        "6": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "xoffset",
+        "width",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexSubImage1DARB": {
+      "lengths": {
+        "6": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "xoffset",
+        "width",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexSubImage2D": {
+      "lengths": {
+        "8": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "xoffset",
+        "yoffset",
+        "width",
+        "height",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexSubImage2DARB": {
+      "lengths": {
+        "8": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "xoffset",
+        "yoffset",
+        "width",
+        "height",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexSubImage3D": {
+      "lengths": {
+        "10": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "xoffset",
+        "yoffset",
+        "zoffset",
+        "width",
+        "height",
+        "depth",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexSubImage3DARB": {
+      "lengths": {
+        "10": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "xoffset",
+        "yoffset",
+        "zoffset",
+        "width",
+        "height",
+        "depth",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTexSubImage3DOES": {
+      "lengths": {
+        "10": "imageSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "xoffset",
+        "yoffset",
+        "zoffset",
+        "width",
+        "height",
+        "depth",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTextureImage1DEXT": {
+      "lengths": {
+        "7": "imageSize"
+      },
+      "parameters": [
+        "texture",
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "border",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedTextureImage2DEXT": {
+      "lengths": {
+        "8": "imageSize"
+      },
+      "parameters": [
+        "texture",
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "height",
+        "border",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedTextureImage3DEXT": {
+      "lengths": {
+        "9": "imageSize"
+      },
+      "parameters": [
+        "texture",
+        "target",
+        "level",
+        "internalformat",
+        "width",
+        "height",
+        "depth",
+        "border",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedTextureSubImage1D": {
+      "lengths": {
+        "6": "imageSize"
+      },
+      "parameters": [
+        "texture",
+        "level",
+        "xoffset",
+        "width",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTextureSubImage1DEXT": {
+      "lengths": {
+        "7": "imageSize"
+      },
+      "parameters": [
+        "texture",
+        "target",
+        "level",
+        "xoffset",
+        "width",
+        "format",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedTextureSubImage2D": {
+      "lengths": {
+        "8": "imageSize"
+      },
+      "parameters": [
+        "texture",
+        "level",
+        "xoffset",
+        "yoffset",
+        "width",
+        "height",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTextureSubImage2DEXT": {
+      "lengths": {
+        "9": "imageSize"
+      },
+      "parameters": [
+        "texture",
+        "target",
+        "level",
+        "xoffset",
+        "yoffset",
+        "width",
+        "height",
+        "format",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCompressedTextureSubImage3D": {
+      "lengths": {
+        "10": "imageSize"
+      },
+      "parameters": [
+        "texture",
+        "level",
+        "xoffset",
+        "yoffset",
+        "zoffset",
+        "width",
+        "height",
+        "depth",
+        "format",
+        "imageSize",
+        "data"
+      ]
+    },
+    "glCompressedTextureSubImage3DEXT": {
+      "lengths": {
+        "11": "imageSize"
+      },
+      "parameters": [
+        "texture",
+        "target",
+        "level",
+        "xoffset",
+        "yoffset",
+        "zoffset",
+        "width",
+        "height",
+        "depth",
+        "format",
+        "imageSize",
+        "bits"
+      ]
+    },
+    "glCoverageModulationTableNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "v"
+      ]
+    },
+    "glCreateBuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "buffers"
+      ]
+    },
+    "glCreateCommandListsNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "lists"
+      ]
+    },
+    "glCreateFramebuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "framebuffers"
+      ]
+    },
+    "glCreateProgramPipelines": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "pipelines"
+      ]
+    },
+    "glCreateQueries": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "target",
+        "n",
+        "ids"
+      ]
+    },
+    "glCreateRenderbuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "renderbuffers"
+      ]
+    },
+    "glCreateSamplers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "samplers"
+      ]
+    },
+    "glCreateSemaphoresNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "semaphores"
+      ]
+    },
+    "glCreateShaderProgramv": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "type",
+        "count",
+        "strings"
+      ]
+    },
+    "glCreateShaderProgramvEXT": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "type",
+        "count",
+        "strings"
+      ]
+    },
+    "glCreateStatesNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "states"
+      ]
+    },
+    "glCreateTextures": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "target",
+        "n",
+        "textures"
+      ]
+    },
+    "glCreateTransformFeedbacks": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glCreateVertexArrays": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "arrays"
+      ]
+    },
+    "glCullParameterdvEXT": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "pname",
+        "params"
+      ]
+    },
+    "glCullParameterfvEXT": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "pname",
+        "params"
+      ]
+    },
+    "glDebugMessageControl": {
+      "lengths": {
+        "4": "count"
+      },
+      "parameters": [
+        "source",
+        "type",
+        "severity",
+        "count",
+        "ids",
+        "enabled"
+      ]
+    },
+    "glDebugMessageControlARB": {
+      "lengths": {
+        "4": "count"
+      },
+      "parameters": [
+        "source",
+        "type",
+        "severity",
+        "count",
+        "ids",
+        "enabled"
+      ]
+    },
+    "glDebugMessageEnableAMD": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "category",
+        "severity",
+        "count",
+        "ids",
+        "enabled"
+      ]
+    },
+    "glDebugMessageInsertAMD": {
+      "lengths": {
+        "4": "length"
+      },
+      "parameters": [
+        "category",
+        "severity",
+        "id",
+        "length",
+        "buf"
+      ]
+    },
+    "glDebugMessageInsertARB": {
+      "lengths": {
+        "5": "length"
+      },
+      "parameters": [
+        "source",
+        "type",
+        "id",
+        "severity",
+        "length",
+        "buf"
+      ]
+    },
+    "glDeleteBuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "buffers"
+      ]
+    },
+    "glDeleteBuffersARB": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "buffers"
+      ]
+    },
+    "glDeleteCommandListsNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "lists"
+      ]
+    },
+    "glDeleteFencesAPPLE": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "fences"
+      ]
+    },
+    "glDeleteFencesNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "fences"
+      ]
+    },
+    "glDeleteFramebuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "framebuffers"
+      ]
+    },
+    "glDeleteFramebuffersEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "framebuffers"
+      ]
+    },
+    "glDeleteFramebuffersOES": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "framebuffers"
+      ]
+    },
+    "glDeleteMemoryObjectsEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "memoryObjects"
+      ]
+    },
+    "glDeleteNamedStringARB": {
+      "lengths": {
+        "1": "namelen"
+      },
+      "parameters": [
+        "namelen",
+        "name"
+      ]
+    },
+    "glDeleteNamesAMD": {
+      "lengths": {
+        "2": "num"
+      },
+      "parameters": [
+        "identifier",
+        "num",
+        "names"
+      ]
+    },
+    "glDeleteOcclusionQueriesNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glDeletePerfMonitorsAMD": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "monitors"
+      ]
+    },
+    "glDeleteProgramPipelines": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "pipelines"
+      ]
+    },
+    "glDeleteProgramPipelinesEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "pipelines"
+      ]
+    },
+    "glDeleteProgramsARB": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "programs"
+      ]
+    },
+    "glDeleteProgramsNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "programs"
+      ]
+    },
+    "glDeleteQueries": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glDeleteQueriesARB": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glDeleteQueriesEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glDeleteQueryResourceTagNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "tagIds"
+      ]
+    },
+    "glDeleteRenderbuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "renderbuffers"
+      ]
+    },
+    "glDeleteRenderbuffersEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "renderbuffers"
+      ]
+    },
+    "glDeleteRenderbuffersOES": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "renderbuffers"
+      ]
+    },
+    "glDeleteSamplers": {
+      "lengths": {
+        "1": "count"
+      },
+      "parameters": [
+        "count",
+        "samplers"
+      ]
+    },
+    "glDeleteSemaphoresEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "semaphores"
+      ]
+    },
+    "glDeleteStatesNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "states"
+      ]
+    },
+    "glDeleteTextures": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "textures"
+      ]
+    },
+    "glDeleteTexturesEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "textures"
+      ]
+    },
+    "glDeleteTransformFeedbacks": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glDeleteTransformFeedbacksNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glDeleteVertexArrays": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "arrays"
+      ]
+    },
+    "glDeleteVertexArraysAPPLE": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "arrays"
+      ]
+    },
+    "glDeleteVertexArraysOES": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "arrays"
+      ]
+    },
+    "glDetailTexFuncSGIS": {
+      "lengths": {
+        "2": "n*2"
+      },
+      "parameters": [
+        "target",
+        "n",
+        "points"
+      ]
+    },
+    "glDiscardFramebufferEXT": {
+      "lengths": {
+        "2": "numAttachments"
+      },
+      "parameters": [
+        "target",
+        "numAttachments",
+        "attachments"
+      ]
+    },
+    "glDrawBuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "bufs"
+      ]
+    },
+    "glDrawBuffersARB": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "bufs"
+      ]
+    },
+    "glDrawBuffersATI": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "bufs"
+      ]
+    },
+    "glDrawBuffersEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "bufs"
+      ]
+    },
+    "glDrawBuffersIndexedEXT": {
+      "lengths": {
+        "1": "n",
+        "2": "n"
+      },
+      "parameters": [
+        "n",
+        "location",
+        "indices"
+      ]
+    },
+    "glDrawBuffersNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "bufs"
+      ]
+    },
+    "glDrawElementsInstancedBaseInstance": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "mode",
+        "count",
+        "type",
+        "indices",
+        "instancecount",
+        "baseinstance"
+      ]
+    },
+    "glDrawElementsInstancedBaseInstanceEXT": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "mode",
+        "count",
+        "type",
+        "indices",
+        "instancecount",
+        "baseinstance"
+      ]
+    },
+    "glDrawElementsInstancedBaseVertexBaseInstance": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "mode",
+        "count",
+        "type",
+        "indices",
+        "instancecount",
+        "basevertex",
+        "baseinstance"
+      ]
+    },
+    "glDrawElementsInstancedBaseVertexBaseInstanceEXT": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "mode",
+        "count",
+        "type",
+        "indices",
+        "instancecount",
+        "basevertex",
+        "baseinstance"
+      ]
+    },
+    "glDrawTexfvOES": {
+      "lengths": {
+        "0": "5"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glDrawTexivOES": {
+      "lengths": {
+        "0": "5"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glDrawTexsvOES": {
+      "lengths": {
+        "0": "5"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glDrawTexxvOES": {
+      "lengths": {
+        "0": "5"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glEdgeFlagv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "flag"
+      ]
+    },
+    "glEvalCoord1dv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "u"
+      ]
+    },
+    "glEvalCoord1fv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "u"
+      ]
+    },
+    "glEvalCoord1xvOES": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glEvalCoord2dv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "u"
+      ]
+    },
+    "glEvalCoord2fv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "u"
+      ]
+    },
+    "glEvalCoord2xvOES": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glExecuteProgramNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "id",
+        "params"
+      ]
+    },
+    "glExtGetBufferPointervQCOM": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "params"
+      ]
+    },
+    "glExtGetBuffersQCOM": {
+      "lengths": {
+        "0": "maxBuffers",
+        "2": "1"
+      },
+      "parameters": [
+        "buffers",
+        "maxBuffers",
+        "numBuffers"
+      ]
+    },
+    "glExtGetFramebuffersQCOM": {
+      "lengths": {
+        "0": "maxFramebuffers",
+        "2": "1"
+      },
+      "parameters": [
+        "framebuffers",
+        "maxFramebuffers",
+        "numFramebuffers"
+      ]
+    },
+    "glExtGetProgramBinarySourceQCOM": {
+      "lengths": {
+        "2": "length"
+      },
+      "parameters": [
+        "program",
+        "shadertype",
+        "source",
+        "length"
+      ]
+    },
+    "glExtGetProgramsQCOM": {
+      "lengths": {
+        "0": "maxPrograms",
+        "2": "1"
+      },
+      "parameters": [
+        "programs",
+        "maxPrograms",
+        "numPrograms"
+      ]
+    },
+    "glExtGetRenderbuffersQCOM": {
+      "lengths": {
+        "0": "maxRenderbuffers",
+        "2": "1"
+      },
+      "parameters": [
+        "renderbuffers",
+        "maxRenderbuffers",
+        "numRenderbuffers"
+      ]
+    },
+    "glExtGetShadersQCOM": {
+      "lengths": {
+        "0": "maxShaders",
+        "2": "1"
+      },
+      "parameters": [
+        "shaders",
+        "maxShaders",
+        "numShaders"
+      ]
+    },
+    "glFeedbackBuffer": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "size",
+        "type",
+        "buffer"
+      ]
+    },
+    "glFeedbackBufferxOES": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "n",
+        "type",
+        "buffer"
+      ]
+    },
+    "glFinishAsyncSGIX": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "markerp"
+      ]
+    },
+    "glFlushVertexArrayRangeAPPLE": {
+      "lengths": {
+        "1": "length"
+      },
+      "parameters": [
+        "length",
+        "pointer"
+      ]
+    },
+    "glFogCoorddv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "coord"
+      ]
+    },
+    "glFogCoorddvEXT": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "coord"
+      ]
+    },
+    "glFogCoordfv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "coord"
+      ]
+    },
+    "glFogCoordfvEXT": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "coord"
+      ]
+    },
+    "glFogCoordhvNV": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "fog"
+      ]
+    },
+    "glFogFuncSGIS": {
+      "lengths": {
+        "1": "n*2"
+      },
+      "parameters": [
+        "n",
+        "points"
+      ]
+    },
+    "glFramebufferDrawBuffersEXT": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "framebuffer",
+        "n",
+        "bufs"
+      ]
+    },
+    "glFramebufferFoveationConfigQCOM": {
+      "lengths": {
+        "4": "1"
+      },
+      "parameters": [
+        "framebuffer",
+        "numLayers",
+        "focalPointsPerLayer",
+        "requestedFeatures",
+        "providedFeatures"
+      ]
+    },
+    "glGenBuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "buffers"
+      ]
+    },
+    "glGenBuffersARB": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "buffers"
+      ]
+    },
+    "glGenFencesAPPLE": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "fences"
+      ]
+    },
+    "glGenFencesNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "fences"
+      ]
+    },
+    "glGenFramebuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "framebuffers"
+      ]
+    },
+    "glGenFramebuffersEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "framebuffers"
+      ]
+    },
+    "glGenFramebuffersOES": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "framebuffers"
+      ]
+    },
+    "glGenNamesAMD": {
+      "lengths": {
+        "2": "num"
+      },
+      "parameters": [
+        "identifier",
+        "num",
+        "names"
+      ]
+    },
+    "glGenOcclusionQueriesNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glGenPerfMonitorsAMD": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "monitors"
+      ]
+    },
+    "glGenProgramPipelines": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "pipelines"
+      ]
+    },
+    "glGenProgramPipelinesEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "pipelines"
+      ]
+    },
+    "glGenProgramsARB": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "programs"
+      ]
+    },
+    "glGenProgramsNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "programs"
+      ]
+    },
+    "glGenQueries": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glGenQueriesARB": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glGenQueriesEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glGenQueryResourceTagNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "tagIds"
+      ]
+    },
+    "glGenRenderbuffers": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "renderbuffers"
+      ]
+    },
+    "glGenRenderbuffersEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "renderbuffers"
+      ]
+    },
+    "glGenRenderbuffersOES": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "renderbuffers"
+      ]
+    },
+    "glGenSamplers": {
+      "lengths": {
+        "1": "count"
+      },
+      "parameters": [
+        "count",
+        "samplers"
+      ]
+    },
+    "glGenSemaphoresEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "semaphores"
+      ]
+    },
+    "glGenTextures": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "textures"
+      ]
+    },
+    "glGenTexturesEXT": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "textures"
+      ]
+    },
+    "glGenTransformFeedbacks": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glGenTransformFeedbacksNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "ids"
+      ]
+    },
+    "glGenVertexArrays": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "arrays"
+      ]
+    },
+    "glGenVertexArraysAPPLE": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "arrays"
+      ]
+    },
+    "glGenVertexArraysOES": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "arrays"
+      ]
+    },
+    "glGetActiveAttrib": {
+      "lengths": {
+        "3": "1",
+        "4": "1",
+        "5": "1",
+        "6": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "index",
+        "bufSize",
+        "length",
+        "size",
+        "type",
+        "name"
+      ]
+    },
+    "glGetActiveAttribARB": {
+      "lengths": {
+        "3": "1",
+        "4": "1",
+        "5": "1",
+        "6": "maxLength"
+      },
+      "parameters": [
+        "programObj",
+        "index",
+        "maxLength",
+        "length",
+        "size",
+        "type",
+        "name"
+      ]
+    },
+    "glGetActiveSubroutineName": {
+      "lengths": {
+        "4": "1",
+        "5": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "shadertype",
+        "index",
+        "bufSize",
+        "length",
+        "name"
+      ]
+    },
+    "glGetActiveSubroutineUniformName": {
+      "lengths": {
+        "4": "1",
+        "5": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "shadertype",
+        "index",
+        "bufSize",
+        "length",
+        "name"
+      ]
+    },
+    "glGetActiveUniform": {
+      "lengths": {
+        "3": "1",
+        "4": "1",
+        "5": "1",
+        "6": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "index",
+        "bufSize",
+        "length",
+        "size",
+        "type",
+        "name"
+      ]
+    },
+    "glGetActiveUniformARB": {
+      "lengths": {
+        "3": "1",
+        "4": "1",
+        "5": "1",
+        "6": "maxLength"
+      },
+      "parameters": [
+        "programObj",
+        "index",
+        "maxLength",
+        "length",
+        "size",
+        "type",
+        "name"
+      ]
+    },
+    "glGetActiveUniformBlockName": {
+      "lengths": {
+        "3": "1",
+        "4": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "uniformBlockIndex",
+        "bufSize",
+        "length",
+        "uniformBlockName"
+      ]
+    },
+    "glGetActiveUniformName": {
+      "lengths": {
+        "3": "1",
+        "4": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "uniformIndex",
+        "bufSize",
+        "length",
+        "uniformName"
+      ]
+    },
+    "glGetActiveUniformsiv": {
+      "lengths": {
+        "2": "uniformCount"
+      },
+      "parameters": [
+        "program",
+        "uniformCount",
+        "uniformIndices",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetActiveVaryingNV": {
+      "lengths": {
+        "3": "1",
+        "4": "1",
+        "5": "1",
+        "6": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "index",
+        "bufSize",
+        "length",
+        "size",
+        "type",
+        "name"
+      ]
+    },
+    "glGetArrayObjectfvATI": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "array",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetArrayObjectivATI": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "array",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetAttachedObjectsARB": {
+      "lengths": {
+        "2": "1",
+        "3": "maxCount"
+      },
+      "parameters": [
+        "containerObj",
+        "maxCount",
+        "count",
+        "obj"
+      ]
+    },
+    "glGetAttachedShaders": {
+      "lengths": {
+        "2": "1",
+        "3": "maxCount"
+      },
+      "parameters": [
+        "program",
+        "maxCount",
+        "count",
+        "shaders"
+      ]
+    },
+    "glGetBufferPointerv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "target",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetBufferPointervARB": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "target",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetBufferPointervOES": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "target",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetBufferSubData": {
+      "lengths": {
+        "3": "size"
+      },
+      "parameters": [
+        "target",
+        "offset",
+        "size",
+        "data"
+      ]
+    },
+    "glGetBufferSubDataARB": {
+      "lengths": {
+        "3": "size"
+      },
+      "parameters": [
+        "target",
+        "offset",
+        "size",
+        "data"
+      ]
+    },
+    "glGetClipPlane": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "plane",
+        "equation"
+      ]
+    },
+    "glGetClipPlanef": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "plane",
+        "equation"
+      ]
+    },
+    "glGetClipPlanefOES": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "plane",
+        "equation"
+      ]
+    },
+    "glGetClipPlanex": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "plane",
+        "equation"
+      ]
+    },
+    "glGetClipPlanexOES": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "plane",
+        "equation"
+      ]
+    },
+    "glGetCompressedTextureImage": {
+      "lengths": {
+        "3": "bufSize"
+      },
+      "parameters": [
+        "texture",
+        "level",
+        "bufSize",
+        "pixels"
+      ]
+    },
+    "glGetCompressedTextureSubImage": {
+      "lengths": {
+        "9": "bufSize"
+      },
+      "parameters": [
+        "texture",
+        "level",
+        "xoffset",
+        "yoffset",
+        "zoffset",
+        "width",
+        "height",
+        "depth",
+        "bufSize",
+        "pixels"
+      ]
+    },
+    "glGetDebugMessageLog": {
+      "lengths": {
+        "2": "count",
+        "3": "count",
+        "4": "count",
+        "5": "count",
+        "6": "count",
+        "7": "bufSize"
+      },
+      "parameters": [
+        "count",
+        "bufSize",
+        "sources",
+        "types",
+        "ids",
+        "severities",
+        "lengths",
+        "messageLog"
+      ]
+    },
+    "glGetDebugMessageLogAMD": {
+      "lengths": {
+        "2": "count",
+        "3": "count",
+        "4": "count",
+        "5": "count",
+        "6": "bufSize"
+      },
+      "parameters": [
+        "count",
+        "bufSize",
+        "categories",
+        "severities",
+        "ids",
+        "lengths",
+        "message"
+      ]
+    },
+    "glGetDebugMessageLogARB": {
+      "lengths": {
+        "2": "count",
+        "3": "count",
+        "4": "count",
+        "5": "count",
+        "6": "count",
+        "7": "bufSize"
+      },
+      "parameters": [
+        "count",
+        "bufSize",
+        "sources",
+        "types",
+        "ids",
+        "severities",
+        "lengths",
+        "messageLog"
+      ]
+    },
+    "glGetDebugMessageLogKHR": {
+      "lengths": {
+        "2": "count",
+        "3": "count",
+        "4": "count",
+        "5": "count",
+        "6": "count",
+        "7": "bufSize"
+      },
+      "parameters": [
+        "count",
+        "bufSize",
+        "sources",
+        "types",
+        "ids",
+        "severities",
+        "lengths",
+        "messageLog"
+      ]
+    },
+    "glGetDriverControlStringQCOM": {
+      "lengths": {
+        "3": "bufSize"
+      },
+      "parameters": [
+        "driverControl",
+        "bufSize",
+        "length",
+        "driverControlString"
+      ]
+    },
+    "glGetDriverControlsQCOM": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "num",
+        "size",
+        "driverControls"
+      ]
+    },
+    "glGetFragmentShadingRatesEXT": {
+      "lengths": {
+        "2": "1",
+        "3": "maxCount"
+      },
+      "parameters": [
+        "samples",
+        "maxCount",
+        "count",
+        "shadingRates"
+      ]
+    },
+    "glGetInfoLogARB": {
+      "lengths": {
+        "2": "1",
+        "3": "maxLength"
+      },
+      "parameters": [
+        "obj",
+        "maxLength",
+        "length",
+        "infoLog"
+      ]
+    },
+    "glGetInternalformatSampleivNV": {
+      "lengths": {
+        "5": "count"
+      },
+      "parameters": [
+        "target",
+        "internalformat",
+        "samples",
+        "pname",
+        "count",
+        "params"
+      ]
+    },
+    "glGetInternalformati64v": {
+      "lengths": {
+        "4": "count"
+      },
+      "parameters": [
+        "target",
+        "internalformat",
+        "pname",
+        "count",
+        "params"
+      ]
+    },
+    "glGetInternalformativ": {
+      "lengths": {
+        "4": "count"
+      },
+      "parameters": [
+        "target",
+        "internalformat",
+        "pname",
+        "count",
+        "params"
+      ]
+    },
+    "glGetMultisamplefvNV": {
+      "lengths": {
+        "2": "2"
+      },
+      "parameters": [
+        "pname",
+        "index",
+        "val"
+      ]
+    },
+    "glGetNamedBufferPointerv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "buffer",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetNamedBufferPointervEXT": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "buffer",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetNamedBufferSubData": {
+      "lengths": {
+        "3": "size"
+      },
+      "parameters": [
+        "buffer",
+        "offset",
+        "size",
+        "data"
+      ]
+    },
+    "glGetNamedProgramLocalParameterIivEXT": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetNamedProgramLocalParameterIuivEXT": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetNamedProgramLocalParameterdvEXT": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetNamedProgramLocalParameterfvEXT": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetNamedProgramivEXT": {
+      "lengths": {
+        "3": "1"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetNamedStringARB": {
+      "lengths": {
+        "1": "namelen",
+        "3": "1",
+        "4": "bufSize"
+      },
+      "parameters": [
+        "namelen",
+        "name",
+        "bufSize",
+        "stringlen",
+        "string"
+      ]
+    },
+    "glGetNamedStringivARB": {
+      "lengths": {
+        "1": "namelen"
+      },
+      "parameters": [
+        "namelen",
+        "name",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetObjectBufferfvATI": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "buffer",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetObjectBufferivATI": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "buffer",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetObjectLabel": {
+      "lengths": {
+        "3": "1",
+        "4": "bufSize"
+      },
+      "parameters": [
+        "identifier",
+        "name",
+        "bufSize",
+        "length",
+        "label"
+      ]
+    },
+    "glGetObjectLabelEXT": {
+      "lengths": {
+        "3": "1",
+        "4": "bufSize"
+      },
+      "parameters": [
+        "type",
+        "object",
+        "bufSize",
+        "length",
+        "label"
+      ]
+    },
+    "glGetObjectLabelKHR": {
+      "lengths": {
+        "3": "1",
+        "4": "bufSize"
+      },
+      "parameters": [
+        "identifier",
+        "name",
+        "bufSize",
+        "length",
+        "label"
+      ]
+    },
+    "glGetObjectPtrLabel": {
+      "lengths": {
+        "2": "1",
+        "3": "bufSize"
+      },
+      "parameters": [
+        "ptr",
+        "bufSize",
+        "length",
+        "label"
+      ]
+    },
+    "glGetObjectPtrLabelKHR": {
+      "lengths": {
+        "2": "1",
+        "3": "bufSize"
+      },
+      "parameters": [
+        "ptr",
+        "bufSize",
+        "length",
+        "label"
+      ]
+    },
+    "glGetPathParameterfvNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "path",
+        "pname",
+        "value"
+      ]
+    },
+    "glGetPathParameterivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "path",
+        "pname",
+        "value"
+      ]
+    },
+    "glGetPerfCounterInfoINTEL": {
+      "lengths": {
+        "3": "counterNameLength",
+        "5": "counterDescLength"
+      },
+      "parameters": [
+        "queryId",
+        "counterId",
+        "counterNameLength",
+        "counterName",
+        "counterDescLength",
+        "counterDesc",
+        "counterOffset",
+        "counterDataSize",
+        "counterTypeEnum",
+        "counterDataTypeEnum",
+        "rawCounterMaxValue"
+      ]
+    },
+    "glGetPerfMonitorCounterDataAMD": {
+      "lengths": {
+        "3": "dataSize/4",
+        "4": "1"
+      },
+      "parameters": [
+        "monitor",
+        "pname",
+        "dataSize",
+        "data",
+        "bytesWritten"
+      ]
+    },
+    "glGetPerfMonitorCounterStringAMD": {
+      "lengths": {
+        "3": "1",
+        "4": "bufSize"
+      },
+      "parameters": [
+        "group",
+        "counter",
+        "bufSize",
+        "length",
+        "counterString"
+      ]
+    },
+    "glGetPerfMonitorCountersAMD": {
+      "lengths": {
+        "1": "1",
+        "2": "1",
+        "4": "counterSize"
+      },
+      "parameters": [
+        "group",
+        "numCounters",
+        "maxActiveCounters",
+        "counterSize",
+        "counters"
+      ]
+    },
+    "glGetPerfMonitorGroupStringAMD": {
+      "lengths": {
+        "2": "1",
+        "3": "bufSize"
+      },
+      "parameters": [
+        "group",
+        "bufSize",
+        "length",
+        "groupString"
+      ]
+    },
+    "glGetPerfMonitorGroupsAMD": {
+      "lengths": {
+        "0": "1",
+        "2": "groupsSize"
+      },
+      "parameters": [
+        "numGroups",
+        "groupsSize",
+        "groups"
+      ]
+    },
+    "glGetPerfQueryInfoINTEL": {
+      "lengths": {
+        "2": "queryNameLength"
+      },
+      "parameters": [
+        "queryId",
+        "queryNameLength",
+        "queryName",
+        "dataSize",
+        "noCounters",
+        "noInstances",
+        "capsMask"
+      ]
+    },
+    "glGetPixelMapxv": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "map",
+        "size",
+        "values"
+      ]
+    },
+    "glGetPointerIndexedvEXT": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "data"
+      ]
+    },
+    "glGetPointeri_vEXT": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "pname",
+        "index",
+        "params"
+      ]
+    },
+    "glGetPointerv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "pname",
+        "params"
+      ]
+    },
+    "glGetPointervEXT": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "pname",
+        "params"
+      ]
+    },
+    "glGetPointervKHR": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "pname",
+        "params"
+      ]
+    },
+    "glGetProgramBinary": {
+      "lengths": {
+        "2": "1",
+        "3": "1",
+        "4": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "bufSize",
+        "length",
+        "binaryFormat",
+        "binary"
+      ]
+    },
+    "glGetProgramBinaryOES": {
+      "lengths": {
+        "2": "1",
+        "3": "1",
+        "4": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "bufSize",
+        "length",
+        "binaryFormat",
+        "binary"
+      ]
+    },
+    "glGetProgramEnvParameterIivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetProgramEnvParameterIuivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetProgramEnvParameterdvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetProgramEnvParameterfvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetProgramInfoLog": {
+      "lengths": {
+        "2": "1",
+        "3": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "bufSize",
+        "length",
+        "infoLog"
+      ]
+    },
+    "glGetProgramLocalParameterIivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetProgramLocalParameterIuivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetProgramLocalParameterdvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetProgramLocalParameterfvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glGetProgramNamedParameterdvNV": {
+      "lengths": {
+        "2": "1",
+        "3": "4"
+      },
+      "parameters": [
+        "id",
+        "len",
+        "name",
+        "params"
+      ]
+    },
+    "glGetProgramNamedParameterfvNV": {
+      "lengths": {
+        "2": "1",
+        "3": "4"
+      },
+      "parameters": [
+        "id",
+        "len",
+        "name",
+        "params"
+      ]
+    },
+    "glGetProgramParameterdvNV": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetProgramParameterfvNV": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetProgramPipelineInfoLog": {
+      "lengths": {
+        "2": "1",
+        "3": "bufSize"
+      },
+      "parameters": [
+        "pipeline",
+        "bufSize",
+        "length",
+        "infoLog"
+      ]
+    },
+    "glGetProgramPipelineInfoLogEXT": {
+      "lengths": {
+        "2": "1",
+        "3": "bufSize"
+      },
+      "parameters": [
+        "pipeline",
+        "bufSize",
+        "length",
+        "infoLog"
+      ]
+    },
+    "glGetProgramResourceName": {
+      "lengths": {
+        "4": "1",
+        "5": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "programInterface",
+        "index",
+        "bufSize",
+        "length",
+        "name"
+      ]
+    },
+    "glGetProgramResourcefvNV": {
+      "lengths": {
+        "6": "1",
+        "7": "count"
+      },
+      "parameters": [
+        "program",
+        "programInterface",
+        "index",
+        "propCount",
+        "props",
+        "count",
+        "length",
+        "params"
+      ]
+    },
+    "glGetProgramResourceiv": {
+      "lengths": {
+        "4": "propCount",
+        "6": "1",
+        "7": "count"
+      },
+      "parameters": [
+        "program",
+        "programInterface",
+        "index",
+        "propCount",
+        "props",
+        "count",
+        "length",
+        "params"
+      ]
+    },
+    "glGetProgramStageiv": {
+      "lengths": {
+        "3": "1"
+      },
+      "parameters": [
+        "program",
+        "shadertype",
+        "pname",
+        "values"
+      ]
+    },
+    "glGetProgramivARB": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "target",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetProgramivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "id",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetShaderInfoLog": {
+      "lengths": {
+        "2": "1",
+        "3": "bufSize"
+      },
+      "parameters": [
+        "shader",
+        "bufSize",
+        "length",
+        "infoLog"
+      ]
+    },
+    "glGetShaderPrecisionFormat": {
+      "lengths": {
+        "2": "2",
+        "3": "1"
+      },
+      "parameters": [
+        "shadertype",
+        "precisiontype",
+        "range",
+        "precision"
+      ]
+    },
+    "glGetShaderSource": {
+      "lengths": {
+        "2": "1",
+        "3": "bufSize"
+      },
+      "parameters": [
+        "shader",
+        "bufSize",
+        "length",
+        "source"
+      ]
+    },
+    "glGetShaderSourceARB": {
+      "lengths": {
+        "2": "1",
+        "3": "maxLength"
+      },
+      "parameters": [
+        "obj",
+        "maxLength",
+        "length",
+        "source"
+      ]
+    },
+    "glGetShadingRateImagePaletteNV": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "viewport",
+        "entry",
+        "rate"
+      ]
+    },
+    "glGetShadingRateSampleLocationivNV": {
+      "lengths": {
+        "3": "3"
+      },
+      "parameters": [
+        "rate",
+        "samples",
+        "index",
+        "location"
+      ]
+    },
+    "glGetSynciv": {
+      "lengths": {
+        "3": "1",
+        "4": "count"
+      },
+      "parameters": [
+        "sync",
+        "pname",
+        "count",
+        "length",
+        "values"
+      ]
+    },
+    "glGetSyncivAPPLE": {
+      "lengths": {
+        "4": "count"
+      },
+      "parameters": [
+        "sync",
+        "pname",
+        "count",
+        "length",
+        "values"
+      ]
+    },
+    "glGetTexParameterPointervAPPLE": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "target",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetTextureImage": {
+      "lengths": {
+        "5": "bufSize"
+      },
+      "parameters": [
+        "texture",
+        "level",
+        "format",
+        "type",
+        "bufSize",
+        "pixels"
+      ]
+    },
+    "glGetTextureSubImage": {
+      "lengths": {
+        "11": "bufSize"
+      },
+      "parameters": [
+        "texture",
+        "level",
+        "xoffset",
+        "yoffset",
+        "zoffset",
+        "width",
+        "height",
+        "depth",
+        "format",
+        "type",
+        "bufSize",
+        "pixels"
+      ]
+    },
+    "glGetTrackMatrixivNV": {
+      "lengths": {
+        "3": "1"
+      },
+      "parameters": [
+        "target",
+        "address",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetTransformFeedbackVarying": {
+      "lengths": {
+        "3": "1",
+        "4": "1",
+        "5": "1",
+        "6": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "index",
+        "bufSize",
+        "length",
+        "size",
+        "type",
+        "name"
+      ]
+    },
+    "glGetTransformFeedbackVaryingEXT": {
+      "lengths": {
+        "3": "1",
+        "4": "1",
+        "5": "1",
+        "6": "bufSize"
+      },
+      "parameters": [
+        "program",
+        "index",
+        "bufSize",
+        "length",
+        "size",
+        "type",
+        "name"
+      ]
+    },
+    "glGetTransformFeedbackVaryingNV": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "program",
+        "index",
+        "location"
+      ]
+    },
+    "glGetTranslatedShaderSourceANGLE": {
+      "lengths": {
+        "2": "1",
+        "3": "bufSize"
+      },
+      "parameters": [
+        "shader",
+        "bufSize",
+        "length",
+        "source"
+      ]
+    },
+    "glGetUniformSubroutineuiv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "shadertype",
+        "location",
+        "params"
+      ]
+    },
+    "glGetVariantArrayObjectfvATI": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "id",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVariantArrayObjectivATI": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "id",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexArrayPointeri_vEXT": {
+      "lengths": {
+        "3": "1"
+      },
+      "parameters": [
+        "vaobj",
+        "index",
+        "pname",
+        "param"
+      ]
+    },
+    "glGetVertexArrayPointervEXT": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "vaobj",
+        "pname",
+        "param"
+      ]
+    },
+    "glGetVertexAttribIiv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribIivEXT": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribIuiv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribIuivEXT": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribPointerv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "pointer"
+      ]
+    },
+    "glGetVertexAttribPointervARB": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "pointer"
+      ]
+    },
+    "glGetVertexAttribPointervNV": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "pointer"
+      ]
+    },
+    "glGetVertexAttribdv": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribdvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribdvNV": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribfv": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribfvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribfvNV": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribiv": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribivARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetVertexAttribivNV": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "index",
+        "pname",
+        "params"
+      ]
+    },
+    "glGetnColorTable": {
+      "lengths": {
+        "4": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "format",
+        "type",
+        "bufSize",
+        "table"
+      ]
+    },
+    "glGetnColorTableARB": {
+      "lengths": {
+        "4": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "format",
+        "type",
+        "bufSize",
+        "table"
+      ]
+    },
+    "glGetnCompressedTexImage": {
+      "lengths": {
+        "3": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "lod",
+        "bufSize",
+        "pixels"
+      ]
+    },
+    "glGetnCompressedTexImageARB": {
+      "lengths": {
+        "3": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "lod",
+        "bufSize",
+        "img"
+      ]
+    },
+    "glGetnConvolutionFilter": {
+      "lengths": {
+        "4": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "format",
+        "type",
+        "bufSize",
+        "image"
+      ]
+    },
+    "glGetnConvolutionFilterARB": {
+      "lengths": {
+        "4": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "format",
+        "type",
+        "bufSize",
+        "image"
+      ]
+    },
+    "glGetnHistogram": {
+      "lengths": {
+        "5": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "reset",
+        "format",
+        "type",
+        "bufSize",
+        "values"
+      ]
+    },
+    "glGetnHistogramARB": {
+      "lengths": {
+        "5": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "reset",
+        "format",
+        "type",
+        "bufSize",
+        "values"
+      ]
+    },
+    "glGetnMapdvARB": {
+      "lengths": {
+        "3": "bufSize/8"
+      },
+      "parameters": [
+        "target",
+        "query",
+        "bufSize",
+        "v"
+      ]
+    },
+    "glGetnMapfvARB": {
+      "lengths": {
+        "3": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "query",
+        "bufSize",
+        "v"
+      ]
+    },
+    "glGetnMapivARB": {
+      "lengths": {
+        "3": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "query",
+        "bufSize",
+        "v"
+      ]
+    },
+    "glGetnMinmax": {
+      "lengths": {
+        "5": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "reset",
+        "format",
+        "type",
+        "bufSize",
+        "values"
+      ]
+    },
+    "glGetnMinmaxARB": {
+      "lengths": {
+        "5": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "reset",
+        "format",
+        "type",
+        "bufSize",
+        "values"
+      ]
+    },
+    "glGetnPixelMapfvARB": {
+      "lengths": {
+        "2": "bufSize/4"
+      },
+      "parameters": [
+        "map",
+        "bufSize",
+        "values"
+      ]
+    },
+    "glGetnPixelMapuivARB": {
+      "lengths": {
+        "2": "bufSize"
+      },
+      "parameters": [
+        "map",
+        "bufSize",
+        "values"
+      ]
+    },
+    "glGetnPixelMapusvARB": {
+      "lengths": {
+        "2": "bufSize"
+      },
+      "parameters": [
+        "map",
+        "bufSize",
+        "values"
+      ]
+    },
+    "glGetnPolygonStipple": {
+      "lengths": {
+        "1": "bufSize"
+      },
+      "parameters": [
+        "bufSize",
+        "pattern"
+      ]
+    },
+    "glGetnPolygonStippleARB": {
+      "lengths": {
+        "1": "bufSize"
+      },
+      "parameters": [
+        "bufSize",
+        "pattern"
+      ]
+    },
+    "glGetnSeparableFilter": {
+      "lengths": {
+        "4": "rowBufSize",
+        "6": "columnBufSize"
+      },
+      "parameters": [
+        "target",
+        "format",
+        "type",
+        "rowBufSize",
+        "row",
+        "columnBufSize",
+        "column",
+        "span"
+      ]
+    },
+    "glGetnSeparableFilterARB": {
+      "lengths": {
+        "4": "rowBufSize",
+        "6": "columnBufSize"
+      },
+      "parameters": [
+        "target",
+        "format",
+        "type",
+        "rowBufSize",
+        "row",
+        "columnBufSize",
+        "column",
+        "span"
+      ]
+    },
+    "glGetnTexImage": {
+      "lengths": {
+        "5": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "format",
+        "type",
+        "bufSize",
+        "pixels"
+      ]
+    },
+    "glGetnTexImageARB": {
+      "lengths": {
+        "5": "bufSize"
+      },
+      "parameters": [
+        "target",
+        "level",
+        "format",
+        "type",
+        "bufSize",
+        "img"
+      ]
+    },
+    "glGetnUniformdv": {
+      "lengths": {
+        "3": "bufSize/8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformdvARB": {
+      "lengths": {
+        "3": "bufSize/8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformfv": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformfvARB": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformfvEXT": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformfvKHR": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformi64vARB": {
+      "lengths": {
+        "3": "bufSize/8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformiv": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformivARB": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformivEXT": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformivKHR": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformui64vARB": {
+      "lengths": {
+        "3": "bufSize/8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformuiv": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformuivARB": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glGetnUniformuivKHR": {
+      "lengths": {
+        "3": "bufSize/4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "bufSize",
+        "params"
+      ]
+    },
+    "glIndexdv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "c"
+      ]
+    },
+    "glIndexfv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "c"
+      ]
+    },
+    "glIndexiv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "c"
+      ]
+    },
+    "glIndexsv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "c"
+      ]
+    },
+    "glIndexubv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "c"
+      ]
+    },
+    "glIndexxvOES": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "component"
+      ]
+    },
+    "glInstrumentsBufferSGIX": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "buffer"
+      ]
+    },
+    "glInvalidateFramebuffer": {
+      "lengths": {
+        "2": "numAttachments"
+      },
+      "parameters": [
+        "target",
+        "numAttachments",
+        "attachments"
+      ]
+    },
+    "glInvalidateNamedFramebufferData": {
+      "lengths": {
+        "2": "numAttachments"
+      },
+      "parameters": [
+        "framebuffer",
+        "numAttachments",
+        "attachments"
+      ]
+    },
+    "glInvalidateNamedFramebufferSubData": {
+      "lengths": {
+        "2": "numAttachments"
+      },
+      "parameters": [
+        "framebuffer",
+        "numAttachments",
+        "attachments",
+        "x",
+        "y",
+        "width",
+        "height"
+      ]
+    },
+    "glInvalidateSubFramebuffer": {
+      "lengths": {
+        "2": "numAttachments"
+      },
+      "parameters": [
+        "target",
+        "numAttachments",
+        "attachments",
+        "x",
+        "y",
+        "width",
+        "height"
+      ]
+    },
+    "glIsNamedStringARB": {
+      "lengths": {
+        "1": "namelen"
+      },
+      "parameters": [
+        "namelen",
+        "name"
+      ]
+    },
+    "glListDrawCommandsStatesClientNV": {
+      "lengths": {
+        "2": "count",
+        "3": "count",
+        "4": "count",
+        "5": "count"
+      },
+      "parameters": [
+        "list",
+        "segment",
+        "indirects",
+        "sizes",
+        "states",
+        "fbos",
+        "count"
+      ]
+    },
+    "glLoadMatrixd": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glLoadMatrixf": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glLoadMatrixx": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glLoadMatrixxOES": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glLoadProgramNV": {
+      "lengths": {
+        "3": "len"
+      },
+      "parameters": [
+        "target",
+        "id",
+        "len",
+        "program"
+      ]
+    },
+    "glLoadTransposeMatrixd": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glLoadTransposeMatrixdARB": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glLoadTransposeMatrixf": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glLoadTransposeMatrixfARB": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glLoadTransposeMatrixxOES": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMapTexture2DINTEL": {
+      "lengths": {
+        "3": "1",
+        "4": "1"
+      },
+      "parameters": [
+        "texture",
+        "level",
+        "access",
+        "stride",
+        "layout"
+      ]
+    },
+    "glMatrixIndexubvARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "indices"
+      ]
+    },
+    "glMatrixIndexuivARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "indices"
+      ]
+    },
+    "glMatrixIndexusvARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "indices"
+      ]
+    },
+    "glMatrixLoadTransposedEXT": {
+      "lengths": {
+        "1": "16"
+      },
+      "parameters": [
+        "mode",
+        "m"
+      ]
+    },
+    "glMatrixLoadTransposefEXT": {
+      "lengths": {
+        "1": "16"
+      },
+      "parameters": [
+        "mode",
+        "m"
+      ]
+    },
+    "glMatrixLoaddEXT": {
+      "lengths": {
+        "1": "16"
+      },
+      "parameters": [
+        "mode",
+        "m"
+      ]
+    },
+    "glMatrixLoadfEXT": {
+      "lengths": {
+        "1": "16"
+      },
+      "parameters": [
+        "mode",
+        "m"
+      ]
+    },
+    "glMatrixMultTransposedEXT": {
+      "lengths": {
+        "1": "16"
+      },
+      "parameters": [
+        "mode",
+        "m"
+      ]
+    },
+    "glMatrixMultTransposefEXT": {
+      "lengths": {
+        "1": "16"
+      },
+      "parameters": [
+        "mode",
+        "m"
+      ]
+    },
+    "glMatrixMultdEXT": {
+      "lengths": {
+        "1": "16"
+      },
+      "parameters": [
+        "mode",
+        "m"
+      ]
+    },
+    "glMatrixMultfEXT": {
+      "lengths": {
+        "1": "16"
+      },
+      "parameters": [
+        "mode",
+        "m"
+      ]
+    },
+    "glMultMatrixd": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMultMatrixf": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMultMatrixx": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMultMatrixxOES": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMultTransposeMatrixd": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMultTransposeMatrixdARB": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMultTransposeMatrixf": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMultTransposeMatrixfARB": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMultTransposeMatrixxOES": {
+      "lengths": {
+        "0": "16"
+      },
+      "parameters": [
+        "m"
+      ]
+    },
+    "glMultiDrawArrays": {
+      "lengths": {
+        "1": "drawcount",
+        "2": "drawcount"
+      },
+      "parameters": [
+        "mode",
+        "first",
+        "count",
+        "drawcount"
+      ]
+    },
+    "glMultiDrawArraysEXT": {
+      "lengths": {
+        "1": "primcount",
+        "2": "primcount"
+      },
+      "parameters": [
+        "mode",
+        "first",
+        "count",
+        "primcount"
+      ]
+    },
+    "glMultiDrawElementArrayAPPLE": {
+      "lengths": {
+        "1": "primcount",
+        "2": "primcount"
+      },
+      "parameters": [
+        "mode",
+        "first",
+        "count",
+        "primcount"
+      ]
+    },
+    "glMultiDrawElements": {
+      "lengths": {
+        "1": "drawcount",
+        "3": "drawcount"
+      },
+      "parameters": [
+        "mode",
+        "count",
+        "type",
+        "indices",
+        "drawcount"
+      ]
+    },
+    "glMultiDrawElementsBaseVertex": {
+      "lengths": {
+        "1": "drawcount",
+        "3": "drawcount",
+        "5": "drawcount"
+      },
+      "parameters": [
+        "mode",
+        "count",
+        "type",
+        "indices",
+        "drawcount",
+        "basevertex"
+      ]
+    },
+    "glMultiDrawElementsBaseVertexEXT": {
+      "lengths": {
+        "1": "drawcount",
+        "3": "drawcount",
+        "5": "drawcount"
+      },
+      "parameters": [
+        "mode",
+        "count",
+        "type",
+        "indices",
+        "drawcount",
+        "basevertex"
+      ]
+    },
+    "glMultiDrawElementsEXT": {
+      "lengths": {
+        "1": "primcount",
+        "3": "primcount"
+      },
+      "parameters": [
+        "mode",
+        "count",
+        "type",
+        "indices",
+        "primcount"
+      ]
+    },
+    "glMultiDrawRangeElementArrayAPPLE": {
+      "lengths": {
+        "3": "primcount",
+        "4": "primcount"
+      },
+      "parameters": [
+        "mode",
+        "start",
+        "end",
+        "first",
+        "count",
+        "primcount"
+      ]
+    },
+    "glMultiModeDrawArraysIBM": {
+      "lengths": {
+        "1": "primcount",
+        "2": "primcount"
+      },
+      "parameters": [
+        "mode",
+        "first",
+        "count",
+        "primcount",
+        "modestride"
+      ]
+    },
+    "glMultiModeDrawElementsIBM": {
+      "lengths": {
+        "1": "primcount",
+        "3": "primcount"
+      },
+      "parameters": [
+        "mode",
+        "count",
+        "type",
+        "indices",
+        "primcount",
+        "modestride"
+      ]
+    },
+    "glMultiTexCoord1bvOES": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "texture",
+        "coords"
+      ]
+    },
+    "glMultiTexCoord1dv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord1dvARB": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord1fv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord1fvARB": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord1hvNV": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord1iv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord1ivARB": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord1sv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord1svARB": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord1xvOES": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "texture",
+        "coords"
+      ]
+    },
+    "glMultiTexCoord2bvOES": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "texture",
+        "coords"
+      ]
+    },
+    "glMultiTexCoord2dv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord2dvARB": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord2fv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord2fvARB": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord2hvNV": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord2iv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord2ivARB": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord2sv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord2svARB": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord2xvOES": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "texture",
+        "coords"
+      ]
+    },
+    "glMultiTexCoord3bvOES": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "texture",
+        "coords"
+      ]
+    },
+    "glMultiTexCoord3dv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord3dvARB": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord3fv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord3fvARB": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord3hvNV": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord3iv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord3ivARB": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord3sv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord3svARB": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord3xvOES": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "texture",
+        "coords"
+      ]
+    },
+    "glMultiTexCoord4bvOES": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "texture",
+        "coords"
+      ]
+    },
+    "glMultiTexCoord4dv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord4dvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord4fv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord4fvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord4hvNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord4iv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord4ivARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord4sv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord4svARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "target",
+        "v"
+      ]
+    },
+    "glMultiTexCoord4xvOES": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "texture",
+        "coords"
+      ]
+    },
+    "glMultiTexCoordP1uiv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "texture",
+        "type",
+        "coords"
+      ]
+    },
+    "glMultiTexCoordP2uiv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "texture",
+        "type",
+        "coords"
+      ]
+    },
+    "glMultiTexCoordP3uiv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "texture",
+        "type",
+        "coords"
+      ]
+    },
+    "glMultiTexCoordP4uiv": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "texture",
+        "type",
+        "coords"
+      ]
+    },
+    "glNamedBufferData": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "buffer",
+        "size",
+        "data",
+        "usage"
+      ]
+    },
+    "glNamedBufferStorage": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "buffer",
+        "size",
+        "data",
+        "flags"
+      ]
+    },
+    "glNamedBufferStorageEXT": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "buffer",
+        "size",
+        "data",
+        "flags"
+      ]
+    },
+    "glNamedBufferSubData": {
+      "lengths": {
+        "3": "size"
+      },
+      "parameters": [
+        "buffer",
+        "offset",
+        "size",
+        "data"
+      ]
+    },
+    "glNamedFramebufferDrawBuffers": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "framebuffer",
+        "n",
+        "bufs"
+      ]
+    },
+    "glNamedProgramLocalParameter4dvEXT": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glNamedProgramLocalParameter4fvEXT": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glNamedProgramLocalParameterI4ivEXT": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glNamedProgramLocalParameterI4uivEXT": {
+      "lengths": {
+        "3": "4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glNamedProgramLocalParameters4fvEXT": {
+      "lengths": {
+        "4": "count*4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "count",
+        "params"
+      ]
+    },
+    "glNamedProgramLocalParametersI4ivEXT": {
+      "lengths": {
+        "4": "count*4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "count",
+        "params"
+      ]
+    },
+    "glNamedProgramLocalParametersI4uivEXT": {
+      "lengths": {
+        "4": "count*4"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "index",
+        "count",
+        "params"
+      ]
+    },
+    "glNamedProgramStringEXT": {
+      "lengths": {
+        "4": "len"
+      },
+      "parameters": [
+        "program",
+        "target",
+        "format",
+        "len",
+        "string"
+      ]
+    },
+    "glNamedStringARB": {
+      "lengths": {
+        "2": "namelen",
+        "4": "stringlen"
+      },
+      "parameters": [
+        "type",
+        "namelen",
+        "name",
+        "stringlen",
+        "string"
+      ]
+    },
+    "glNewObjectBufferATI": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "pointer",
+        "usage"
+      ]
+    },
+    "glNormal3bv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glNormal3dv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glNormal3fVertex3fvSUN": {
+      "lengths": {
+        "0": "3",
+        "1": "3"
+      },
+      "parameters": [
+        "n",
+        "v"
+      ]
+    },
+    "glNormal3fv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glNormal3hvNV": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glNormal3iv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glNormal3sv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glNormal3xvOES": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glNormalP3uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "coords"
+      ]
+    },
+    "glNormalPointervINTEL": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "type",
+        "pointer"
+      ]
+    },
+    "glNormalStream3bvATI": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glNormalStream3dvATI": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glNormalStream3fvATI": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glNormalStream3ivATI": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glNormalStream3svATI": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glPathCommandsNV": {
+      "lengths": {
+        "2": "numCommands"
+      },
+      "parameters": [
+        "path",
+        "numCommands",
+        "commands",
+        "numCoords",
+        "coordType",
+        "coords"
+      ]
+    },
+    "glPathDashArrayNV": {
+      "lengths": {
+        "2": "dashCount"
+      },
+      "parameters": [
+        "path",
+        "dashCount",
+        "dashArray"
+      ]
+    },
+    "glPathGlyphIndexRangeNV": {
+      "lengths": {
+        "5": "2"
+      },
+      "parameters": [
+        "fontTarget",
+        "fontName",
+        "fontStyle",
+        "pathParameterTemplate",
+        "emScale",
+        "baseAndCount"
+      ]
+    },
+    "glPathStringNV": {
+      "lengths": {
+        "3": "length"
+      },
+      "parameters": [
+        "path",
+        "format",
+        "length",
+        "pathString"
+      ]
+    },
+    "glPathSubCommandsNV": {
+      "lengths": {
+        "4": "numCommands"
+      },
+      "parameters": [
+        "path",
+        "commandStart",
+        "commandsToDelete",
+        "numCommands",
+        "commands",
+        "numCoords",
+        "coordType",
+        "coords"
+      ]
+    },
+    "glPixelDataRangeNV": {
+      "lengths": {
+        "2": "length"
+      },
+      "parameters": [
+        "target",
+        "length",
+        "pointer"
+      ]
+    },
+    "glPixelMapfv": {
+      "lengths": {
+        "2": "mapsize"
+      },
+      "parameters": [
+        "map",
+        "mapsize",
+        "values"
+      ]
+    },
+    "glPixelMapuiv": {
+      "lengths": {
+        "2": "mapsize"
+      },
+      "parameters": [
+        "map",
+        "mapsize",
+        "values"
+      ]
+    },
+    "glPixelMapusv": {
+      "lengths": {
+        "2": "mapsize"
+      },
+      "parameters": [
+        "map",
+        "mapsize",
+        "values"
+      ]
+    },
+    "glPixelMapx": {
+      "lengths": {
+        "2": "size"
+      },
+      "parameters": [
+        "map",
+        "size",
+        "values"
+      ]
+    },
+    "glPixelTransformParameterfvEXT": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "target",
+        "pname",
+        "params"
+      ]
+    },
+    "glPixelTransformParameterivEXT": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "target",
+        "pname",
+        "params"
+      ]
+    },
+    "glPointAlongPathNV": {
+      "lengths": {
+        "4": "1",
+        "5": "1",
+        "6": "1",
+        "7": "1"
+      },
+      "parameters": [
+        "path",
+        "startSegment",
+        "numSegments",
+        "distance",
+        "x",
+        "y",
+        "tangentX",
+        "tangentY"
+      ]
+    },
+    "glPollAsyncSGIX": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "markerp"
+      ]
+    },
+    "glPollInstrumentsSGIX": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "marker_p"
+      ]
+    },
+    "glPrioritizeTextures": {
+      "lengths": {
+        "1": "n",
+        "2": "n"
+      },
+      "parameters": [
+        "n",
+        "textures",
+        "priorities"
+      ]
+    },
+    "glPrioritizeTexturesEXT": {
+      "lengths": {
+        "1": "n",
+        "2": "n"
+      },
+      "parameters": [
+        "n",
+        "textures",
+        "priorities"
+      ]
+    },
+    "glPrioritizeTexturesxOES": {
+      "lengths": {
+        "1": "n",
+        "2": "n"
+      },
+      "parameters": [
+        "n",
+        "textures",
+        "priorities"
+      ]
+    },
+    "glProgramBinary": {
+      "lengths": {
+        "2": "length"
+      },
+      "parameters": [
+        "program",
+        "binaryFormat",
+        "binary",
+        "length"
+      ]
+    },
+    "glProgramBinaryOES": {
+      "lengths": {
+        "2": "length"
+      },
+      "parameters": [
+        "program",
+        "binaryFormat",
+        "binary",
+        "length"
+      ]
+    },
+    "glProgramBufferParametersIivNV": {
+      "lengths": {
+        "4": "count"
+      },
+      "parameters": [
+        "target",
+        "bindingIndex",
+        "wordIndex",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramBufferParametersIuivNV": {
+      "lengths": {
+        "4": "count"
+      },
+      "parameters": [
+        "target",
+        "bindingIndex",
+        "wordIndex",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramBufferParametersfvNV": {
+      "lengths": {
+        "4": "count"
+      },
+      "parameters": [
+        "target",
+        "bindingIndex",
+        "wordIndex",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramEnvParameter4dvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glProgramEnvParameter4fvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glProgramEnvParameterI4ivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glProgramEnvParameterI4uivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glProgramEnvParameters4fvEXT": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramEnvParametersI4ivNV": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramEnvParametersI4uivNV": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramLocalParameter4dvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glProgramLocalParameter4fvARB": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glProgramLocalParameterI4ivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glProgramLocalParameterI4uivNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "params"
+      ]
+    },
+    "glProgramLocalParameters4fvEXT": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramLocalParametersI4ivNV": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramLocalParametersI4uivNV": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramNamedParameter4dNV": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "id",
+        "len",
+        "name",
+        "x",
+        "y",
+        "z",
+        "w"
+      ]
+    },
+    "glProgramNamedParameter4dvNV": {
+      "lengths": {
+        "2": "1",
+        "3": "4"
+      },
+      "parameters": [
+        "id",
+        "len",
+        "name",
+        "v"
+      ]
+    },
+    "glProgramNamedParameter4fNV": {
+      "lengths": {
+        "2": "1"
+      },
+      "parameters": [
+        "id",
+        "len",
+        "name",
+        "x",
+        "y",
+        "z",
+        "w"
+      ]
+    },
+    "glProgramNamedParameter4fvNV": {
+      "lengths": {
+        "2": "1",
+        "3": "4"
+      },
+      "parameters": [
+        "id",
+        "len",
+        "name",
+        "v"
+      ]
+    },
+    "glProgramParameter4dvNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "v"
+      ]
+    },
+    "glProgramParameter4fvNV": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "v"
+      ]
+    },
+    "glProgramParameters4dvNV": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glProgramParameters4fvNV": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "target",
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glProgramStringARB": {
+      "lengths": {
+        "3": "len"
+      },
+      "parameters": [
+        "target",
+        "format",
+        "len",
+        "string"
+      ]
+    },
+    "glProgramSubroutineParametersuivNV": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "target",
+        "count",
+        "params"
+      ]
+    },
+    "glProgramUniform1dv": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1dvEXT": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1fv": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1fvEXT": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1i64vARB": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1i64vNV": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1iv": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1ivEXT": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1ui64vARB": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1ui64vNV": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1uiv": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform1uivEXT": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2dv": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2dvEXT": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2fv": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2fvEXT": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2i64vARB": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2i64vNV": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2iv": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2ivEXT": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2ui64vARB": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2ui64vNV": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2uiv": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform2uivEXT": {
+      "lengths": {
+        "3": "count*2"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3dv": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3dvEXT": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3fv": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3fvEXT": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3i64vARB": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3i64vNV": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3iv": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3ivEXT": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3ui64vARB": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3ui64vNV": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3uiv": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform3uivEXT": {
+      "lengths": {
+        "3": "count*3"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4dv": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4dvEXT": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4fv": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4fvEXT": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4i64vARB": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4i64vNV": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4iv": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4ivEXT": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4ui64vARB": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4ui64vNV": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4uiv": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniform4uivEXT": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glProgramUniformHandleui64vARB": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "values"
+      ]
+    },
+    "glProgramUniformHandleui64vIMG": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "values"
+      ]
+    },
+    "glProgramUniformHandleui64vNV": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "values"
+      ]
+    },
+    "glProgramUniformMatrix2dv": {
+      "lengths": {
+        "4": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2dvEXT": {
+      "lengths": {
+        "4": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2fv": {
+      "lengths": {
+        "4": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2fvEXT": {
+      "lengths": {
+        "4": "count*4"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2x3dv": {
+      "lengths": {
+        "4": "count*6"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2x3dvEXT": {
+      "lengths": {
+        "4": "count*6"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2x3fv": {
+      "lengths": {
+        "4": "count*6"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2x3fvEXT": {
+      "lengths": {
+        "4": "count*6"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2x4dv": {
+      "lengths": {
+        "4": "count*8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2x4dvEXT": {
+      "lengths": {
+        "4": "count*8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2x4fv": {
+      "lengths": {
+        "4": "count*8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix2x4fvEXT": {
+      "lengths": {
+        "4": "count*8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3dv": {
+      "lengths": {
+        "4": "count*9"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3dvEXT": {
+      "lengths": {
+        "4": "count*9"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3fv": {
+      "lengths": {
+        "4": "count*9"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3fvEXT": {
+      "lengths": {
+        "4": "count*9"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3x2dv": {
+      "lengths": {
+        "4": "count*6"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3x2dvEXT": {
+      "lengths": {
+        "4": "count*6"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3x2fv": {
+      "lengths": {
+        "4": "count*6"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3x2fvEXT": {
+      "lengths": {
+        "4": "count*6"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3x4dv": {
+      "lengths": {
+        "4": "count*12"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3x4dvEXT": {
+      "lengths": {
+        "4": "count*12"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3x4fv": {
+      "lengths": {
+        "4": "count*12"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix3x4fvEXT": {
+      "lengths": {
+        "4": "count*12"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4dv": {
+      "lengths": {
+        "4": "count*16"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4dvEXT": {
+      "lengths": {
+        "4": "count*16"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4fv": {
+      "lengths": {
+        "4": "count*16"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4fvEXT": {
+      "lengths": {
+        "4": "count*16"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4x2dv": {
+      "lengths": {
+        "4": "count*8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4x2dvEXT": {
+      "lengths": {
+        "4": "count*8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4x2fv": {
+      "lengths": {
+        "4": "count*8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4x2fvEXT": {
+      "lengths": {
+        "4": "count*8"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4x3dv": {
+      "lengths": {
+        "4": "count*12"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4x3dvEXT": {
+      "lengths": {
+        "4": "count*12"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4x3fv": {
+      "lengths": {
+        "4": "count*12"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformMatrix4x3fvEXT": {
+      "lengths": {
+        "4": "count*12"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glProgramUniformui64vNV": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "program",
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glQueryMatrixxOES": {
+      "lengths": {
+        "0": "16",
+        "1": "16"
+      },
+      "parameters": [
+        "mantissa",
+        "exponent"
+      ]
+    },
+    "glQueryResourceNV": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "queryType",
+        "tagId",
+        "count",
+        "buffer"
+      ]
+    },
+    "glRasterPos2dv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos2fv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos2iv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos2sv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos2xvOES": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glRasterPos3dv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos3fv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos3iv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos3sv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos3xvOES": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glRasterPos4dv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos4fv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos4iv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos4sv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glRasterPos4xvOES": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glReadnPixels": {
+      "lengths": {
+        "7": "bufSize"
+      },
+      "parameters": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "format",
+        "type",
+        "bufSize",
+        "data"
+      ]
+    },
+    "glReadnPixelsARB": {
+      "lengths": {
+        "7": "bufSize"
+      },
+      "parameters": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "format",
+        "type",
+        "bufSize",
+        "data"
+      ]
+    },
+    "glReadnPixelsEXT": {
+      "lengths": {
+        "7": "bufSize"
+      },
+      "parameters": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "format",
+        "type",
+        "bufSize",
+        "data"
+      ]
+    },
+    "glReadnPixelsKHR": {
+      "lengths": {
+        "7": "bufSize"
+      },
+      "parameters": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "format",
+        "type",
+        "bufSize",
+        "data"
+      ]
+    },
+    "glRectdv": {
+      "lengths": {
+        "0": "2",
+        "1": "2"
+      },
+      "parameters": [
+        "v1",
+        "v2"
+      ]
+    },
+    "glRectfv": {
+      "lengths": {
+        "0": "2",
+        "1": "2"
+      },
+      "parameters": [
+        "v1",
+        "v2"
+      ]
+    },
+    "glRectiv": {
+      "lengths": {
+        "0": "2",
+        "1": "2"
+      },
+      "parameters": [
+        "v1",
+        "v2"
+      ]
+    },
+    "glRectsv": {
+      "lengths": {
+        "0": "2",
+        "1": "2"
+      },
+      "parameters": [
+        "v1",
+        "v2"
+      ]
+    },
+    "glRectxvOES": {
+      "lengths": {
+        "0": "2",
+        "1": "2"
+      },
+      "parameters": [
+        "v1",
+        "v2"
+      ]
+    },
+    "glReferencePlaneSGIX": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "equation"
+      ]
+    },
+    "glReplacementCodeuiColor3fVertex3fvSUN": {
+      "lengths": {
+        "0": "1",
+        "1": "3",
+        "2": "3"
+      },
+      "parameters": [
+        "rc",
+        "c",
+        "v"
+      ]
+    },
+    "glReplacementCodeuiColor4fNormal3fVertex3fvSUN": {
+      "lengths": {
+        "0": "1",
+        "1": "4",
+        "2": "3",
+        "3": "3"
+      },
+      "parameters": [
+        "rc",
+        "c",
+        "n",
+        "v"
+      ]
+    },
+    "glReplacementCodeuiColor4ubVertex3fvSUN": {
+      "lengths": {
+        "0": "1",
+        "1": "4",
+        "2": "3"
+      },
+      "parameters": [
+        "rc",
+        "c",
+        "v"
+      ]
+    },
+    "glReplacementCodeuiNormal3fVertex3fvSUN": {
+      "lengths": {
+        "0": "1",
+        "1": "3",
+        "2": "3"
+      },
+      "parameters": [
+        "rc",
+        "n",
+        "v"
+      ]
+    },
+    "glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN": {
+      "lengths": {
+        "0": "1",
+        "1": "2",
+        "2": "4",
+        "3": "3",
+        "4": "3"
+      },
+      "parameters": [
+        "rc",
+        "tc",
+        "c",
+        "n",
+        "v"
+      ]
+    },
+    "glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN": {
+      "lengths": {
+        "0": "1",
+        "1": "2",
+        "2": "3",
+        "3": "3"
+      },
+      "parameters": [
+        "rc",
+        "tc",
+        "n",
+        "v"
+      ]
+    },
+    "glReplacementCodeuiTexCoord2fVertex3fvSUN": {
+      "lengths": {
+        "0": "1",
+        "1": "2",
+        "2": "3"
+      },
+      "parameters": [
+        "rc",
+        "tc",
+        "v"
+      ]
+    },
+    "glReplacementCodeuiVertex3fvSUN": {
+      "lengths": {
+        "0": "1",
+        "1": "3"
+      },
+      "parameters": [
+        "rc",
+        "v"
+      ]
+    },
+    "glRequestResidentProgramsNV": {
+      "lengths": {
+        "1": "n"
+      },
+      "parameters": [
+        "n",
+        "programs"
+      ]
+    },
+    "glScissorIndexedv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glScissorIndexedvNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glScissorIndexedvOES": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glSecondaryColor3bv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3bvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3dv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3dvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3fv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3fvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3hvNV": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3iv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3ivEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3sv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3svEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3ubv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3ubvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3uiv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3uivEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3usv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColor3usvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glSecondaryColorP3uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "color"
+      ]
+    },
+    "glSelectBuffer": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "buffer"
+      ]
+    },
+    "glSelectPerfMonitorCountersAMD": {
+      "lengths": {
+        "4": "numCounters"
+      },
+      "parameters": [
+        "monitor",
+        "enable",
+        "group",
+        "numCounters",
+        "counterList"
+      ]
+    },
+    "glSetFragmentShaderConstantATI": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "dst",
+        "value"
+      ]
+    },
+    "glSetMultisamplefvAMD": {
+      "lengths": {
+        "2": "2"
+      },
+      "parameters": [
+        "pname",
+        "index",
+        "val"
+      ]
+    },
+    "glShaderBinary": {
+      "lengths": {
+        "1": "count",
+        "3": "length"
+      },
+      "parameters": [
+        "count",
+        "shaders",
+        "binaryFormat",
+        "binary",
+        "length"
+      ]
+    },
+    "glShaderSource": {
+      "lengths": {
+        "2": "count",
+        "3": "count"
+      },
+      "parameters": [
+        "shader",
+        "count",
+        "string",
+        "length"
+      ]
+    },
+    "glShaderSourceARB": {
+      "lengths": {
+        "2": "count",
+        "3": "count"
+      },
+      "parameters": [
+        "shaderObj",
+        "count",
+        "string",
+        "length"
+      ]
+    },
+    "glShadingRateImagePaletteNV": {
+      "lengths": {
+        "3": "count"
+      },
+      "parameters": [
+        "viewport",
+        "first",
+        "count",
+        "rates"
+      ]
+    },
+    "glSharpenTexFuncSGIS": {
+      "lengths": {
+        "2": "n*2"
+      },
+      "parameters": [
+        "target",
+        "n",
+        "points"
+      ]
+    },
+    "glSignalSemaphoreui64NVX": {
+      "lengths": {
+        "2": "fenceObjectCount",
+        "3": "fenceObjectCount"
+      },
+      "parameters": [
+        "signalGpu",
+        "fenceObjectCount",
+        "semaphoreArray",
+        "fenceValueArray"
+      ]
+    },
+    "glSpecializeShader": {
+      "lengths": {
+        "3": "numSpecializationConstants",
+        "4": "numSpecializationConstants"
+      },
+      "parameters": [
+        "shader",
+        "pEntryPoint",
+        "numSpecializationConstants",
+        "pConstantIndex",
+        "pConstantValue"
+      ]
+    },
+    "glStringMarkerGREMEDY": {
+      "lengths": {
+        "1": "len"
+      },
+      "parameters": [
+        "len",
+        "string"
+      ]
+    },
+    "glTangent3bvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTangent3dvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTangent3fvEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTangent3ivEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTangent3svEXT": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord1bvOES": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glTexCoord1dv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord1fv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord1hvNV": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord1iv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord1sv": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord1xvOES": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glTexCoord2bvOES": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glTexCoord2dv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord2fColor3fVertex3fvSUN": {
+      "lengths": {
+        "0": "2",
+        "1": "3",
+        "2": "3"
+      },
+      "parameters": [
+        "tc",
+        "c",
+        "v"
+      ]
+    },
+    "glTexCoord2fColor4fNormal3fVertex3fvSUN": {
+      "lengths": {
+        "0": "2",
+        "1": "4",
+        "2": "3",
+        "3": "3"
+      },
+      "parameters": [
+        "tc",
+        "c",
+        "n",
+        "v"
+      ]
+    },
+    "glTexCoord2fColor4ubVertex3fvSUN": {
+      "lengths": {
+        "0": "2",
+        "1": "4",
+        "2": "3"
+      },
+      "parameters": [
+        "tc",
+        "c",
+        "v"
+      ]
+    },
+    "glTexCoord2fNormal3fVertex3fvSUN": {
+      "lengths": {
+        "0": "2",
+        "1": "3",
+        "2": "3"
+      },
+      "parameters": [
+        "tc",
+        "n",
+        "v"
+      ]
+    },
+    "glTexCoord2fVertex3fvSUN": {
+      "lengths": {
+        "0": "2",
+        "1": "3"
+      },
+      "parameters": [
+        "tc",
+        "v"
+      ]
+    },
+    "glTexCoord2fv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord2hvNV": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord2iv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord2sv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord2xvOES": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glTexCoord3bvOES": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glTexCoord3dv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord3fv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord3hvNV": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord3iv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord3sv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord3xvOES": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glTexCoord4bvOES": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glTexCoord4dv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord4fColor4fNormal3fVertex4fvSUN": {
+      "lengths": {
+        "0": "4",
+        "1": "4",
+        "2": "3",
+        "3": "4"
+      },
+      "parameters": [
+        "tc",
+        "c",
+        "n",
+        "v"
+      ]
+    },
+    "glTexCoord4fVertex4fvSUN": {
+      "lengths": {
+        "0": "4",
+        "1": "4"
+      },
+      "parameters": [
+        "tc",
+        "v"
+      ]
+    },
+    "glTexCoord4fv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord4hvNV": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord4iv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord4sv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glTexCoord4xvOES": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glTexCoordP1uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "coords"
+      ]
+    },
+    "glTexCoordP2uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "coords"
+      ]
+    },
+    "glTexCoordP3uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "coords"
+      ]
+    },
+    "glTexCoordP4uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "coords"
+      ]
+    },
+    "glTexCoordPointervINTEL": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "size",
+        "type",
+        "pointer"
+      ]
+    },
+    "glTexFilterFuncSGIS": {
+      "lengths": {
+        "3": "n"
+      },
+      "parameters": [
+        "target",
+        "filter",
+        "n",
+        "weights"
+      ]
+    },
+    "glTextureRangeAPPLE": {
+      "lengths": {
+        "2": "length"
+      },
+      "parameters": [
+        "target",
+        "length",
+        "pointer"
+      ]
+    },
+    "glTransformFeedbackStreamAttribsNV": {
+      "lengths": {
+        "1": "count",
+        "3": "nbuffers"
+      },
+      "parameters": [
+        "count",
+        "attribs",
+        "nbuffers",
+        "bufstreams",
+        "bufferMode"
+      ]
+    },
+    "glTransformFeedbackVaryings": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "program",
+        "count",
+        "varyings",
+        "bufferMode"
+      ]
+    },
+    "glTransformFeedbackVaryingsEXT": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "program",
+        "count",
+        "varyings",
+        "bufferMode"
+      ]
+    },
+    "glTransformFeedbackVaryingsNV": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "program",
+        "count",
+        "locations",
+        "bufferMode"
+      ]
+    },
+    "glUniform1dv": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1fv": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1fvARB": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1i64vARB": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1i64vNV": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1iv": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1ivARB": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1ui64vARB": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1ui64vNV": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1uiv": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform1uivEXT": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2dv": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2fv": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2fvARB": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2i64vARB": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2i64vNV": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2iv": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2ivARB": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2ui64vARB": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2ui64vNV": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2uiv": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform2uivEXT": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3dv": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3fv": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3fvARB": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3i64vARB": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3i64vNV": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3iv": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3ivARB": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3ui64vARB": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3ui64vNV": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3uiv": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform3uivEXT": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4dv": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4fv": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4fvARB": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4i64vARB": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4i64vNV": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4iv": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4ivARB": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4ui64vARB": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4ui64vNV": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4uiv": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniform4uivEXT": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniformHandleui64vARB": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniformHandleui64vIMG": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniformHandleui64vNV": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUniformMatrix2dv": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix2fv": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix2fvARB": {
+      "lengths": {
+        "3": "count*4"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix2x3dv": {
+      "lengths": {
+        "3": "count*6"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix2x3fv": {
+      "lengths": {
+        "3": "count*6"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix2x3fvNV": {
+      "lengths": {
+        "3": "count*6"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix2x4dv": {
+      "lengths": {
+        "3": "count*8"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix2x4fv": {
+      "lengths": {
+        "3": "count*8"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix2x4fvNV": {
+      "lengths": {
+        "3": "count*8"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix3dv": {
+      "lengths": {
+        "3": "count*9"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix3fv": {
+      "lengths": {
+        "3": "count*9"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix3fvARB": {
+      "lengths": {
+        "3": "count*9"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix3x2dv": {
+      "lengths": {
+        "3": "count*6"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix3x2fv": {
+      "lengths": {
+        "3": "count*6"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix3x2fvNV": {
+      "lengths": {
+        "3": "count*6"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix3x4dv": {
+      "lengths": {
+        "3": "count*12"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix3x4fv": {
+      "lengths": {
+        "3": "count*12"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix3x4fvNV": {
+      "lengths": {
+        "3": "count*12"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix4dv": {
+      "lengths": {
+        "3": "count*16"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix4fv": {
+      "lengths": {
+        "3": "count*16"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix4fvARB": {
+      "lengths": {
+        "3": "count*16"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix4x2dv": {
+      "lengths": {
+        "3": "count*8"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix4x2fv": {
+      "lengths": {
+        "3": "count*8"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix4x2fvNV": {
+      "lengths": {
+        "3": "count*8"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix4x3dv": {
+      "lengths": {
+        "3": "count*12"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix4x3fv": {
+      "lengths": {
+        "3": "count*12"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformMatrix4x3fvNV": {
+      "lengths": {
+        "3": "count*12"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "transpose",
+        "value"
+      ]
+    },
+    "glUniformSubroutinesuiv": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "shadertype",
+        "count",
+        "indices"
+      ]
+    },
+    "glUniformui64vNV": {
+      "lengths": {
+        "2": "count*1"
+      },
+      "parameters": [
+        "location",
+        "count",
+        "value"
+      ]
+    },
+    "glUpdateObjectBufferATI": {
+      "lengths": {
+        "3": "size"
+      },
+      "parameters": [
+        "buffer",
+        "offset",
+        "size",
+        "pointer",
+        "preserve"
+      ]
+    },
+    "glVDPAUGetSurfaceivNV": {
+      "lengths": {
+        "4": "count"
+      },
+      "parameters": [
+        "surface",
+        "pname",
+        "count",
+        "length",
+        "values"
+      ]
+    },
+    "glVDPAUMapSurfacesNV": {
+      "lengths": {
+        "1": "numSurfaces"
+      },
+      "parameters": [
+        "numSurfaces",
+        "surfaces"
+      ]
+    },
+    "glVDPAURegisterOutputSurfaceNV": {
+      "lengths": {
+        "3": "numTextureNames"
+      },
+      "parameters": [
+        "vdpSurface",
+        "target",
+        "numTextureNames",
+        "textureNames"
+      ]
+    },
+    "glVDPAURegisterVideoSurfaceNV": {
+      "lengths": {
+        "3": "numTextureNames"
+      },
+      "parameters": [
+        "vdpSurface",
+        "target",
+        "numTextureNames",
+        "textureNames"
+      ]
+    },
+    "glVDPAURegisterVideoSurfaceWithPictureStructureNV": {
+      "lengths": {
+        "3": "numTextureNames"
+      },
+      "parameters": [
+        "vdpSurface",
+        "target",
+        "numTextureNames",
+        "textureNames",
+        "isFrameStructure"
+      ]
+    },
+    "glVDPAUUnmapSurfacesNV": {
+      "lengths": {
+        "1": "numSurface"
+      },
+      "parameters": [
+        "numSurface",
+        "surfaces"
+      ]
+    },
+    "glVertex2bvOES": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glVertex2dv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex2fv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex2hvNV": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex2iv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex2sv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex2xvOES": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glVertex3bvOES": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glVertex3dv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex3fv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex3hvNV": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex3iv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex3sv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex3xvOES": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glVertex4bvOES": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glVertex4dv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex4fv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex4hvNV": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex4iv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex4sv": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glVertex4xvOES": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "coords"
+      ]
+    },
+    "glVertexArrayRangeAPPLE": {
+      "lengths": {
+        "1": "length"
+      },
+      "parameters": [
+        "length",
+        "pointer"
+      ]
+    },
+    "glVertexArrayVertexBuffers": {
+      "lengths": {
+        "3": "count",
+        "4": "count",
+        "5": "count"
+      },
+      "parameters": [
+        "vaobj",
+        "first",
+        "count",
+        "buffers",
+        "offsets",
+        "strides"
+      ]
+    },
+    "glVertexAttrib1dv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib1dvARB": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib1dvNV": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib1fv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib1fvARB": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib1fvNV": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib1hvNV": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib1sv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib1svARB": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib1svNV": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2dv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2dvARB": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2dvNV": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2fv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2fvARB": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2fvNV": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2hvNV": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2sv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2svARB": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib2svNV": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3dv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3dvARB": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3dvNV": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3fv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3fvARB": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3fvNV": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3hvNV": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3sv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3svARB": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib3svNV": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4Nbv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4NbvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4Niv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4NivARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4Nsv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4NsvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4Nubv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4NubvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4Nuiv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4NuivARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4Nusv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4NusvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4bv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4bvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4dv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4dvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4dvNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4fv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4fvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4fvNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4hvNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4iv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4ivARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4sv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4svARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4svNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4ubv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4ubvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4ubvNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4uiv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4uivARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4usv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttrib4usvARB": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI1iv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI1ivEXT": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI1uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI1uivEXT": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI2iv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI2ivEXT": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI2uiv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI2uivEXT": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI3iv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI3ivEXT": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI3uiv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI3uivEXT": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4bv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4bvEXT": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4iv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4ivEXT": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4sv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4svEXT": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4ubv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4ubvEXT": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4uiv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4uivEXT": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4usv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribI4usvEXT": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL1dv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL1dvEXT": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL1i64vNV": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL1ui64vNV": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL2dv": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL2dvEXT": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL2i64vNV": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL2ui64vNV": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL3dv": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL3dvEXT": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL3i64vNV": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL3ui64vNV": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL4dv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL4dvEXT": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL4i64vNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribL4ui64vNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glVertexAttribP1uiv": {
+      "lengths": {
+        "3": "1"
+      },
+      "parameters": [
+        "index",
+        "type",
+        "normalized",
+        "value"
+      ]
+    },
+    "glVertexAttribP2uiv": {
+      "lengths": {
+        "3": "1"
+      },
+      "parameters": [
+        "index",
+        "type",
+        "normalized",
+        "value"
+      ]
+    },
+    "glVertexAttribP3uiv": {
+      "lengths": {
+        "3": "1"
+      },
+      "parameters": [
+        "index",
+        "type",
+        "normalized",
+        "value"
+      ]
+    },
+    "glVertexAttribP4uiv": {
+      "lengths": {
+        "3": "1"
+      },
+      "parameters": [
+        "index",
+        "type",
+        "normalized",
+        "value"
+      ]
+    },
+    "glVertexAttribs1dvNV": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs1fvNV": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs1hvNV": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "index",
+        "n",
+        "v"
+      ]
+    },
+    "glVertexAttribs1svNV": {
+      "lengths": {
+        "2": "count"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs2dvNV": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs2fvNV": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs2hvNV": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "index",
+        "n",
+        "v"
+      ]
+    },
+    "glVertexAttribs2svNV": {
+      "lengths": {
+        "2": "count*2"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs3dvNV": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs3fvNV": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs3hvNV": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "index",
+        "n",
+        "v"
+      ]
+    },
+    "glVertexAttribs3svNV": {
+      "lengths": {
+        "2": "count*3"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs4dvNV": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs4fvNV": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs4hvNV": {
+      "lengths": {
+        "2": "n"
+      },
+      "parameters": [
+        "index",
+        "n",
+        "v"
+      ]
+    },
+    "glVertexAttribs4svNV": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexAttribs4ubvNV": {
+      "lengths": {
+        "2": "count*4"
+      },
+      "parameters": [
+        "index",
+        "count",
+        "v"
+      ]
+    },
+    "glVertexP2uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "value"
+      ]
+    },
+    "glVertexP3uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "value"
+      ]
+    },
+    "glVertexP4uiv": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "type",
+        "value"
+      ]
+    },
+    "glVertexPointervINTEL": {
+      "lengths": {
+        "2": "4"
+      },
+      "parameters": [
+        "size",
+        "type",
+        "pointer"
+      ]
+    },
+    "glVertexStream1dvATI": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream1fvATI": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream1ivATI": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream1svATI": {
+      "lengths": {
+        "1": "1"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream2dvATI": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream2fvATI": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream2ivATI": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream2svATI": {
+      "lengths": {
+        "1": "2"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream3dvATI": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream3fvATI": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream3ivATI": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream3svATI": {
+      "lengths": {
+        "1": "3"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream4dvATI": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream4fvATI": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream4ivATI": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexStream4svATI": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "stream",
+        "coords"
+      ]
+    },
+    "glVertexWeightfvEXT": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "weight"
+      ]
+    },
+    "glVertexWeighthvNV": {
+      "lengths": {
+        "0": "1"
+      },
+      "parameters": [
+        "weight"
+      ]
+    },
+    "glViewportIndexedfv": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glViewportIndexedfvNV": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glViewportIndexedfvOES": {
+      "lengths": {
+        "1": "4"
+      },
+      "parameters": [
+        "index",
+        "v"
+      ]
+    },
+    "glWaitSemaphoreui64NVX": {
+      "lengths": {
+        "2": "fenceObjectCount",
+        "3": "fenceObjectCount"
+      },
+      "parameters": [
+        "waitGpu",
+        "fenceObjectCount",
+        "semaphoreArray",
+        "fenceValueArray"
+      ]
+    },
+    "glWeightPathsNV": {
+      "lengths": {
+        "2": "numPaths",
+        "3": "numPaths"
+      },
+      "parameters": [
+        "resultPath",
+        "numPaths",
+        "paths",
+        "weights"
+      ]
+    },
+    "glWeightbvARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "weights"
+      ]
+    },
+    "glWeightdvARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "weights"
+      ]
+    },
+    "glWeightfvARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "weights"
+      ]
+    },
+    "glWeightivARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "weights"
+      ]
+    },
+    "glWeightsvARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "weights"
+      ]
+    },
+    "glWeightubvARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "weights"
+      ]
+    },
+    "glWeightuivARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "weights"
+      ]
+    },
+    "glWeightusvARB": {
+      "lengths": {
+        "1": "size"
+      },
+      "parameters": [
+        "size",
+        "weights"
+      ]
+    },
+    "glWindowPos2dv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2dvARB": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2dvMESA": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2fv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2fvARB": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2fvMESA": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2iv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2ivARB": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2ivMESA": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2sv": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2svARB": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos2svMESA": {
+      "lengths": {
+        "0": "2"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3dv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3dvARB": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3dvMESA": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3fv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3fvARB": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3fvMESA": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3iv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3ivARB": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3ivMESA": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3sv": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3svARB": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos3svMESA": {
+      "lengths": {
+        "0": "3"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos4dvMESA": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos4fvMESA": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos4ivMESA": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    },
+    "glWindowPos4svMESA": {
+      "lengths": {
+        "0": "4"
+      },
+      "parameters": [
+        "v"
+      ]
+    }
+  },
+  "copyright": "Copyright 2013-2026 The Khronos Group Inc.",
+  "license": "Apache-2.0",
+  "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+  "revision": "6af574a14089ccfee87efe230ebcdd8742859813",
+  "sha256": "b9ca2cfa5c676e901c20d34af3407f1687cde0f1336a5ff7a8974d04c7494ad3",
+  "source": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Registry/6af574a14089ccfee87efe230ebcdd8742859813/xml/gl.xml"
+}

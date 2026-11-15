@@ -1,0 +1,33 @@
+name: Checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BEND_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Install tool dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang-19 elan curl zstd
+      - name: Install pinned Bend and Lean
+        run: bash scripts/install-ci-tools.sh
+      - name: Check Python syntax
+        run: python3 -m compileall -q generator scripts
+      - name: Check CI target and validation contracts
+        run: python3 scripts/check-ci-qt-build.py
+      - name: Check setup examples and proofs
+        run: bash scripts/check.sh

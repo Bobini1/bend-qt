@@ -1,0 +1,122 @@
+{
+  "name": "qt611",
+  "package_name": "qt",
+  "license_flavor": "gpl",
+  "minimum_qt": "6.11.3",
+  "qt_modules": [
+    "Qt3DAnimation",
+    "Qt3DCore",
+    "Qt3DExtras",
+    "Qt3DInput",
+    "Qt3DLogic",
+    "Qt3DRender",
+    "QtBluetooth",
+    "QtCanvasPainter",
+    "QtCharts",
+    "QtConcurrent",
+    "QtCore",
+    "QtDBus",
+    "QtDataVisualization",
+    "QtDesigner",
+    "QtGraphs",
+    "QtGraphsWidgets",
+    "QtGui",
+    "QtHelp",
+    "QtHttpServer",
+    "QtLocation",
+    "QtMultimedia",
+    "QtMultimediaWidgets",
+    "QtNetwork",
+    "QtNetworkAuth",
+    "QtNfc",
+    "QtOpenGL",
+    "QtOpenGLWidgets",
+    "QtPdf",
+    "QtPdfWidgets",
+    "QtPositioning",
+    "QtPrintSupport",
+    "QtQml",
+    "QtQuick",
+    "QtQuick3D",
+    "QtQuickControls2",
+    "QtQuickTest",
+    "QtQuickWidgets",
+    "QtRemoteObjects",
+    "QtScxml",
+    "QtSensors",
+    "QtSerialBus",
+    "QtSerialPort",
+    "QtSpatialAudio",
+    "QtSql",
+    "QtStateMachine",
+    "QtSvg",
+    "QtSvgWidgets",
+    "QtTest",
+    "QtTextToSpeech",
+    "QtUiTools",
+    "QtWebChannel",
+    "QtWebEngineCore",
+    "QtWebEngineQuick",
+    "QtWebEngineWidgets",
+    "QtWebSockets",
+    "QtWebView",
+    "QtWidgets",
+    "QtXml"
+  ],
+  "native_modules": [
+    {
+      "name": "CanvasPainter",
+      "separate_headers": true,
+      "qt_modules": [
+        "QtCanvasPainter"
+      ]
+    },
+    {
+      "name": "Graphs",
+      "qt_modules": [
+        "QtGraphs",
+        "QtGraphsWidgets"
+      ]
+    },
+    {
+      "name": "HttpServer",
+      "qt_modules": [
+        "QtHttpServer"
+      ]
+    },
+    {
+      "name": "NetworkAuth",
+      "qt_modules": [
+        "QtNetworkAuth"
+      ]
+    },
+    {
+      "name": "Quick3D",
+      "qt_modules": [
+        "QtQuick3D"
+      ]
+    },
+    {
+      "name": "Charts",
+      "qt_modules": [
+        "QtCharts"
+      ],
+      "separate_headers": true,
+      "namespaces": {
+        "PySide6.QtCharts": "Charts"
+      }
+    },
+    {
+      "name": "DataVisualization",
+      "qt_modules": [
+        "QtDataVisualization"
+      ],
+      "separate_headers": true,
+      "namespaces": {
+        "PySide6.QtDataVisualization": "DataVisualization"
+      }
+    }
+  ],
+  "exclude_methods": {},
+  "limited_abi": true
+}

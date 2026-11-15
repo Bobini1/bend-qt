@@ -1,0 +1,524 @@
+{
+  "boundary": "Pinned PySide6 6.12.0 runtime class inventory, selected 57 Linux modules. Snapshot compared with extraction before helper additions. Aliases are mapped to owning or canonical native forms.",
+  "module_count": 57,
+  "missing_class_count": 42,
+  "module_failures": {},
+  "records": [
+    {
+      "module": "Qt3DCore",
+      "name": "Qt3DCore.QAspectJobPtr",
+      "cpp_name": "Qt3DCore::QAspectJobPtr",
+      "bases": [
+        "Object"
+      ],
+      "classification": "owning_shared_pointer_carrier",
+      "bend": "Shared_Qt3DCore__QAspectJob",
+      "source": "generator/representations.py"
+    },
+    {
+      "module": "Qt3DCore",
+      "name": "Qt3DCore.QBackendNodeMapperPtr",
+      "cpp_name": "Qt3DCore::QBackendNodeMapperPtr",
+      "bases": [
+        "Object"
+      ],
+      "classification": "owning_shared_pointer_carrier",
+      "bend": "Shared_Qt3DCore__QBackendNodeMapper",
+      "source": "generator/representations.py"
+    },
+    {
+      "module": "Qt3DCore",
+      "name": "Qt3DCore.QEntityPtr",
+      "cpp_name": "Qt3DCore::QEntityPtr",
+      "bases": [
+        "Object"
+      ],
+      "classification": "owning_shared_pointer_carrier",
+      "bend": "Shared_Qt3DCore__QEntity",
+      "source": "generator/representations.py"
+    },
+    {
+      "module": "Qt3DExtras",
+      "name": "Qt3DExtras.QFirstPersonCameraController.InputState",
+      "cpp_name": "Qt3DExtras::QFirstPersonCameraController::InputState",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "Qt3DExtras.QAbstractCameraController.InputState",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "Qt3DExtras",
+      "name": "Qt3DExtras.QOrbitCameraController.InputState",
+      "cpp_name": "Qt3DExtras::QOrbitCameraController::InputState",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "Qt3DExtras.QAbstractCameraController.InputState",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "Qt3DRender",
+      "name": "Qt3DRender.PropertyReaderInterfacePtr",
+      "cpp_name": "Qt3DRender::PropertyReaderInterfacePtr",
+      "bases": [
+        "Object"
+      ],
+      "classification": "owning_shared_pointer_carrier",
+      "bend": "Shared_Qt3DRender__PropertyReaderInterface",
+      "source": "generator/representations.py"
+    },
+    {
+      "module": "Qt3DRender",
+      "name": "Qt3DRender.QTextureImageDataGeneratorPtr",
+      "cpp_name": "Qt3DRender::QTextureImageDataGeneratorPtr",
+      "bases": [
+        "Object"
+      ],
+      "classification": "owning_shared_pointer_carrier",
+      "bend": "Shared_Qt3DRender__QTextureImageDataGenerator",
+      "source": "generator/representations.py"
+    },
+    {
+      "module": "Qt3DRender",
+      "name": "Qt3DRender.QTextureImageDataPtr",
+      "cpp_name": "Qt3DRender::QTextureImageDataPtr",
+      "bases": [
+        "Object"
+      ],
+      "classification": "owning_shared_pointer_carrier",
+      "bend": "Shared_Qt3DRender__QTextureImageData",
+      "source": "generator/representations.py"
+    },
+    {
+      "module": "QtCanvasPainter",
+      "name": "QCanvasPainterItem.UpdatePaintNodeData",
+      "cpp_name": "QCanvasPainterItem::UpdatePaintNodeData",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QQuickItem.UpdatePaintNodeData",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtCore",
+      "name": "PyClassProperty",
+      "cpp_name": "PyClassProperty",
+      "bases": [
+        "property"
+      ],
+      "classification": "python_language_descriptor",
+      "bend": [
+        "Property.define",
+        "Property.readOnly",
+        "Property.constant"
+      ],
+      "source": "generator/templates/qt_object_types.bend"
+    },
+    {
+      "module": "QtCore",
+      "name": "QDirListingIterator",
+      "cpp_name": "QDirListingIterator",
+      "bases": [
+        "Object"
+      ],
+      "classification": "owning_traversal_alternative",
+      "bend": "QDirListing.entries",
+      "source": "generator/convenience_apis.py"
+    },
+    {
+      "module": "QtCore",
+      "name": "QGenericArgumentHolder",
+      "cpp_name": "QGenericArgumentHolder",
+      "bases": [
+        "Object"
+      ],
+      "classification": "typed_metacall_adapter",
+      "bend": [
+        "MetaStorage.fromVariant",
+        "MetaStorage.allocate",
+        "QGenericArgument.new__String_MetaStorage",
+        "QGenericReturnArgument.new__String_MetaStorage"
+      ],
+      "source": "generator/generic_arguments.py"
+    },
+    {
+      "module": "QtCore",
+      "name": "QGenericReturnArgumentHolder",
+      "cpp_name": "QGenericReturnArgumentHolder",
+      "bases": [
+        "Object"
+      ],
+      "classification": "typed_metacall_adapter",
+      "bend": [
+        "MetaStorage.fromVariant",
+        "MetaStorage.allocate",
+        "QGenericArgument.new__String_MetaStorage",
+        "QGenericReturnArgument.new__String_MetaStorage"
+      ],
+      "source": "generator/generic_arguments.py"
+    },
+    {
+      "module": "QtCore",
+      "name": "QIOPipe",
+      "cpp_name": "QIOPipe",
+      "bases": [
+        "QObject"
+      ],
+      "classification": "native_helper_adapter",
+      "bend": "QtCoreHelper.QIOPipe",
+      "source": "generator/qio_pipe.py",
+      "validation": "Native duplex control passed; final fixture pending"
+    },
+    {
+      "module": "QtCore",
+      "name": "QMutexLocker",
+      "cpp_name": "QMutexLocker",
+      "bases": [
+        "Object"
+      ],
+      "classification": "native_helper_adapter",
+      "bend": [
+        "QMutexLocker",
+        "QRecursiveMutexLocker"
+      ],
+      "source": "generator/mutex_lockers.py",
+      "validation": "Native template adapter; final fixture pending"
+    },
+    {
+      "module": "QtCore",
+      "name": "QStringConverter.State",
+      "cpp_name": "QStringConverter::State",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QStringConverterBase.State",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtCore",
+      "name": "QStringDecoder.State",
+      "cpp_name": "QStringDecoder::State",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QStringConverterBase.State",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtCore",
+      "name": "QStringEncoder.State",
+      "cpp_name": "QStringEncoder::State",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QStringConverterBase.State",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtDesigner",
+      "name": "QExtensionFactory",
+      "cpp_name": "QExtensionFactory",
+      "bases": [
+        "QObject",
+        "QAbstractExtensionFactory"
+      ],
+      "classification": "public_registered_header",
+      "bend": "QExtensionFactory",
+      "source": "generator/upstream.py",
+      "validation": "Real ApiExtractor generated=true; strict Bend fixture passed; combined native gate pending"
+    },
+    {
+      "module": "QtDesigner",
+      "name": "QPyDesignerContainerExtension",
+      "cpp_name": "QPyDesignerContainerExtension",
+      "bases": [
+        "QObject",
+        "QDesignerContainerExtension"
+      ],
+      "classification": "native_qobject_interface_helper",
+      "bend": "QPyDesignerContainerExtension",
+      "source": "generator/qobject_interfaces.py",
+      "validation": "Real ApiExtractor + moc + Qt6.12 qobject_cast control passed; strict Bend fixture passed; combined native gate pending"
+    },
+    {
+      "module": "QtDesigner",
+      "name": "QPyDesignerCustomWidgetCollection",
+      "cpp_name": "QPyDesignerCustomWidgetCollection",
+      "bases": [
+        "QDesignerCustomWidgetCollectionInterface"
+      ],
+      "classification": "python_host_plugin_transport",
+      "bend": [
+        "QDesignerCustomWidgetInterface.newOverride",
+        "QDesignerCustomWidgetCollectionInterface.newOverride"
+      ],
+      "source": "Pinned PySide qpydesignercustomwidgetcollection.cpp",
+      "boundary": "The PySide Designer plugin looks up a Python-host singleton on QApplication; Python class instantiation and external Designer plugin loading do not execute in the Bend-owned application. Native interface authoring is generated."
+    },
+    {
+      "module": "QtDesigner",
+      "name": "QPyDesignerMemberSheetExtension",
+      "cpp_name": "QPyDesignerMemberSheetExtension",
+      "bases": [
+        "QObject",
+        "QDesignerMemberSheetExtension"
+      ],
+      "classification": "native_qobject_interface_helper",
+      "bend": "QPyDesignerMemberSheetExtension",
+      "source": "generator/qobject_interfaces.py",
+      "validation": "Real ApiExtractor + moc + Qt6.12 qobject_cast control passed; strict Bend fixture passed; combined native gate pending"
+    },
+    {
+      "module": "QtDesigner",
+      "name": "QPyDesignerPropertySheetExtension",
+      "cpp_name": "QPyDesignerPropertySheetExtension",
+      "bases": [
+        "QObject",
+        "QDesignerPropertySheetExtension"
+      ],
+      "classification": "native_qobject_interface_helper",
+      "bend": "QPyDesignerPropertySheetExtension",
+      "source": "generator/qobject_interfaces.py",
+      "validation": "Real ApiExtractor + moc + Qt6.12 qobject_cast control passed; strict Bend fixture passed; combined native gate pending"
+    },
+    {
+      "module": "QtDesigner",
+      "name": "QPyDesignerTaskMenuExtension",
+      "cpp_name": "QPyDesignerTaskMenuExtension",
+      "bases": [
+        "QObject",
+        "QDesignerTaskMenuExtension"
+      ],
+      "classification": "native_qobject_interface_helper",
+      "bend": "QPyDesignerTaskMenuExtension",
+      "source": "generator/qobject_interfaces.py",
+      "validation": "Real ApiExtractor + moc + Qt6.12 qobject_cast control passed; strict Bend fixture passed; combined native gate pending"
+    },
+    {
+      "module": "QtGui",
+      "name": "QOverrideCursorGuard",
+      "cpp_name": "QOverrideCursorGuard",
+      "bases": [
+        "Object"
+      ],
+      "classification": "native_helper_adapter",
+      "bend": "QOverrideCursorGuard",
+      "source": "generator/cursor_guards.py",
+      "validation": "Native cursor stack adapter; final fixture pending"
+    },
+    {
+      "module": "QtGui",
+      "name": "QPyTextObject",
+      "cpp_name": "QPyTextObject",
+      "bases": [
+        "QObject",
+        "QTextObjectInterface"
+      ],
+      "classification": "native_qobject_interface_helper",
+      "bend": "QPyTextObject",
+      "source": "generator/qobject_interfaces.py",
+      "validation": "Real ApiExtractor + moc + Qt6.12 qobject_cast control passed; strict Bend fixture passed; combined native gate pending"
+    },
+    {
+      "module": "QtGui",
+      "name": "QTextTable.iterator",
+      "cpp_name": "QTextTable::iterator",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QTextFrame.iterator",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtQml",
+      "name": "QPyQmlParserStatus",
+      "cpp_name": "QPyQmlParserStatus",
+      "bases": [
+        "QObject",
+        "QQmlParserStatus"
+      ],
+      "classification": "native_qobject_interface_helper",
+      "bend": "QPyQmlParserStatus",
+      "source": "generator/qobject_interfaces.py",
+      "validation": "Real ApiExtractor + moc + Qt6.12 qobject_cast control passed; strict Bend fixture passed; combined native gate pending"
+    },
+    {
+      "module": "QtQml",
+      "name": "QPyQmlPropertyValueSource",
+      "cpp_name": "QPyQmlPropertyValueSource",
+      "bases": [
+        "QObject",
+        "QQmlPropertyValueSource"
+      ],
+      "classification": "native_qobject_interface_helper",
+      "bend": "QPyQmlPropertyValueSource",
+      "source": "generator/qobject_interfaces.py",
+      "validation": "Real ApiExtractor + moc + Qt6.12 qobject_cast control passed; strict Bend fixture passed; combined native gate pending"
+    },
+    {
+      "module": "QtQuick",
+      "name": "QQuickFramebufferObject.UpdatePaintNodeData",
+      "cpp_name": "QQuickFramebufferObject::UpdatePaintNodeData",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QQuickItem.UpdatePaintNodeData",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtQuick",
+      "name": "QQuickPaintedItem.UpdatePaintNodeData",
+      "cpp_name": "QQuickPaintedItem::UpdatePaintNodeData",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QQuickItem.UpdatePaintNodeData",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtQuick",
+      "name": "QQuickRhiItem.UpdatePaintNodeData",
+      "cpp_name": "QQuickRhiItem::UpdatePaintNodeData",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QQuickItem.UpdatePaintNodeData",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtQuick",
+      "name": "QQuickView.GraphicsStateInfo",
+      "cpp_name": "QQuickView::GraphicsStateInfo",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QQuickWindow.GraphicsStateInfo",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtQuick",
+      "name": "QSharedPointer_QQuickItemGrabResult",
+      "cpp_name": "QSharedPointer_QQuickItemGrabResult",
+      "bases": [
+        "Object"
+      ],
+      "classification": "owning_shared_pointer_carrier",
+      "bend": "Shared_QQuickItemGrabResult",
+      "source": "generator/representations.py"
+    },
+    {
+      "module": "QtScxml",
+      "name": "QScxmlCppDataModel.ForeachLoopBody",
+      "cpp_name": "QScxmlCppDataModel::ForeachLoopBody",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QScxmlDataModel.ForeachLoopBody",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtScxml",
+      "name": "QScxmlNullDataModel.ForeachLoopBody",
+      "cpp_name": "QScxmlNullDataModel::ForeachLoopBody",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QScxmlDataModel.ForeachLoopBody",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtSql",
+      "name": "QSqlRelationalDelegate",
+      "cpp_name": "QSqlRelationalDelegate",
+      "bases": [
+        "QStyledItemDelegate"
+      ],
+      "classification": "public_registered_header",
+      "bend": "QSqlRelationalDelegate",
+      "source": "generator/upstream.py",
+      "validation": "Real ApiExtractor generated=true; strict Bend fixture passed; combined native gate pending"
+    },
+    {
+      "module": "QtTest",
+      "name": "QTest.QTouchEventSequence",
+      "cpp_name": "QTest::QTouchEventSequence",
+      "bases": [
+        "Object"
+      ],
+      "classification": "native_helper_adapter",
+      "bend": "QTest.QTouchEventSequence",
+      "source": "generator/touch_sequences.py",
+      "validation": "Real Qt6.12 window/widget touch dispatch and native-deletion guard passed; final fixture pending"
+    },
+    {
+      "module": "QtWidgets",
+      "name": "QPlainTextDocumentLayout.PaintContext",
+      "cpp_name": "QPlainTextDocumentLayout::PaintContext",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QAbstractTextDocumentLayout.PaintContext",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtWidgets",
+      "name": "QPlainTextDocumentLayout.Selection",
+      "cpp_name": "QPlainTextDocumentLayout::Selection",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QAbstractTextDocumentLayout.Selection",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtWidgets",
+      "name": "QStylePainter.PixmapFragment",
+      "cpp_name": "QStylePainter::PixmapFragment",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QPainter.PixmapFragment",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    },
+    {
+      "module": "QtWidgets",
+      "name": "QTextBrowser.ExtraSelection",
+      "cpp_name": "QTextBrowser::ExtraSelection",
+      "bases": [
+        "Object"
+      ],
+      "classification": "inherited_native_type_alias",
+      "bend": "QTextEdit.ExtraSelection",
+      "source": "Qt public inheritance metadata; generated base nested type"
+    }
+  ],
+  "counts": {
+    "owning_shared_pointer_carrier": 7,
+    "inherited_native_type_alias": 17,
+    "python_language_descriptor": 1,
+    "owning_traversal_alternative": 1,
+    "typed_metacall_adapter": 2,
+    "native_helper_adapter": 4,
+    "public_registered_header": 2,
+    "native_qobject_interface_helper": 7,
+    "python_host_plugin_transport": 1
+  },
+  "verification": "Source mapping plus specifically named focused receipts. Fresh full generation and canonical native bundle validation remain required."
+}

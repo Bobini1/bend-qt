@@ -1,0 +1,211 @@
+# Qt package distributions
+
+The release plan is one versioned `bend-qt-bindings` package containing separately retained
+and loaded native modules, following the module-based approach used by PySide.
+A Core-only application must not retain or load a GPL-only Qt module. Calling
+an API or declaring a type from a module must retain that module and its actual
+dependencies. QML-only module use also needs an explicit deployment dependency.
+
+The selective transport emits a separate foreign C import for each native
+module. Bend's ordinary reachability keeps the module's native payload and
+runtime asset imports together. Runtime file tables carry module ownership;
+only files belonging to retained modules are extracted. The selected module
+set contributes to the cache identity. Shared dependency files are stored once.
+
+Typed argument and class schemas resolve through `Action`, which initializes
+their native modules before the schema reaches Qt. Public declarations retain
+their existing syntax, including nested lists and authored object properties.
+An explicit `Modules.<module>.load()` action supports a dependency used only
+inside QML source. Module metadata and native deleters remain loaded until the
+process exits.
+
+The proposed `qt`/`qt-gpl` package split was superseded by the project owner's
+decision. The existing LGPL/GPL profiles are maintainer policy fixtures, not
+separate public products. The old monolithic payload cannot meet this release
+requirement and must be replaced before distribution.
+
+License boundaries come from the selected Qt installation's SPDX software bill
+of materials, including each runtime binary's license and checksum. Using a
+GPL-only module, such as Graphs or Charts, carries that module's requirements.
+Mere availability in the package must not impose it on unrelated consumers.
+A commercial Qt license requires an independently built distribution using the
+licensee's commercial Qt files; it does not relabel the public open-source files.
+
+The original generator and Bend glue use [MIT](../LICENSE), as selected by the
+project owner. Qt, PySide, Shiboken and other third-party components retain
+their own terms. The generated package's component-aware LICENSE must preserve
+that separation; MIT on the glue does not change the GPL modules' requirements.
+
+Qt for Python also bundles its matching Qt libraries. Its Essentials/Addons
+division groups functionality, and is not an LGPL/GPL boundary. Qt for Python
+documents separate community and commercial distributions. Installing an
+optional module and linking an application to it are separate questions.
+
+Standalone tools require a separate classification. PySide includes
+`pyside6-qsb`; Qt licenses this code generator under GPL with the Qt GPL
+exception, which allows distributing its generated output under other terms.
+The runtime planner can include an independently executed generator with this
+exception in `qt`, with its own notices and corresponding source. This does
+not permit linking an ordinary GPL module into the LGPL package's native
+payload. The license check verifies both the installer file checksum and its
+SPDX tool classification. See [pyside6-qsb](https://doc.qt.io/qtforpython-6/tools/pyside6-qsb.html)
+and the [Qt GPL exception](https://doc.qt.io/qt-6/qt-gpl-exception-1-0.html).
+
+Sources: [Qt licensing](https://doc.qt.io/qt-6/licensing.html),
+[PySide package contents](https://doc.qt.io/qtforpython-6/package_details.html),
+[Qt for Python commercial distribution](https://doc.qt.io/qtforpython-6/commercial/index.html).
+
+## Runtime selection
+
+`generator/qt612-lgpl/profile.json` currently selects 51 binding modules.
+Graphs, GraphsWidgets, CanvasPainter, HttpServer, NetworkAuth and Quick3D are
+excluded from that policy fixture. New production generation retains optional
+module payloads and runtime dependencies selectively. Charts and DataVisualization
+have separate native partitions behind the same public package. The shared
+native group currently contains the 51 modules with an LGPL option, so Core-only
+use avoids GPL-only Qt modules but does not yet minimize the footprint of all LGPL modules.
+
+Filtering the binding profile alone is insufficient. The runtime selector also
+checks plugin and QML binary licenses and follows actual ELF dependencies. For
+example, the Canvas2D adapter has an LGPL option, but depends on GPL-only Canvas
+Painter. The LGPL distribution excludes that dependent adapter too.
+
+An unrecognized license expression or a missing binary checksum cannot authorize
+redistribution. Installer files omitted from Qt's SPDX file inventory require
+separate evidence recording their exact bytes, source and license notices. The
+release inputs now include separate evidence for ICU, FFmpeg, Qt's FFmpeg stubs,
+QtWebEngineProcess and the locally built WebView plugin. Each row records its
+bytes, source and original notices. FFmpeg's release is checked through the
+installed binary and its matching source archive.
+
+## Versioning
+
+Packages use `Qt-major.Qt-minor.Qt-patch.binding-revision`, for example
+`qt@6.12.0.1`. Increment the final component for a binding
+fix targeting the same Qt release. Changing Qt changes the first three
+components and triggers an independent build against that release's pinned
+PySide type systems and ApiExtractor.
+
+`generator/qt_targets.json` records Qt 6.10.3, 6.11.3 and 6.12.0 and their exact
+PySide and WebView source commits. A version target in this file is a build
+configuration, not a claim that its package is compiled or verified. APIs absent
+from that Qt release remain unavailable in that release's generated inventory.
+
+The `qt610` and `qt611` profiles use the same module-retention policy as `qt612`.
+Canvas Painter is absent from Qt 6.10. Labs Style Kit has no type system in
+the pinned PySide 6.10 or 6.11 sources, so those profiles omit its C++ bindings.
+Installed QML modules remain runtime assets with their own dependency checks.
+
+## Bundled runtime and replacement
+
+The intended consumer workflow remains a Hub import and `bend main.bend -o app`.
+The matching runtime is embedded as compressed assets in ordinary foreign C
+imports. It is extracted into a private, content-addressed cache and checked by
+SHA-256. The generated loader must use those libraries and plugins by default,
+so a system Qt update cannot replace the application's Qt libraries.
+
+The loader registers `:/qt/etc/qt.conf` before creating the Qt application,
+using the selected runtime prefix. Plugin, QML and WebEngine paths point into
+that runtime. It rejects Qt or ICU already loaded from a different installation.
+Optional FFmpeg backends retain Qt's normal lazy symbol resolution.
+Preloading follows the retained binding modules and their actual ELF dependencies.
+Bundled platform helpers and style libraries load when Qt needs their plugins;
+their presence does not add host dependencies to an offscreen application.
+
+`BEND_QT_RUNTIME` selects an explicit complete replacement runtime. This supports
+user-rebuilt Qt libraries and does not enable automatic fallback to system Qt.
+The replacement must match the package's native ABI. Dynamic replacement,
+notices and access to corresponding source are part of the LGPL distribution
+design. See [Qt's LGPL obligations](https://www.qt.io/development/open-source-lgpl-obligations).
+
+Before any public release, include component license texts, copyright and
+third-party notices, matching source archives and build instructions, and a
+per-file source/license manifest. A top-level LICENSE must explain the component
+licenses so BendHub's default MIT-0 cannot be mistaken for the license of the
+embedded Qt binaries. Public publication has not been requested.
+
+## Release inputs
+
+Full generation of a licensed distribution requires `--runtime-manifest FILE`.
+The manifest records the exact Qt version and flavor, a component-aware package
+LICENSE, byte-pinned notices, matching source archives with their distribution
+URLs, supplemental evidence for installer files absent from SPDX, and every
+nonbinary runtime asset. Installed data omitted deliberately needs a byte-pinned
+exclusion with a reason. The source archives are maintainer release inputs;
+consumers do not download them to compile or run their applications.
+
+`generator/runtime_release.py` rechecks installer binaries against Qt's SPDX
+checksums and follows ELF dependencies. It rejects missing source artifacts,
+changed notice bytes, incompatible licenses, unclassified data and an attempt
+to list an ELF library as a data asset. The embedded bundle retains the original
+SPDX documents and a corresponding-source manifest. Generation rechecks release
+inputs after native compilation before replacing package artifacts.
+
+This gate verifies the declared source and notice inputs. Maintainer review
+still has to establish complete corresponding source, including submodules and
+build instructions, and complete third-party notices. Supplying a hash or URL
+does not by itself establish that completeness.
+
+`generator/qt_sources.py` prepares snapshots at the revisions recorded by Qt's
+SBOMs. For addons that record only a release, it resolves the release tag and
+checks the result against every source-SBOM file checksum. Gitlinks have their
+own snapshots. Git export substitutions and omitted metadata are preserved as
+explicit, hash-checked overlays from the original revision. The source manifest
+records how to obtain each archive, Git snapshot, submodule and overlay.
+
+Qt 6.11.3 Remote Objects has one recorded metadata difference: both its public
+Git archive and official source tarball contain a `.tag` commit stamp that
+differs from the installer's source SPDX. The release table pins both hashes
+and the exact public revision. That archive remains unmodified, its source
+verification reports the difference, and every other inventoried file must
+match. This does not permit a checksum exception for source code.
+
+`scripts/audit-qt-runtime-assets.py --sources FILE` uses maintainer REUSE 5.1.1
+to resolve the original annotation expressions and precedence in those
+byte-verified snapshots. It never interprets an unordered SPDX license-ID set
+as an OR expression. The report leaves missing or ambiguous evidence unresolved.
+
+## Verification boundary
+
+The module policy, exact binary checksum checks, generic stock-Bend asset
+transport, concurrent extraction, cache repair and actual bundled QtCore/ICU
+loading have focused native checks. A real Qt Quick/QML window also rendered
+the expected pixels with conflicting system Qt/plugin/QML search paths. Cold
+and warm runs, a replacement prefix containing spaces and a comma, incomplete
+replacement rejection and foreign Qt preload rejection passed. These controls
+use ordinary stock Bend compilation.
+
+A freshly generated authored-value binding also passed its fresh Hub-format
+consumer with the bundle and an explicit matching replacement. This exercises
+the real startup ABI, synchronous callbacks, QML value/list writeback, native
+object retention and zero-handle/data cleanup. It remains a narrow fixture.
+
+The focused selective-module Hub package passed Core-only, declaration-only
+DataVisualization, and mixed Graphs/Charts/DataVisualization consumers with the
+bundle and an explicit matching replacement. The Core executable contains
+neither optional native payload nor its compressed runtime assets. Its cache
+contains exactly the selected files, and its `/proc/self/maps` snapshot contains
+no GPL-only Qt library. The declaration-only consumer retains DataVisualization
+without calling a native family constructor. Native point updates, callbacks,
+cross-family QObject rejection and zero-handle cleanup also passed. These use
+bounded class inventories, rather than the complete release inventory.
+
+The stronger selective fixture also passes QVariant value/list round-trips,
+wrong-family rejection, authored native subclasses, QML QObject properties and
+value sequences. Native direct and queued signals preserve concrete QObject
+arguments, including forwarding to authored signals and slots. One engine
+imports QtGraphs, QtCharts and QtDataVisualization and creates a native series
+from each module. The same consumers pass with the bundle and a matching
+replacement. Stock Bend's publication client includes all imported native and
+runtime files in the local registry test.
+
+The prepared 6.12 release inputs pass binary, data, source, notice and module
+ownership checks. Required QML imports also propagate runtime ownership, while
+optional imports remain optional. Tooling type descriptions, designer assets,
+static development objects and standalone developer-tool QML data have
+byte-pinned exclusions. These checks validate the release inputs, and do not
+establish that a complete generated package works.
+
+Full-inventory native generation, canonical integration checks, application
+behavior fixtures and all three versioned release builds remain pending.
+Completion requires fresh generated artifacts and the canonical package check.

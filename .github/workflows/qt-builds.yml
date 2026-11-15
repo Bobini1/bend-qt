@@ -1,0 +1,82 @@
+name: Qt builds
+on:
+  push:
+    branches: [main]
+    paths: ['generator/**', 'scripts/**', 'examples/**', '.github/**', 'LAWS.bend', 'PROOF.bend', 'LICENSE']
+  pull_request:
+    paths: ['generator/**', 'scripts/**', 'examples/**', '.github/**', 'LAWS.bend', 'PROOF.bend', 'LICENSE']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: qt-builds-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    name: Qt ${{ matrix.qt }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        qt: ['6.10.3', '6.11.3', '6.12.0']
+    env:
+      QT_VERSION: ${{ matrix.qt }}
+      BEND_NO_TELEMETRY: '1'
+      PYTHONUNBUFFERED: '1'
+      BQT_SHARD_JOBS: '2'
+      BQT_STATE_JOBS: '2'
+      LIBGL_ALWAYS_SOFTWARE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Install maintainer and headless test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang-19 libclang-19-dev llvm-19-dev lld-19 cmake ninja-build git \
+            python3-venv curl elan zstd qt6-base-dev qt6-declarative-dev \
+            libx11-dev libasound2-dev libxkbcommon-dev libxkbcommon-x11-0 \
+            libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+            libxcb-render-util0 libxcb-xinerama0 libxcb-xkb1 \
+            xvfb xauth x11-xkb-utils libgl1-mesa-dri libegl1 libopengl0 \
+            libpulse0 libnss3 libnspr4 libxcomposite1 libxdamage1 libxrandr2 \
+            libxtst6 libfontconfig1 libdbus-1-3 libatk1.0-0t64 \
+            libatk-bridge2.0-0t64 libcups2t64 libdrm2 libgbm1 libpango-1.0-0
+      - name: Install pinned Bend and Lean
+        run: bash scripts/install-ci-tools.sh
+      - name: Restore pinned Qt, sources and extractor
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cache/bend-qt-generator/Qt
+            ~/.cache/bend-qt-generator/venv
+            ~/.cache/bend-qt-generator/pyside-setup*
+            ~/.cache/bend-qt-generator/build*
+            ~/.cache/bend-qt-generator/corresponding-sources
+            ~/.cache/bend-qt-webview-*
+          key: qt-sdk-${{ runner.os }}-${{ runner.arch }}-${{ matrix.qt }}-llvm19-${{ hashFiles('generator/qt_targets.json', 'generator/CMakeLists.txt', 'scripts/setup-qt*.sh') }}
+      - name: Prepare pinned Qt SDK and extractor
+        run: bash scripts/setup-qt-generator.sh --qt-version "$QT_VERSION"
+      - name: Prepare corresponding sources, notices and runtime manifest
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" prepare
+      - name: Generate and compile complete distribution
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" generate
+      - name: Validate fresh native consumers
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" verify
+      - name: Package validated build
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" artifact
+      - name: Collect diagnostics
+        if: always()
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" diagnostics
+      - name: Upload package and diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bend-qt-${{ matrix.qt }}-${{ github.run_attempt }}
+          path: build/ci-artifacts/*
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0

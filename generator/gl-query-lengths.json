@@ -1,0 +1,1225 @@
+{
+  "copyright": [
+    "Copyright 1991-2006 Silicon Graphics, Inc.",
+    "Copyright 2010-2014 Khronos Group"
+  ],
+  "families": {
+    "program": {
+      "GL_ACTIVE_ATOMIC_COUNTER_BUFFERS": {
+        "enum": 37593,
+        "length": 1
+      },
+      "GL_ACTIVE_ATTRIBUTES": {
+        "enum": 35721,
+        "length": 1
+      },
+      "GL_ACTIVE_ATTRIBUTE_MAX_LENGTH": {
+        "enum": 35722,
+        "length": 1
+      },
+      "GL_ACTIVE_UNIFORMS": {
+        "enum": 35718,
+        "length": 1
+      },
+      "GL_ACTIVE_UNIFORM_MAX_LENGTH": {
+        "enum": 35719,
+        "length": 1
+      },
+      "GL_ATTACHED_SHADERS": {
+        "enum": 35717,
+        "length": 1
+      },
+      "GL_COMPUTE_WORK_GROUP_SIZE": {
+        "enum": 33383,
+        "length": 3
+      },
+      "GL_DELETE_STATUS": {
+        "enum": 35712,
+        "length": 1
+      },
+      "GL_GEOMETRY_INPUT_TYPE": {
+        "enum": 35095,
+        "length": 1
+      },
+      "GL_GEOMETRY_OUTPUT_TYPE": {
+        "enum": 35096,
+        "length": 1
+      },
+      "GL_GEOMETRY_VERTICES_OUT": {
+        "enum": 35094,
+        "length": 1
+      },
+      "GL_INFO_LOG_LENGTH": {
+        "enum": 35716,
+        "length": 1
+      },
+      "GL_LINK_STATUS": {
+        "enum": 35714,
+        "length": 1
+      },
+      "GL_PROGRAM_BINARY_LENGTH": {
+        "enum": 34625,
+        "length": 1
+      },
+      "GL_TRANSFORM_FEEDBACK_BUFFER_MODE": {
+        "enum": 35967,
+        "length": 1
+      },
+      "GL_TRANSFORM_FEEDBACK_VARYINGS": {
+        "enum": 35971,
+        "length": 1
+      },
+      "GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH": {
+        "enum": 35958,
+        "length": 1
+      },
+      "GL_VALIDATE_STATUS": {
+        "enum": 35715,
+        "length": 1
+      }
+    },
+    "sampler": {
+      "GL_TEXTURE_BORDER_COLOR": {
+        "enum": 4100,
+        "length": 4
+      },
+      "GL_TEXTURE_COMPARE_FUNC": {
+        "enum": 34893,
+        "length": 1
+      },
+      "GL_TEXTURE_COMPARE_MODE": {
+        "enum": 34892,
+        "length": 1
+      },
+      "GL_TEXTURE_MAG_FILTER": {
+        "enum": 10240,
+        "length": 1
+      },
+      "GL_TEXTURE_MAX_LOD": {
+        "enum": 33083,
+        "length": 1
+      },
+      "GL_TEXTURE_MIN_FILTER": {
+        "enum": 10241,
+        "length": 1
+      },
+      "GL_TEXTURE_MIN_LOD": {
+        "enum": 33082,
+        "length": 1
+      },
+      "GL_TEXTURE_WRAP_R": {
+        "enum": 32882,
+        "length": 1
+      },
+      "GL_TEXTURE_WRAP_S": {
+        "enum": 10242,
+        "length": 1
+      },
+      "GL_TEXTURE_WRAP_T": {
+        "enum": 10243,
+        "length": 1
+      }
+    },
+    "state": {
+      "GL_ACTIVE_TEXTURE": {
+        "enum": 34016,
+        "length": 1
+      },
+      "GL_ALIASED_LINE_WIDTH_RANGE": {
+        "enum": 33902,
+        "length": 2
+      },
+      "GL_ARRAY_BUFFER_BINDING": {
+        "enum": 34964,
+        "length": 1
+      },
+      "GL_BLEND": {
+        "enum": 3042,
+        "length": 1
+      },
+      "GL_BLEND_COLOR": {
+        "enum": 32773,
+        "length": 4
+      },
+      "GL_BLEND_DST_ALPHA": {
+        "enum": 32970,
+        "length": 1
+      },
+      "GL_BLEND_DST_RGB": {
+        "enum": 32968,
+        "length": 1
+      },
+      "GL_BLEND_EQUATION_ALPHA": {
+        "enum": 34877,
+        "length": 1
+      },
+      "GL_BLEND_EQUATION_RGB": {
+        "enum": 32777,
+        "length": 1
+      },
+      "GL_BLEND_SRC_ALPHA": {
+        "enum": 32971,
+        "length": 1
+      },
+      "GL_BLEND_SRC_RGB": {
+        "enum": 32969,
+        "length": 1
+      },
+      "GL_COLOR_CLEAR_VALUE": {
+        "enum": 3106,
+        "length": 4
+      },
+      "GL_COLOR_LOGIC_OP": {
+        "enum": 3058,
+        "length": 1
+      },
+      "GL_COLOR_WRITEMASK": {
+        "enum": 3107,
+        "length": 4
+      },
+      "GL_COMPRESSED_TEXTURE_FORMATS": {
+        "count_enum": 34466,
+        "enum": 34467,
+        "length": "GL_NUM_COMPRESSED_TEXTURE_FORMATS"
+      },
+      "GL_CONTEXT_FLAGS": {
+        "enum": 33310,
+        "length": 1
+      },
+      "GL_CULL_FACE": {
+        "enum": 2884,
+        "length": 1
+      },
+      "GL_CULL_FACE_MODE": {
+        "enum": 2885,
+        "length": 1
+      },
+      "GL_CURRENT_PROGRAM": {
+        "enum": 35725,
+        "length": 1
+      },
+      "GL_DEBUG_GROUP_STACK_DEPTH": {
+        "enum": 33389,
+        "length": 1
+      },
+      "GL_DEPTH_CLEAR_VALUE": {
+        "enum": 2931,
+        "length": 1
+      },
+      "GL_DEPTH_FUNC": {
+        "enum": 2932,
+        "length": 1
+      },
+      "GL_DEPTH_RANGE": {
+        "enum": 2928,
+        "length": 2
+      },
+      "GL_DEPTH_TEST": {
+        "enum": 2929,
+        "length": 1
+      },
+      "GL_DEPTH_WRITEMASK": {
+        "enum": 2930,
+        "length": 1
+      },
+      "GL_DISPATCH_INDIRECT_BUFFER_BINDING": {
+        "enum": 37103,
+        "length": 1
+      },
+      "GL_DITHER": {
+        "enum": 3024,
+        "length": 1
+      },
+      "GL_DOUBLEBUFFER": {
+        "enum": 3122,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER": {
+        "enum": 3073,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER0": {
+        "enum": 34853,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER1": {
+        "enum": 34854,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER10": {
+        "enum": 34863,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER11": {
+        "enum": 34864,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER12": {
+        "enum": 34865,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER13": {
+        "enum": 34866,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER14": {
+        "enum": 34867,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER15": {
+        "enum": 34868,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER2": {
+        "enum": 34855,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER3": {
+        "enum": 34856,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER4": {
+        "enum": 34857,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER5": {
+        "enum": 34858,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER6": {
+        "enum": 34859,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER7": {
+        "enum": 34860,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER8": {
+        "enum": 34861,
+        "length": 1
+      },
+      "GL_DRAW_BUFFER9": {
+        "enum": 34862,
+        "length": 1
+      },
+      "GL_DRAW_FRAMEBUFFER_BINDING": {
+        "enum": 36006,
+        "length": 1
+      },
+      "GL_ELEMENT_ARRAY_BUFFER_BINDING": {
+        "enum": 34965,
+        "length": 1
+      },
+      "GL_FRAGMENT_SHADER_DERIVATIVE_HINT": {
+        "enum": 35723,
+        "length": 1
+      },
+      "GL_IMPLEMENTATION_COLOR_READ_FORMAT": {
+        "enum": 35739,
+        "length": 1
+      },
+      "GL_IMPLEMENTATION_COLOR_READ_TYPE": {
+        "enum": 35738,
+        "length": 1
+      },
+      "GL_LAYER_PROVOKING_VERTEX": {
+        "enum": 33374,
+        "length": 1
+      },
+      "GL_LINE_SMOOTH": {
+        "enum": 2848,
+        "length": 1
+      },
+      "GL_LINE_SMOOTH_HINT": {
+        "enum": 3154,
+        "length": 1
+      },
+      "GL_LINE_WIDTH": {
+        "enum": 2849,
+        "length": 1
+      },
+      "GL_LOGIC_OP_MODE": {
+        "enum": 3056,
+        "length": 1
+      },
+      "GL_MAJOR_VERSION": {
+        "enum": 33307,
+        "length": 1
+      },
+      "GL_MAX_3D_TEXTURE_SIZE": {
+        "enum": 32883,
+        "length": 1
+      },
+      "GL_MAX_ARRAY_TEXTURE_LAYERS": {
+        "enum": 35071,
+        "length": 1
+      },
+      "GL_MAX_CLIP_DISTANCES": {
+        "enum": 3378,
+        "length": 1
+      },
+      "GL_MAX_COLOR_TEXTURE_SAMPLES": {
+        "enum": 37134,
+        "length": 1
+      },
+      "GL_MAX_COMBINED_ATOMIC_COUNTERS": {
+        "enum": 37591,
+        "length": 1
+      },
+      "GL_MAX_COMBINED_COMPUTE_UNIFORM_COMPONENTS": {
+        "enum": 33382,
+        "length": 1
+      },
+      "GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS": {
+        "enum": 35379,
+        "length": 1
+      },
+      "GL_MAX_COMBINED_GEOMETRY_UNIFORM_COMPONENTS": {
+        "enum": 35378,
+        "length": 1
+      },
+      "GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS": {
+        "enum": 37084,
+        "length": 1
+      },
+      "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS": {
+        "enum": 35661,
+        "length": 1
+      },
+      "GL_MAX_COMBINED_UNIFORM_BLOCKS": {
+        "enum": 35374,
+        "length": 1
+      },
+      "GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS": {
+        "enum": 35377,
+        "length": 1
+      },
+      "GL_MAX_COMPUTE_ATOMIC_COUNTERS": {
+        "enum": 33381,
+        "length": 1
+      },
+      "GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS": {
+        "enum": 33380,
+        "length": 1
+      },
+      "GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS": {
+        "enum": 37083,
+        "length": 1
+      },
+      "GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS": {
+        "enum": 37308,
+        "length": 1
+      },
+      "GL_MAX_COMPUTE_UNIFORM_BLOCKS": {
+        "enum": 37307,
+        "length": 1
+      },
+      "GL_MAX_COMPUTE_UNIFORM_COMPONENTS": {
+        "enum": 33379,
+        "length": 1
+      },
+      "GL_MAX_COMPUTE_WORK_GROUP_COUNT": {
+        "enum": 37310,
+        "length": 1
+      },
+      "GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS": {
+        "enum": 37099,
+        "length": 1
+      },
+      "GL_MAX_COMPUTE_WORK_GROUP_SIZE": {
+        "enum": 37311,
+        "length": 1
+      },
+      "GL_MAX_CUBE_MAP_TEXTURE_SIZE": {
+        "enum": 34076,
+        "length": 1
+      },
+      "GL_MAX_DEBUG_GROUP_STACK_DEPTH": {
+        "enum": 33388,
+        "length": 1
+      },
+      "GL_MAX_DEPTH_TEXTURE_SAMPLES": {
+        "enum": 37135,
+        "length": 1
+      },
+      "GL_MAX_DRAW_BUFFERS": {
+        "enum": 34852,
+        "length": 1
+      },
+      "GL_MAX_DUAL_SOURCE_DRAW_BUFFERS": {
+        "enum": 35068,
+        "length": 1
+      },
+      "GL_MAX_ELEMENTS_INDICES": {
+        "enum": 33001,
+        "length": 1
+      },
+      "GL_MAX_ELEMENTS_VERTICES": {
+        "enum": 33000,
+        "length": 1
+      },
+      "GL_MAX_ELEMENT_INDEX": {
+        "enum": 36203,
+        "length": 1
+      },
+      "GL_MAX_FRAGMENT_ATOMIC_COUNTERS": {
+        "enum": 37590,
+        "length": 1
+      },
+      "GL_MAX_FRAGMENT_INPUT_COMPONENTS": {
+        "enum": 37157,
+        "length": 1
+      },
+      "GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS": {
+        "enum": 37082,
+        "length": 1
+      },
+      "GL_MAX_FRAGMENT_UNIFORM_BLOCKS": {
+        "enum": 35373,
+        "length": 1
+      },
+      "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS": {
+        "enum": 35657,
+        "length": 1
+      },
+      "GL_MAX_FRAGMENT_UNIFORM_VECTORS": {
+        "enum": 36349,
+        "length": 1
+      },
+      "GL_MAX_FRAMEBUFFER_HEIGHT": {
+        "enum": 37654,
+        "length": 1
+      },
+      "GL_MAX_FRAMEBUFFER_LAYERS": {
+        "enum": 37655,
+        "length": 1
+      },
+      "GL_MAX_FRAMEBUFFER_SAMPLES": {
+        "enum": 37656,
+        "length": 1
+      },
+      "GL_MAX_FRAMEBUFFER_WIDTH": {
+        "enum": 37653,
+        "length": 1
+      },
+      "GL_MAX_GEOMETRY_ATOMIC_COUNTERS": {
+        "enum": 37589,
+        "length": 1
+      },
+      "GL_MAX_GEOMETRY_INPUT_COMPONENTS": {
+        "enum": 37155,
+        "length": 1
+      },
+      "GL_MAX_GEOMETRY_OUTPUT_COMPONENTS": {
+        "enum": 37156,
+        "length": 1
+      },
+      "GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS": {
+        "enum": 37079,
+        "length": 1
+      },
+      "GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS": {
+        "enum": 35881,
+        "length": 1
+      },
+      "GL_MAX_GEOMETRY_UNIFORM_BLOCKS": {
+        "enum": 35372,
+        "length": 1
+      },
+      "GL_MAX_GEOMETRY_UNIFORM_COMPONENTS": {
+        "enum": 36319,
+        "length": 1
+      },
+      "GL_MAX_INTEGER_SAMPLES": {
+        "enum": 37136,
+        "length": 1
+      },
+      "GL_MAX_LABEL_LENGTH": {
+        "enum": 33512,
+        "length": 1
+      },
+      "GL_MAX_PROGRAM_TEXEL_OFFSET": {
+        "enum": 35077,
+        "length": 1
+      },
+      "GL_MAX_RECTANGLE_TEXTURE_SIZE": {
+        "enum": 34040,
+        "length": 1
+      },
+      "GL_MAX_RENDERBUFFER_SIZE": {
+        "enum": 34024,
+        "length": 1
+      },
+      "GL_MAX_SAMPLE_MASK_WORDS": {
+        "enum": 36441,
+        "length": 1
+      },
+      "GL_MAX_SERVER_WAIT_TIMEOUT": {
+        "enum": 37137,
+        "length": 1
+      },
+      "GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS": {
+        "enum": 37085,
+        "length": 1
+      },
+      "GL_MAX_TESS_CONTROL_ATOMIC_COUNTERS": {
+        "enum": 37587,
+        "length": 1
+      },
+      "GL_MAX_TESS_CONTROL_SHADER_STORAGE_BLOCKS": {
+        "enum": 37080,
+        "length": 1
+      },
+      "GL_MAX_TESS_EVALUATION_ATOMIC_COUNTERS": {
+        "enum": 37588,
+        "length": 1
+      },
+      "GL_MAX_TESS_EVALUATION_SHADER_STORAGE_BLOCKS": {
+        "enum": 37081,
+        "length": 1
+      },
+      "GL_MAX_TEXTURE_BUFFER_SIZE": {
+        "enum": 35883,
+        "length": 1
+      },
+      "GL_MAX_TEXTURE_IMAGE_UNITS": {
+        "enum": 34930,
+        "length": 1
+      },
+      "GL_MAX_TEXTURE_LOD_BIAS": {
+        "enum": 34045,
+        "length": 1
+      },
+      "GL_MAX_TEXTURE_SIZE": {
+        "enum": 3379,
+        "length": 1
+      },
+      "GL_MAX_UNIFORM_BLOCK_SIZE": {
+        "enum": 35376,
+        "length": 1
+      },
+      "GL_MAX_UNIFORM_BUFFER_BINDINGS": {
+        "enum": 35375,
+        "length": 1
+      },
+      "GL_MAX_UNIFORM_LOCATIONS": {
+        "enum": 33390,
+        "length": 1
+      },
+      "GL_MAX_VARYING_COMPONENTS": {
+        "enum": 35659,
+        "length": 1
+      },
+      "GL_MAX_VARYING_FLOATS": {
+        "enum": 35659,
+        "length": 1
+      },
+      "GL_MAX_VARYING_VECTORS": {
+        "enum": 36348,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_ATOMIC_COUNTERS": {
+        "enum": 37586,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_ATTRIBS": {
+        "enum": 34921,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_ATTRIB_BINDINGS": {
+        "enum": 33498,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_ATTRIB_RELATIVE_OFFSET": {
+        "enum": 33497,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_OUTPUT_COMPONENTS": {
+        "enum": 37154,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS": {
+        "enum": 37078,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS": {
+        "enum": 35660,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_UNIFORM_BLOCKS": {
+        "enum": 35371,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_UNIFORM_COMPONENTS": {
+        "enum": 35658,
+        "length": 1
+      },
+      "GL_MAX_VERTEX_UNIFORM_VECTORS": {
+        "enum": 36347,
+        "length": 1
+      },
+      "GL_MAX_VIEWPORTS": {
+        "enum": 33371,
+        "length": 1
+      },
+      "GL_MAX_VIEWPORT_DIMS": {
+        "enum": 3386,
+        "length": 2
+      },
+      "GL_MINOR_VERSION": {
+        "enum": 33308,
+        "length": 1
+      },
+      "GL_MIN_MAP_BUFFER_ALIGNMENT": {
+        "enum": 37052,
+        "length": 1
+      },
+      "GL_MIN_PROGRAM_TEXEL_OFFSET": {
+        "enum": 35076,
+        "length": 1
+      },
+      "GL_NUM_COMPRESSED_TEXTURE_FORMATS": {
+        "enum": 34466,
+        "length": 1
+      },
+      "GL_NUM_EXTENSIONS": {
+        "enum": 33309,
+        "length": 1
+      },
+      "GL_NUM_PROGRAM_BINARY_FORMATS": {
+        "enum": 34814,
+        "length": 1
+      },
+      "GL_NUM_SHADER_BINARY_FORMATS": {
+        "enum": 36345,
+        "length": 1
+      },
+      "GL_PACK_ALIGNMENT": {
+        "enum": 3333,
+        "length": 1
+      },
+      "GL_PACK_IMAGE_HEIGHT": {
+        "enum": 32876,
+        "length": 1
+      },
+      "GL_PACK_LSB_FIRST": {
+        "enum": 3329,
+        "length": 1
+      },
+      "GL_PACK_ROW_LENGTH": {
+        "enum": 3330,
+        "length": 1
+      },
+      "GL_PACK_SKIP_IMAGES": {
+        "enum": 32875,
+        "length": 1
+      },
+      "GL_PACK_SKIP_PIXELS": {
+        "enum": 3332,
+        "length": 1
+      },
+      "GL_PACK_SKIP_ROWS": {
+        "enum": 3331,
+        "length": 1
+      },
+      "GL_PACK_SWAP_BYTES": {
+        "enum": 3328,
+        "length": 1
+      },
+      "GL_PIXEL_PACK_BUFFER_BINDING": {
+        "enum": 35053,
+        "length": 1
+      },
+      "GL_PIXEL_UNPACK_BUFFER_BINDING": {
+        "enum": 35055,
+        "length": 1
+      },
+      "GL_POINT_FADE_THRESHOLD_SIZE": {
+        "enum": 33064,
+        "length": 1
+      },
+      "GL_POINT_SIZE": {
+        "enum": 2833,
+        "length": 1
+      },
+      "GL_POINT_SIZE_GRANULARITY": {
+        "enum": 2835,
+        "length": 1
+      },
+      "GL_POINT_SIZE_RANGE": {
+        "enum": 2834,
+        "length": 2
+      },
+      "GL_POLYGON_OFFSET_CLAMP": {
+        "enum": 36379,
+        "length": 1
+      },
+      "GL_POLYGON_OFFSET_FACTOR": {
+        "enum": 32824,
+        "length": 1
+      },
+      "GL_POLYGON_OFFSET_FILL": {
+        "enum": 32823,
+        "length": 1
+      },
+      "GL_POLYGON_OFFSET_LINE": {
+        "enum": 10754,
+        "length": 1
+      },
+      "GL_POLYGON_OFFSET_POINT": {
+        "enum": 10753,
+        "length": 1
+      },
+      "GL_POLYGON_OFFSET_UNITS": {
+        "enum": 10752,
+        "length": 1
+      },
+      "GL_POLYGON_SMOOTH": {
+        "enum": 2881,
+        "length": 1
+      },
+      "GL_POLYGON_SMOOTH_HINT": {
+        "enum": 3155,
+        "length": 1
+      },
+      "GL_PRIMITIVE_RESTART_INDEX": {
+        "enum": 36766,
+        "length": 1
+      },
+      "GL_PROGRAM_BINARY_FORMATS": {
+        "count_enum": 34814,
+        "enum": 34815,
+        "length": "GL_NUM_PROGRAM_BINARY_FORMATS"
+      },
+      "GL_PROGRAM_PIPELINE_BINDING": {
+        "enum": 33370,
+        "length": 1
+      },
+      "GL_PROGRAM_POINT_SIZE": {
+        "enum": 34370,
+        "length": 1
+      },
+      "GL_PROVOKING_VERTEX": {
+        "enum": 36431,
+        "length": 1
+      },
+      "GL_READ_BUFFER": {
+        "enum": 3074,
+        "length": 1
+      },
+      "GL_READ_FRAMEBUFFER_BINDING": {
+        "enum": 36010,
+        "length": 1
+      },
+      "GL_RENDERBUFFER_BINDING": {
+        "enum": 36007,
+        "length": 1
+      },
+      "GL_SAMPLER_BINDING": {
+        "enum": 35097,
+        "length": 1
+      },
+      "GL_SAMPLES": {
+        "enum": 32937,
+        "length": 1
+      },
+      "GL_SAMPLE_BUFFERS": {
+        "enum": 32936,
+        "length": 1
+      },
+      "GL_SAMPLE_COVERAGE_INVERT": {
+        "enum": 32939,
+        "length": 1
+      },
+      "GL_SAMPLE_COVERAGE_VALUE": {
+        "enum": 32938,
+        "length": 1
+      },
+      "GL_SAMPLE_MASK_VALUE": {
+        "enum": 36434,
+        "length": 1
+      },
+      "GL_SCISSOR_BOX": {
+        "enum": 3088,
+        "length": 4
+      },
+      "GL_SCISSOR_TEST": {
+        "enum": 3089,
+        "length": 1
+      },
+      "GL_SHADER_COMPILER": {
+        "enum": 36346,
+        "length": 1
+      },
+      "GL_SHADER_STORAGE_BUFFER_BINDING": {
+        "enum": 37075,
+        "length": 1
+      },
+      "GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT": {
+        "enum": 37087,
+        "length": 1
+      },
+      "GL_SHADER_STORAGE_BUFFER_SIZE": {
+        "enum": 37077,
+        "length": 1
+      },
+      "GL_SHADER_STORAGE_BUFFER_START": {
+        "enum": 37076,
+        "length": 1
+      },
+      "GL_SMOOTH_LINE_WIDTH_GRANULARITY": {
+        "enum": 2851,
+        "length": 1
+      },
+      "GL_SMOOTH_LINE_WIDTH_RANGE": {
+        "enum": 2850,
+        "length": 2
+      },
+      "GL_STENCIL_BACK_FAIL": {
+        "enum": 34817,
+        "length": 1
+      },
+      "GL_STENCIL_BACK_FUNC": {
+        "enum": 34816,
+        "length": 1
+      },
+      "GL_STENCIL_BACK_PASS_DEPTH_FAIL": {
+        "enum": 34818,
+        "length": 1
+      },
+      "GL_STENCIL_BACK_PASS_DEPTH_PASS": {
+        "enum": 34819,
+        "length": 1
+      },
+      "GL_STENCIL_BACK_REF": {
+        "enum": 36003,
+        "length": 1
+      },
+      "GL_STENCIL_BACK_VALUE_MASK": {
+        "enum": 36004,
+        "length": 1
+      },
+      "GL_STENCIL_BACK_WRITEMASK": {
+        "enum": 36005,
+        "length": 1
+      },
+      "GL_STENCIL_CLEAR_VALUE": {
+        "enum": 2961,
+        "length": 1
+      },
+      "GL_STENCIL_FAIL": {
+        "enum": 2964,
+        "length": 1
+      },
+      "GL_STENCIL_FUNC": {
+        "enum": 2962,
+        "length": 1
+      },
+      "GL_STENCIL_PASS_DEPTH_FAIL": {
+        "enum": 2965,
+        "length": 1
+      },
+      "GL_STENCIL_PASS_DEPTH_PASS": {
+        "enum": 2966,
+        "length": 1
+      },
+      "GL_STENCIL_REF": {
+        "enum": 2967,
+        "length": 1
+      },
+      "GL_STENCIL_TEST": {
+        "enum": 2960,
+        "length": 1
+      },
+      "GL_STENCIL_VALUE_MASK": {
+        "enum": 2963,
+        "length": 1
+      },
+      "GL_STENCIL_WRITEMASK": {
+        "enum": 2968,
+        "length": 1
+      },
+      "GL_STEREO": {
+        "enum": 3123,
+        "length": 1
+      },
+      "GL_SUBPIXEL_BITS": {
+        "enum": 3408,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_1D": {
+        "enum": 32872,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_1D_ARRAY": {
+        "enum": 35868,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_2D": {
+        "enum": 32873,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_2D_ARRAY": {
+        "enum": 35869,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_2D_MULTISAMPLE": {
+        "enum": 37124,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY": {
+        "enum": 37125,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_3D": {
+        "enum": 32874,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_BUFFER": {
+        "enum": 35884,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_CUBE_MAP": {
+        "enum": 34068,
+        "length": 1
+      },
+      "GL_TEXTURE_BINDING_RECTANGLE": {
+        "enum": 34038,
+        "length": 1
+      },
+      "GL_TEXTURE_BUFFER_OFFSET_ALIGNMENT": {
+        "enum": 37279,
+        "length": 1
+      },
+      "GL_TEXTURE_COMPRESSION_HINT": {
+        "enum": 34031,
+        "length": 1
+      },
+      "GL_TIMESTAMP": {
+        "enum": 36392,
+        "length": 1
+      },
+      "GL_TRANSFORM_FEEDBACK_BUFFER_BINDING": {
+        "enum": 35983,
+        "length": 1
+      },
+      "GL_TRANSFORM_FEEDBACK_BUFFER_SIZE": {
+        "enum": 35973,
+        "length": 1
+      },
+      "GL_TRANSFORM_FEEDBACK_BUFFER_START": {
+        "enum": 35972,
+        "length": 1
+      },
+      "GL_UNIFORM_BUFFER_BINDING": {
+        "enum": 35368,
+        "length": 1
+      },
+      "GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT": {
+        "enum": 35380,
+        "length": 1
+      },
+      "GL_UNIFORM_BUFFER_SIZE": {
+        "enum": 35370,
+        "length": 1
+      },
+      "GL_UNIFORM_BUFFER_START": {
+        "enum": 35369,
+        "length": 1
+      },
+      "GL_UNPACK_ALIGNMENT": {
+        "enum": 3317,
+        "length": 1
+      },
+      "GL_UNPACK_IMAGE_HEIGHT": {
+        "enum": 32878,
+        "length": 1
+      },
+      "GL_UNPACK_LSB_FIRST": {
+        "enum": 3313,
+        "length": 1
+      },
+      "GL_UNPACK_ROW_LENGTH": {
+        "enum": 3314,
+        "length": 1
+      },
+      "GL_UNPACK_SKIP_IMAGES": {
+        "enum": 32877,
+        "length": 1
+      },
+      "GL_UNPACK_SKIP_PIXELS": {
+        "enum": 3316,
+        "length": 1
+      },
+      "GL_UNPACK_SKIP_ROWS": {
+        "enum": 3315,
+        "length": 1
+      },
+      "GL_UNPACK_SWAP_BYTES": {
+        "enum": 3312,
+        "length": 1
+      },
+      "GL_VERTEX_ARRAY_BINDING": {
+        "enum": 34229,
+        "length": 1
+      },
+      "GL_VERTEX_BINDING_BUFFER": {
+        "enum": 36687,
+        "length": 1
+      },
+      "GL_VERTEX_BINDING_DIVISOR": {
+        "enum": 33494,
+        "length": 1
+      },
+      "GL_VERTEX_BINDING_OFFSET": {
+        "enum": 33495,
+        "length": 1
+      },
+      "GL_VERTEX_BINDING_STRIDE": {
+        "enum": 33496,
+        "length": 1
+      },
+      "GL_VIEWPORT": {
+        "enum": 2978,
+        "length": 4
+      },
+      "GL_VIEWPORT_BOUNDS_RANGE": {
+        "enum": 33373,
+        "length": 2
+      },
+      "GL_VIEWPORT_INDEX_PROVOKING_VERTEX": {
+        "enum": 33375,
+        "length": 1
+      },
+      "GL_VIEWPORT_SUBPIXEL_BITS": {
+        "enum": 33372,
+        "length": 1
+      }
+    },
+    "texture": {
+      "GL_DEPTH_STENCIL_TEXTURE_MODE": {
+        "enum": 37098,
+        "length": 1
+      },
+      "GL_IMAGE_FORMAT_COMPATIBILITY_TYPE": {
+        "enum": 37063,
+        "length": 1
+      },
+      "GL_TEXTURE_BASE_LEVEL": {
+        "enum": 33084,
+        "length": 1
+      },
+      "GL_TEXTURE_BORDER_COLOR": {
+        "enum": 4100,
+        "length": 4
+      },
+      "GL_TEXTURE_COMPARE_FUNC": {
+        "enum": 34893,
+        "length": 1
+      },
+      "GL_TEXTURE_COMPARE_MODE": {
+        "enum": 34892,
+        "length": 1
+      },
+      "GL_TEXTURE_IMMUTABLE_FORMAT": {
+        "enum": 37167,
+        "length": 1
+      },
+      "GL_TEXTURE_IMMUTABLE_LEVELS": {
+        "enum": 33503,
+        "length": 1
+      },
+      "GL_TEXTURE_MAG_FILTER": {
+        "enum": 10240,
+        "length": 1
+      },
+      "GL_TEXTURE_MAX_LEVEL": {
+        "enum": 33085,
+        "length": 1
+      },
+      "GL_TEXTURE_MAX_LOD": {
+        "enum": 33083,
+        "length": 1
+      },
+      "GL_TEXTURE_MIN_FILTER": {
+        "enum": 10241,
+        "length": 1
+      },
+      "GL_TEXTURE_MIN_LOD": {
+        "enum": 33082,
+        "length": 1
+      },
+      "GL_TEXTURE_SWIZZLE_A": {
+        "enum": 36421,
+        "length": 1
+      },
+      "GL_TEXTURE_SWIZZLE_B": {
+        "enum": 36420,
+        "length": 1
+      },
+      "GL_TEXTURE_SWIZZLE_G": {
+        "enum": 36419,
+        "length": 1
+      },
+      "GL_TEXTURE_SWIZZLE_R": {
+        "enum": 36418,
+        "length": 1
+      },
+      "GL_TEXTURE_SWIZZLE_RGBA": {
+        "enum": 36422,
+        "length": 4
+      },
+      "GL_TEXTURE_TARGET": {
+        "enum": 4102,
+        "length": 1
+      },
+      "GL_TEXTURE_VIEW_MIN_LAYER": {
+        "enum": 33501,
+        "length": 1
+      },
+      "GL_TEXTURE_VIEW_MIN_LEVEL": {
+        "enum": 33499,
+        "length": 1
+      },
+      "GL_TEXTURE_VIEW_NUM_LAYERS": {
+        "enum": 33502,
+        "length": 1
+      },
+      "GL_TEXTURE_VIEW_NUM_LEVELS": {
+        "enum": 33500,
+        "length": 1
+      },
+      "GL_TEXTURE_WRAP_R": {
+        "enum": 32882,
+        "length": 1
+      },
+      "GL_TEXTURE_WRAP_S": {
+        "enum": 10242,
+        "length": 1
+      },
+      "GL_TEXTURE_WRAP_T": {
+        "enum": 10243,
+        "length": 1
+      }
+    }
+  },
+  "revision": "4bdf67a73d040f79bd7b087f5c1e588809e1f329",
+  "sources": [
+    {
+      "sha256": "fd95b31fe881df5437fbb33e97f8398c58aa1c7498f764df0888d4b7d8efd50a",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl4/glGet.xml"
+    },
+    {
+      "sha256": "176640ba6fa8b7f2f2d73b7811025d11edde76f8c315f59815610afa11925831",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl4/glGetProgram.xml"
+    },
+    {
+      "sha256": "e635c16d723a594449db74b05d8d67ae7af2f062d8cdabc14ad767d5e4efdac0",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl4/glGetTexParameter.xml"
+    },
+    {
+      "sha256": "724031818762b26e275745e3841654a3266afc314e555da0c434f5a7902df145",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl4/glGetSamplerParameter.xml"
+    }
+  ]
+}

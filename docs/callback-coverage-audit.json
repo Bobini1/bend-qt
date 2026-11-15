@@ -1,0 +1,2800 @@
+{
+  "boundary": "Pinned PySide6 6.12.0 Linux x86-64 residual callback snapshot. Documented Qt consumer APIs and useful binding helpers are distinguished from Qt-internal hooks, backend-provider authoring and upstream unusable contracts.",
+  "snapshot_rows": 1026,
+  "unique_contracts": 62,
+  "by_category": {
+    "generated_metadata_entry": 1,
+    "qt_internal_pyside_hook": 1,
+    "upstream_removed_reverse_override": 9,
+    "upstream_private_override": 25,
+    "documented_constructor": 2,
+    "qt_internal_unused_abi_hook": 1,
+    "cpp_rvalue_constructor": 2,
+    "proxy_constructor_import_variant": 2,
+    "proxy_constructor_external_pixels": 2,
+    "platform_provider_wrapper_disabled": 9,
+    "rhi_backend_implementation": 1,
+    "reserved_backend_extension": 1,
+    "renderer_backend_provider_override": 2,
+    "compiled_scxml_table_plumbing": 3,
+    "platform_surface_provider": 1
+  },
+  "by_status": {
+    "alternative_implemented": 1,
+    "intentionally_excluded_by_user_policy": 1,
+    "not_a_pyside_reverse_contract": 34,
+    "fixed_focused_native_validated": 2,
+    "excluded_from_documented_default_target": 2,
+    "language_adaptation": 2,
+    "composition_alternative": 4,
+    "not_a_pyside_authoring_contract": 10,
+    "outside_public_pyside_backend_workflow": 2,
+    "upstream_unusable_buffer_return": 3,
+    "upstream_native_dispatch_unusable": 1
+  },
+  "records": [
+    {
+      "signature": "metaObject()const",
+      "reason": "Qt-generated metaobject entry point",
+      "pure": false,
+      "inherited_rows": 737,
+      "classes": [
+        "Q3DBarsWidgetItem",
+        "Q3DGraphsWidgetItem",
+        "Q3DScatterWidgetItem",
+        "Q3DScene",
+        "Q3DSurfaceWidgetItem",
+        "QAbstract3DAxis",
+        "QAbstract3DSeries",
+        "QAbstractAnimation",
+        "QAbstractAxis",
+        "QAbstractButton",
+        "QAbstractDataProxy",
+        "QAbstractEventDispatcher",
+        "QAbstractHttpServer",
+        "QAbstractItemDelegate",
+        "QAbstractItemModel",
+        "QAbstractItemModelReplica",
+        "QAbstractItemModelTester",
+        "QAbstractItemView",
+        "QAbstractListModel",
+        "QAbstractNetworkCache",
+        "QAbstractOAuth",
+        "QAbstractOAuth2",
+        "QAbstractOAuthReplyHandler",
+        "QAbstractPrintDialog",
+        "QAbstractProxyModel",
+        "QAbstractScrollArea",
+        "QAbstractSeries",
+        "QAbstractSlider",
+        "QAbstractSocket",
+        "QAbstractSpinBox",
+        "QAbstractState",
+        "QAbstractTableModel",
+        "QAbstractTextDocumentLayout",
+        "QAbstractTransition",
+        "QAccelerometer",
+        "QAccelerometerReading",
+        "QAccessibilityHints",
+        "QAction",
+        "QActionGroup",
+        "QAmbientLightReading",
+        "QAmbientLightSensor",
+        "QAmbientSound",
+        "QAmbientTemperatureReading",
+        "QAmbientTemperatureSensor",
+        "QAnimationGroup",
+        "QAreaSeries",
+        "QAudioBufferInput",
+        "QAudioBufferOutput",
+        "QAudioDecoder",
+        "QAudioEngine",
+        "QAudioInput",
+        "QAudioListener",
+        "QAudioOutput",
+        "QAudioRoom",
+        "QAudioSink",
+        "QAudioSource",
+        "QBar3DSeries",
+        "QBarCategoryAxis",
+        "QBarDataProxy",
+        "QBarModelMapper",
+        "QBarSeries",
+        "QBarSet",
+        "QBluetoothDeviceDiscoveryAgent",
+        "QBluetoothLocalDevice",
+        "QBluetoothServer",
+        "QBluetoothServiceDiscoveryAgent",
+        "QBluetoothSocket",
+        "QBoxLayout",
+        "QBuffer",
+        "QButtonGroup",
+        "QCalendarWidget",
+        "QCamera",
+        "QCanBus",
+        "QCanBusDevice",
+        "QCanvasPainterItem",
+        "QCanvasPainterWidget",
+        "QCategory3DAxis",
+        "QCheckBox",
+        "QColorDialog",
+        "QColumnView",
+        "QComboBox",
+        "QCommandLinkButton",
+        "QCommonStyle",
+        "QCompass",
+        "QCompassReading",
+        "QCompleter",
+        "QConcatenateTablesProxyModel",
+        "QConnectionAbstractServer",
+        "QCustom3DItem",
+        "QCustom3DLabel",
+        "QCustom3DVolume",
+        "QCustomSeries",
+        "QDBusAbstractAdaptor",
+        "QDBusAbstractInterface",
+        "QDBusAbstractInterfaceBase",
+        "QDBusInterface",
+        "QDBusPendingCallWatcher",
+        "QDBusServer",
+        "QDBusServiceWatcher",
+        "QDBusVirtualObject",
+        "QDataWidgetMapper",
+        "QDateEdit",
+        "QDateTimeAxis",
+        "QDateTimeEdit",
+        "QDesignerActionEditorInterface",
+        "QDesignerFormEditorInterface",
+        "QDesignerFormWindowInterface",
+        "QDesignerFormWindowManagerInterface",
+        "QDesignerFormWindowToolInterface",
+        "QDesignerObjectInspectorInterface",
+        "QDesignerPropertyEditorInterface",
+        "QDesignerWidgetBoxInterface",
+        "QDial",
+        "QDialog",
+        "QDialogButtonBox",
+        "QDnsLookup",
+        "QDockWidget",
+        "QDoubleSpinBox",
+        "QDoubleValidator",
+        "QDrag",
+        "QDtls",
+        "QDtlsClientVerifier",
+        "QErrorMessage",
+        "QEventLoop",
+        "QEventTransition",
+        "QExtensionManager",
+        "QFile",
+        "QFileDevice",
+        "QFileDialog",
+        "QFileSelector",
+        "QFileSystemModel",
+        "QFileSystemWatcher",
+        "QFinalState",
+        "QFocusFrame",
+        "QFontComboBox",
+        "QFontDialog",
+        "QFormLayout",
+        "QFrame",
+        "QFutureWatcherQString",
+        "QFutureWatcherVoid",
+        "QGeoAreaMonitorSource",
+        "QGeoCodeReply",
+        "QGeoCodingManager",
+        "QGeoCodingManagerEngine",
+        "QGeoPositionInfoSource",
+        "QGeoRouteReply",
+        "QGeoRoutingManager",
+        "QGeoRoutingManagerEngine",
+        "QGeoSatelliteInfoSource",
+        "QGeoServiceProvider",
+        "QGesture",
+        "QGraphicsAnchor",
+        "QGraphicsBlurEffect",
+        "QGraphicsColorizeEffect",
+        "QGraphicsDropShadowEffect",
+        "QGraphicsEffect",
+        "QGraphicsItemAnimation",
+        "QGraphicsObject",
+        "QGraphicsOpacityEffect",
+        "QGraphicsProxyWidget",
+        "QGraphicsRotation",
+        "QGraphicsScale",
+        "QGraphicsScene",
+        "QGraphicsSvgItem",
+        "QGraphicsTextItem",
+        "QGraphicsTransform",
+        "QGraphicsVideoItem",
+        "QGraphicsView",
+        "QGraphicsWidget",
+        "QGraphsTheme",
+        "QGridLayout",
+        "QGroupBox",
+        "QGyroscope",
+        "QGyroscopeReading",
+        "QHBoxLayout",
+        "QHeaderView",
+        "QHeightMapSurfaceDataProxy",
+        "QHelpContentModel",
+        "QHelpContentWidget",
+        "QHelpEngine",
+        "QHelpEngineCore",
+        "QHelpFilterEngine",
+        "QHelpFilterSettingsWidget",
+        "QHelpIndexWidget",
+        "QHelpSearchEngine",
+        "QHelpSearchEngineCore",
+        "QHelpSearchQueryWidget",
+        "QHelpSearchResultWidget",
+        "QHistoryState",
+        "QHttpMultiPart",
+        "QHumidityReading",
+        "QHumiditySensor",
+        "QIODevice",
+        "QIRProximityReading",
+        "QIRProximitySensor",
+        "QIdentityProxyModel",
+        "QImageCapture",
+        "QInputDevice",
+        "QInputDialog",
+        "QIntValidator",
+        "QItemDelegate",
+        "QItemModelBarDataProxy",
+        "QItemModelScatterDataProxy",
+        "QItemModelSurfaceDataProxy",
+        "QItemSelectionModel",
+        "QJSEngine",
+        "QKeyEventTransition",
+        "QKeySequenceEdit",
+        "QLCDNumber",
+        "QLabel",
+        "QLayout",
+        "QLibrary",
+        "QLidReading",
+        "QLidSensor",
+        "QLightReading",
+        "QLightSensor",
+        "QLineEdit",
+        "QLineSeries",
+        "QListView",
+        "QListWidget",
+        "QLocalServer",
+        "QLocalSocket",
+        "QLogValue3DAxisFormatter",
+        "QLogValueAxis",
+        "QLowEnergyController",
+        "QLowEnergyService",
+        "QMagnetometer",
+        "QMagnetometerReading",
+        "QMainWindow",
+        "QMaskGenerator",
+        "QMdiArea",
+        "QMdiSubWindow",
+        "QMediaCaptureSession",
+        "QMediaDevices",
+        "QMediaPlayer",
+        "QMediaRecorder",
+        "QMenu",
+        "QMenuBar",
+        "QMessageBox",
+        "QMimeData",
+        "QModbusClient",
+        "QModbusDevice",
+        "QModbusReply",
+        "QModbusRtuSerialClient",
+        "QModbusRtuSerialServer",
+        "QModbusServer",
+        "QModbusTcpClient",
+        "QModbusTcpServer",
+        "QMouseEventTransition",
+        "QMovie",
+        "QNearFieldManager",
+        "QNearFieldTarget",
+        "QNetworkAccessManager",
+        "QNetworkCookieJar",
+        "QNetworkDiskCache",
+        "QNetworkReply",
+        "QNmeaPositionInfoSource",
+        "QNmeaSatelliteInfoSource",
+        "QOAuth1",
+        "QOAuth2AuthorizationCodeFlow",
+        "QOAuth2DeviceAuthorizationFlow",
+        "QOAuthHttpServerReplyHandler",
+        "QOAuthOobReplyHandler",
+        "QOAuthUriSchemeReplyHandler",
+        "QObject",
+        "QOffscreenSurface",
+        "QOpenGLContext",
+        "QOpenGLContextGroup",
+        "QOpenGLDebugLogger",
+        "QOpenGLShader",
+        "QOpenGLShaderProgram",
+        "QOpenGLTimeMonitor",
+        "QOpenGLTimerQuery",
+        "QOpenGLVertexArrayObject",
+        "QOpenGLWidget",
+        "QOpenGLWindow",
+        "QOrientationReading",
+        "QOrientationSensor",
+        "QPageSetupDialog",
+        "QPaintDeviceWindow",
+        "QPanGesture",
+        "QParallelAnimationGroup",
+        "QPauseAnimation",
+        "QPdfBookmarkModel",
+        "QPdfDocument",
+        "QPdfLinkModel",
+        "QPdfPageNavigator",
+        "QPdfPageRenderer",
+        "QPdfPageSelector",
+        "QPdfSearchModel",
+        "QPdfView",
+        "QPdfWriter",
+        "QPieModelMapper",
+        "QPieSeries",
+        "QPieSlice",
+        "QPinchGesture",
+        "QPlaceContentReply",
+        "QPlaceDetailsReply",
+        "QPlaceIdReply",
+        "QPlaceManager",
+        "QPlaceManagerEngine",
+        "QPlaceMatchReply",
+        "QPlaceReply",
+        "QPlaceSearchReply",
+        "QPlaceSearchSuggestionReply",
+        "QPlainTextDocumentLayout",
+        "QPlainTextEdit",
+        "QPluginLoader",
+        "QPointingDevice",
+        "QPressureReading",
+        "QPressureSensor",
+        "QPrintDialog",
+        "QPrintPreviewDialog",
+        "QPrintPreviewWidget",
+        "QProcess",
+        "QProgressBar",
+        "QProgressDialog",
+        "QPropertyAnimation",
+        "QProximityReading",
+        "QProximitySensor",
+        "QProxyStyle",
+        "QPushButton",
+        "QQmlApplicationEngine",
+        "QQmlComponent",
+        "QQmlContext",
+        "QQmlEngine",
+        "QQmlExpression",
+        "QQmlExtensionPlugin",
+        "QQmlFileSelector",
+        "QQmlImageProviderBase",
+        "QQmlPropertyMap",
+        "QQuick3DGeometry",
+        "QQuick3DInstancing",
+        "QQuick3DObject",
+        "QQuick3DRenderExtension",
+        "QQuick3DTextureData",
+        "QQuickAsyncImageProvider",
+        "QQuickAttachedPropertyPropagator",
+        "QQuickFramebufferObject",
+        "QQuickImageProvider",
+        "QQuickImageResponse",
+        "QQuickItem",
+        "QQuickItemGrabResult",
+        "QQuickPaintedItem",
+        "QQuickRenderControl",
+        "QQuickRhiItem",
+        "QQuickTextDocument",
+        "QQuickTextureFactory",
+        "QQuickTransform",
+        "QQuickView",
+        "QQuickWebEngineDownloadRequest",
+        "QQuickWebEngineProfile",
+        "QQuickWidget",
+        "QQuickWindow",
+        "QRadioButton",
+        "QRangeModel",
+        "QRasterWindow",
+        "QRegularExpressionValidator",
+        "QRemoteObjectAbstractPersistedStore",
+        "QRemoteObjectDynamicReplica",
+        "QRemoteObjectHost",
+        "QRemoteObjectHostBase",
+        "QRemoteObjectNode",
+        "QRemoteObjectPendingCallWatcher",
+        "QRemoteObjectRegistry",
+        "QRemoteObjectRegistryHost",
+        "QRemoteObjectReplica",
+        "QRemoteObjectSettingsStore",
+        "QRestAccessManager",
+        "QRhiWidget",
+        "QRotationReading",
+        "QRotationSensor",
+        "QRubberBand",
+        "QSGDynamicTexture",
+        "QSGTexture",
+        "QSGTextureProvider",
+        "QSaveFile",
+        "QScatter3DSeries",
+        "QScatterDataProxy",
+        "QScatterSeries",
+        "QScreen",
+        "QScreenCapture",
+        "QScrollArea",
+        "QScrollBar",
+        "QScxmlCppDataModel",
+        "QScxmlDataModel",
+        "QScxmlDynamicScxmlServiceFactory",
+        "QScxmlInvokableService",
+        "QScxmlInvokableServiceFactory",
+        "QScxmlNullDataModel",
+        "QScxmlStateMachine",
+        "QScxmlStaticScxmlServiceFactory",
+        "QSensor",
+        "QSensorBackend",
+        "QSensorReading",
+        "QSequentialAnimationGroup",
+        "QSerialPort",
+        "QSettings",
+        "QSharedMemory",
+        "QShortcut",
+        "QSignalMapper",
+        "QSignalTransition",
+        "QSizeGrip",
+        "QSlider",
+        "QSocketNotifier",
+        "QSortFilterProxyModel",
+        "QSoundEffect",
+        "QSpatialSound",
+        "QSpinBox",
+        "QSplashScreen",
+        "QSpline3DSeries",
+        "QSplineSeries",
+        "QSplitter",
+        "QSplitterHandle",
+        "QSqlDriver",
+        "QSqlQueryModel",
+        "QSqlRelationalTableModel",
+        "QSqlTableModel",
+        "QSslServer",
+        "QSslSocket",
+        "QStackedLayout",
+        "QStackedWidget",
+        "QStandardItemModel",
+        "QState",
+        "QStateMachine",
+        "QStatusBar",
+        "QStringListModel",
+        "QStyle",
+        "QStyleHints",
+        "QStyleKitStyle",
+        "QStyledItemDelegate",
+        "QSurface3DSeries",
+        "QSurfaceDataProxy",
+        "QSvgRenderer",
+        "QSvgWidget",
+        "QSwipeGesture",
+        "QSyntaxHighlighter",
+        "QSystemTrayIcon",
+        "QTabBar",
+        "QTabWidget",
+        "QTableView",
+        "QTableWidget",
+        "QTapAndHoldGesture",
+        "QTapGesture",
+        "QTapReading",
+        "QTapSensor",
+        "QTcpServer",
+        "QTcpSocket",
+        "QTemporaryFile",
+        "QTextBlockGroup",
+        "QTextBrowser",
+        "QTextDocument",
+        "QTextEdit",
+        "QTextFrame",
+        "QTextList",
+        "QTextObject",
+        "QTextTable",
+        "QTextToSpeech",
+        "QTextToSpeechEngine",
+        "QThread",
+        "QThreadPool",
+        "QTiltReading",
+        "QTiltSensor",
+        "QTimeEdit",
+        "QTimeLine",
+        "QTimer",
+        "QToolBar",
+        "QToolBox",
+        "QToolButton",
+        "QTranslator",
+        "QTransposeProxyModel",
+        "QTreeView",
+        "QTreeWidget",
+        "QUdpSocket",
+        "QUiLoader",
+        "QUndoGroup",
+        "QUndoStack",
+        "QUndoView",
+        "QVBoxLayout",
+        "QValidator",
+        "QValue3DAxis",
+        "QValue3DAxisFormatter",
+        "QValueAxis",
+        "QVariantAnimation",
+        "QVideoFrameInput",
+        "QVideoSink",
+        "QVideoWidget",
+        "QWaveDecoder",
+        "QWebChannel",
+        "QWebChannelAbstractTransport",
+        "QWebEngineClientHints",
+        "QWebEngineContextMenuRequest",
+        "QWebEngineCookieStore",
+        "QWebEngineDownloadRequest",
+        "QWebEngineExtensionManager",
+        "QWebEngineNavigationRequest",
+        "QWebEngineNewWindowRequest",
+        "QWebEngineNotification",
+        "QWebEnginePage",
+        "QWebEngineProfile",
+        "QWebEngineUrlRequestInterceptor",
+        "QWebEngineUrlRequestJob",
+        "QWebEngineUrlSchemeHandler",
+        "QWebEngineView",
+        "QWebEngineWebAuthUxRequest",
+        "QWebSocket",
+        "QWebSocketServer",
+        "QWebView",
+        "QWidget",
+        "QWidgetAction",
+        "QWindow",
+        "QWindowCapture",
+        "QWizard",
+        "QWizardPage",
+        "QXYModelMapper",
+        "QXYSeries",
+        "Qt3DAnimation::QAbstractAnimation",
+        "Qt3DAnimation::QAbstractAnimationClip",
+        "Qt3DAnimation::QAbstractChannelMapping",
+        "Qt3DAnimation::QAbstractClipAnimator",
+        "Qt3DAnimation::QAbstractClipBlendNode",
+        "Qt3DAnimation::QAdditiveClipBlend",
+        "Qt3DAnimation::QAnimationAspect",
+        "Qt3DAnimation::QAnimationClip",
+        "Qt3DAnimation::QAnimationClipLoader",
+        "Qt3DAnimation::QAnimationController",
+        "Qt3DAnimation::QAnimationGroup",
+        "Qt3DAnimation::QBlendedClipAnimator",
+        "Qt3DAnimation::QCallbackMapping",
+        "Qt3DAnimation::QChannelMapper",
+        "Qt3DAnimation::QChannelMapping",
+        "Qt3DAnimation::QClipAnimator",
+        "Qt3DAnimation::QClipBlendValue",
+        "Qt3DAnimation::QClock",
+        "Qt3DAnimation::QKeyframeAnimation",
+        "Qt3DAnimation::QLerpClipBlend",
+        "Qt3DAnimation::QMorphTarget",
+        "Qt3DAnimation::QMorphingAnimation",
+        "Qt3DAnimation::QSkeletonMapping",
+        "Qt3DAnimation::QVertexBlendAnimation",
+        "Qt3DCore::QAbstractAspect",
+        "Qt3DCore::QAbstractSkeleton",
+        "Qt3DCore::QArmature",
+        "Qt3DCore::QAspectEngine",
+        "Qt3DCore::QAttribute",
+        "Qt3DCore::QBoundingVolume",
+        "Qt3DCore::QBuffer",
+        "Qt3DCore::QComponent",
+        "Qt3DCore::QCoreAspect",
+        "Qt3DCore::QCoreSettings",
+        "Qt3DCore::QEntity",
+        "Qt3DCore::QGeometry",
+        "Qt3DCore::QGeometryView",
+        "Qt3DCore::QJoint",
+        "Qt3DCore::QNode",
+        "Qt3DCore::QSkeleton",
+        "Qt3DCore::QSkeletonLoader",
+        "Qt3DCore::QTransform",
+        "Qt3DExtras::QAbstractCameraController",
+        "Qt3DExtras::QAbstractSpriteSheet",
+        "Qt3DExtras::QConeGeometry",
+        "Qt3DExtras::QConeGeometryView",
+        "Qt3DExtras::QConeMesh",
+        "Qt3DExtras::QCuboidGeometry",
+        "Qt3DExtras::QCuboidGeometryView",
+        "Qt3DExtras::QCuboidMesh",
+        "Qt3DExtras::QCylinderGeometry",
+        "Qt3DExtras::QCylinderGeometryView",
+        "Qt3DExtras::QCylinderMesh",
+        "Qt3DExtras::QDiffuseMapMaterial",
+        "Qt3DExtras::QDiffuseSpecularMapMaterial",
+        "Qt3DExtras::QDiffuseSpecularMaterial",
+        "Qt3DExtras::QExtrudedTextGeometry",
+        "Qt3DExtras::QExtrudedTextMesh",
+        "Qt3DExtras::QFirstPersonCameraController",
+        "Qt3DExtras::QForwardRenderer",
+        "Qt3DExtras::QGoochMaterial",
+        "Qt3DExtras::QMetalRoughMaterial",
+        "Qt3DExtras::QMorphPhongMaterial",
+        "Qt3DExtras::QNormalDiffuseMapAlphaMaterial",
+        "Qt3DExtras::QNormalDiffuseMapMaterial",
+        "Qt3DExtras::QNormalDiffuseSpecularMapMaterial",
+        "Qt3DExtras::QOrbitCameraController",
+        "Qt3DExtras::QPerVertexColorMaterial",
+        "Qt3DExtras::QPhongAlphaMaterial",
+        "Qt3DExtras::QPhongMaterial",
+        "Qt3DExtras::QPlaneGeometry",
+        "Qt3DExtras::QPlaneGeometryView",
+        "Qt3DExtras::QPlaneMesh",
+        "Qt3DExtras::QSkyboxEntity",
+        "Qt3DExtras::QSphereGeometry",
+        "Qt3DExtras::QSphereGeometryView",
+        "Qt3DExtras::QSphereMesh",
+        "Qt3DExtras::QSpriteGrid",
+        "Qt3DExtras::QSpriteSheet",
+        "Qt3DExtras::QSpriteSheetItem",
+        "Qt3DExtras::QText2DEntity",
+        "Qt3DExtras::QTextureMaterial",
+        "Qt3DExtras::QTorusGeometry",
+        "Qt3DExtras::QTorusGeometryView",
+        "Qt3DExtras::QTorusMesh",
+        "Qt3DExtras::Qt3DWindow",
+        "Qt3DInput::QAbstractActionInput",
+        "Qt3DInput::QAbstractAxisInput",
+        "Qt3DInput::QAbstractPhysicalDevice",
+        "Qt3DInput::QAction",
+        "Qt3DInput::QActionInput",
+        "Qt3DInput::QAnalogAxisInput",
+        "Qt3DInput::QAxis",
+        "Qt3DInput::QAxisAccumulator",
+        "Qt3DInput::QAxisSetting",
+        "Qt3DInput::QButtonAxisInput",
+        "Qt3DInput::QInputAspect",
+        "Qt3DInput::QInputChord",
+        "Qt3DInput::QInputSequence",
+        "Qt3DInput::QInputSettings",
+        "Qt3DInput::QKeyEvent",
+        "Qt3DInput::QKeyboardDevice",
+        "Qt3DInput::QKeyboardHandler",
+        "Qt3DInput::QLogicalDevice",
+        "Qt3DInput::QMouseDevice",
+        "Qt3DInput::QMouseEvent",
+        "Qt3DInput::QMouseHandler",
+        "Qt3DInput::QWheelEvent",
+        "Qt3DLogic::QFrameAction",
+        "Qt3DLogic::QLogicAspect",
+        "Qt3DRender::QAbstractLight",
+        "Qt3DRender::QAbstractRayCaster",
+        "Qt3DRender::QAbstractTexture",
+        "Qt3DRender::QAbstractTextureImage",
+        "Qt3DRender::QAlphaCoverage",
+        "Qt3DRender::QAlphaTest",
+        "Qt3DRender::QBlendEquation",
+        "Qt3DRender::QBlendEquationArguments",
+        "Qt3DRender::QBlitFramebuffer",
+        "Qt3DRender::QBufferCapture",
+        "Qt3DRender::QCamera",
+        "Qt3DRender::QCameraLens",
+        "Qt3DRender::QCameraSelector",
+        "Qt3DRender::QClearBuffers",
+        "Qt3DRender::QClipPlane",
+        "Qt3DRender::QColorMask",
+        "Qt3DRender::QComputeCommand",
+        "Qt3DRender::QCullFace",
+        "Qt3DRender::QDebugOverlay",
+        "Qt3DRender::QDepthRange",
+        "Qt3DRender::QDepthTest",
+        "Qt3DRender::QDirectionalLight",
+        "Qt3DRender::QDispatchCompute",
+        "Qt3DRender::QDithering",
+        "Qt3DRender::QEffect",
+        "Qt3DRender::QEnvironmentLight",
+        "Qt3DRender::QFilterKey",
+        "Qt3DRender::QFrameGraphNode",
+        "Qt3DRender::QFrontFace",
+        "Qt3DRender::QFrustumCulling",
+        "Qt3DRender::QGeometryRenderer",
+        "Qt3DRender::QGraphicsApiFilter",
+        "Qt3DRender::QLayer",
+        "Qt3DRender::QLayerFilter",
+        "Qt3DRender::QLevelOfDetail",
+        "Qt3DRender::QLevelOfDetailSwitch",
+        "Qt3DRender::QLineWidth",
+        "Qt3DRender::QMaterial",
+        "Qt3DRender::QMemoryBarrier",
+        "Qt3DRender::QMesh",
+        "Qt3DRender::QMultiSampleAntiAliasing",
+        "Qt3DRender::QNoDepthMask",
+        "Qt3DRender::QNoDraw",
+        "Qt3DRender::QNoPicking",
+        "Qt3DRender::QObjectPicker",
+        "Qt3DRender::QPaintedTextureImage",
+        "Qt3DRender::QParameter",
+        "Qt3DRender::QPickEvent",
+        "Qt3DRender::QPickLineEvent",
+        "Qt3DRender::QPickPointEvent",
+        "Qt3DRender::QPickTriangleEvent",
+        "Qt3DRender::QPickingProxy",
+        "Qt3DRender::QPickingSettings",
+        "Qt3DRender::QPointLight",
+        "Qt3DRender::QPointSize",
+        "Qt3DRender::QPolygonOffset",
+        "Qt3DRender::QProximityFilter",
+        "Qt3DRender::QRasterMode",
+        "Qt3DRender::QRayCaster",
+        "Qt3DRender::QRenderAspect",
+        "Qt3DRender::QRenderCapabilities",
+        "Qt3DRender::QRenderCapture",
+        "Qt3DRender::QRenderCaptureReply",
+        "Qt3DRender::QRenderPass",
+        "Qt3DRender::QRenderPassFilter",
+        "Qt3DRender::QRenderSettings",
+        "Qt3DRender::QRenderState",
+        "Qt3DRender::QRenderStateSet",
+        "Qt3DRender::QRenderSurfaceSelector",
+        "Qt3DRender::QRenderTarget",
+        "Qt3DRender::QRenderTargetOutput",
+        "Qt3DRender::QRenderTargetSelector",
+        "Qt3DRender::QSceneLoader",
+        "Qt3DRender::QScissorTest",
+        "Qt3DRender::QScreenRayCaster",
+        "Qt3DRender::QSeamlessCubemap",
+        "Qt3DRender::QSetFence",
+        "Qt3DRender::QShaderData",
+        "Qt3DRender::QShaderImage",
+        "Qt3DRender::QShaderProgram",
+        "Qt3DRender::QShaderProgramBuilder",
+        "Qt3DRender::QSharedGLTexture",
+        "Qt3DRender::QSortPolicy",
+        "Qt3DRender::QSpotLight",
+        "Qt3DRender::QStencilMask",
+        "Qt3DRender::QStencilOperation",
+        "Qt3DRender::QStencilOperationArguments",
+        "Qt3DRender::QStencilTest",
+        "Qt3DRender::QStencilTestArguments",
+        "Qt3DRender::QSubtreeEnabler",
+        "Qt3DRender::QTechnique",
+        "Qt3DRender::QTechniqueFilter",
+        "Qt3DRender::QTexture1D",
+        "Qt3DRender::QTexture1DArray",
+        "Qt3DRender::QTexture2D",
+        "Qt3DRender::QTexture2DArray",
+        "Qt3DRender::QTexture2DMultisample",
+        "Qt3DRender::QTexture2DMultisampleArray",
+        "Qt3DRender::QTexture3D",
+        "Qt3DRender::QTextureBuffer",
+        "Qt3DRender::QTextureCubeMap",
+        "Qt3DRender::QTextureCubeMapArray",
+        "Qt3DRender::QTextureImage",
+        "Qt3DRender::QTextureLoader",
+        "Qt3DRender::QTextureRectangle",
+        "Qt3DRender::QTextureWrapMode",
+        "Qt3DRender::QViewport",
+        "Qt3DRender::QWaitFence",
+        "QtROClientIoDevice",
+        "QtROIoDeviceBase",
+        "QtROServerIoDevice"
+      ],
+      "category": "generated_metadata_entry",
+      "status": "alternative_implemented",
+      "detail": "Qt-generated metaObject/qt_metacall entry points are supplied by the runtime schema system, not ordinary Python virtual dispatch.",
+      "alternatives": [
+        "QtObject.define",
+        "QtObject.withMethods",
+        "QtObject.withSignals"
+      ],
+      "evidence": [
+        "generator/qt_objects.py",
+        "generator/templates/qt_objects.cpp",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:310-320"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QObject",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "const QMetaObject *"
+        }
+      ]
+    },
+    {
+      "signature": "sharedPainter()const",
+      "reason": "Reverse pointer/reference results require an explicit lifetime policy",
+      "pure": false,
+      "inherited_rows": 109,
+      "classes": [
+        "QAbstractButton",
+        "QAbstractItemView",
+        "QAbstractPrintDialog",
+        "QAbstractScrollArea",
+        "QAbstractSlider",
+        "QAbstractSpinBox",
+        "QBitmap",
+        "QCalendarWidget",
+        "QCanvasPainterWidget",
+        "QCheckBox",
+        "QColorDialog",
+        "QColumnView",
+        "QComboBox",
+        "QCommandLinkButton",
+        "QDateEdit",
+        "QDateTimeEdit",
+        "QDesignerActionEditorInterface",
+        "QDesignerFormWindowInterface",
+        "QDesignerObjectInspectorInterface",
+        "QDesignerPropertyEditorInterface",
+        "QDesignerWidgetBoxInterface",
+        "QDial",
+        "QDialog",
+        "QDialogButtonBox",
+        "QDockWidget",
+        "QDoubleSpinBox",
+        "QErrorMessage",
+        "QFileDialog",
+        "QFocusFrame",
+        "QFontComboBox",
+        "QFontDialog",
+        "QFrame",
+        "QGraphicsView",
+        "QGroupBox",
+        "QHeaderView",
+        "QHelpContentWidget",
+        "QHelpFilterSettingsWidget",
+        "QHelpIndexWidget",
+        "QHelpSearchQueryWidget",
+        "QHelpSearchResultWidget",
+        "QImage",
+        "QInputDialog",
+        "QKeySequenceEdit",
+        "QLCDNumber",
+        "QLabel",
+        "QLineEdit",
+        "QListView",
+        "QListWidget",
+        "QMainWindow",
+        "QMdiArea",
+        "QMdiSubWindow",
+        "QMenu",
+        "QMenuBar",
+        "QMessageBox",
+        "QOpenGLPaintDevice",
+        "QOpenGLWidget",
+        "QOpenGLWindow",
+        "QPageSetupDialog",
+        "QPagedPaintDevice",
+        "QPaintDevice",
+        "QPaintDeviceWindow",
+        "QPdfPageSelector",
+        "QPdfView",
+        "QPdfWriter",
+        "QPicture",
+        "QPixmap",
+        "QPlainTextEdit",
+        "QPrintDialog",
+        "QPrintPreviewDialog",
+        "QPrintPreviewWidget",
+        "QPrinter",
+        "QProgressBar",
+        "QProgressDialog",
+        "QPushButton",
+        "QQuickWidget",
+        "QRadioButton",
+        "QRasterWindow",
+        "QRhiWidget",
+        "QRubberBand",
+        "QScrollArea",
+        "QScrollBar",
+        "QSizeGrip",
+        "QSlider",
+        "QSpinBox",
+        "QSplashScreen",
+        "QSplitter",
+        "QSplitterHandle",
+        "QStackedWidget",
+        "QStatusBar",
+        "QSvgGenerator",
+        "QSvgWidget",
+        "QTabBar",
+        "QTabWidget",
+        "QTableView",
+        "QTableWidget",
+        "QTextBrowser",
+        "QTextEdit",
+        "QTimeEdit",
+        "QToolBar",
+        "QToolBox",
+        "QToolButton",
+        "QTreeView",
+        "QTreeWidget",
+        "QUndoView",
+        "QVideoWidget",
+        "QWebEngineView",
+        "QWidget",
+        "QWizard",
+        "QWizardPage"
+      ],
+      "category": "qt_internal_pyside_hook",
+      "status": "intentionally_excluded_by_user_policy",
+      "detail": "Qt explicitly marks this shared active-painter hook internal. Pinned PySide can author it; 109 rows are inherited copies of this one contract. The user explicitly requested removing this internal hook from the public API. Reverse exposure was prototyped then reverted, and forward exposure is removed by generator policy. The build-only prototype archive is not part of the active API.",
+      "alternatives": [],
+      "evidence": [
+        "https://github.com/qt/qtbase/blob/v6.12.0/src/gui/painting/qpaintdevice.cpp#L65-L71",
+        "build/residual-callback-audit/pyside-runtime.json",
+        "build/shared-painter-prototype.patch",
+        "generator/adapters.py"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QPaintDevice",
+          "private": false,
+          "protected": true,
+          "removed": false,
+          "return_type": "QPainter *"
+        }
+      ]
+    },
+    {
+      "signature": "setExtension(QGraphicsItem::Extension,QVariant)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 16,
+      "classes": [
+        "QAbstractGraphicsShapeItem",
+        "QGraphicsEllipseItem",
+        "QGraphicsItem",
+        "QGraphicsItemGroup",
+        "QGraphicsLineItem",
+        "QGraphicsObject",
+        "QGraphicsPathItem",
+        "QGraphicsPixmapItem",
+        "QGraphicsPolygonItem",
+        "QGraphicsProxyWidget",
+        "QGraphicsRectItem",
+        "QGraphicsSimpleTextItem",
+        "QGraphicsSvgItem",
+        "QGraphicsTextItem",
+        "QGraphicsVideoItem",
+        "QGraphicsWidget"
+      ],
+      "category": "upstream_removed_reverse_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned type-system removal prevents this native virtual from dispatching Python overrides. Remaining direct helpers and supported virtuals are distinct contracts.",
+      "alternatives": [],
+      "evidence": [
+        "pinned PySide type-system remove=all metadata",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QGraphicsEllipseItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        },
+        {
+          "owner": "QGraphicsItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        },
+        {
+          "owner": "QGraphicsLineItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        },
+        {
+          "owner": "QGraphicsPathItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        },
+        {
+          "owner": "QGraphicsPixmapItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        },
+        {
+          "owner": "QGraphicsPolygonItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        },
+        {
+          "owner": "QGraphicsRectItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        },
+        {
+          "owner": "QGraphicsSimpleTextItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        },
+        {
+          "owner": "QGraphicsTextItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "supportsExtension(QGraphicsItem::Extension)const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 16,
+      "classes": [
+        "QAbstractGraphicsShapeItem",
+        "QGraphicsEllipseItem",
+        "QGraphicsItem",
+        "QGraphicsItemGroup",
+        "QGraphicsLineItem",
+        "QGraphicsObject",
+        "QGraphicsPathItem",
+        "QGraphicsPixmapItem",
+        "QGraphicsPolygonItem",
+        "QGraphicsProxyWidget",
+        "QGraphicsRectItem",
+        "QGraphicsSimpleTextItem",
+        "QGraphicsSvgItem",
+        "QGraphicsTextItem",
+        "QGraphicsVideoItem",
+        "QGraphicsWidget"
+      ],
+      "category": "upstream_removed_reverse_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned type-system removal prevents this native virtual from dispatching Python overrides. Remaining direct helpers and supported virtuals are distinct contracts.",
+      "alternatives": [],
+      "evidence": [
+        "pinned PySide type-system remove=all metadata",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QGraphicsEllipseItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "bool"
+        },
+        {
+          "owner": "QGraphicsItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "bool"
+        },
+        {
+          "owner": "QGraphicsLineItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "bool"
+        },
+        {
+          "owner": "QGraphicsPathItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "bool"
+        },
+        {
+          "owner": "QGraphicsPixmapItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "bool"
+        },
+        {
+          "owner": "QGraphicsPolygonItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "bool"
+        },
+        {
+          "owner": "QGraphicsRectItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "bool"
+        },
+        {
+          "owner": "QGraphicsSimpleTextItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "bool"
+        },
+        {
+          "owner": "QGraphicsTextItem",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "bool"
+        }
+      ]
+    },
+    {
+      "signature": "columnCount(QModelIndex)const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 4,
+      "classes": [
+        "QAbstractListModel",
+        "QPdfLinkModel",
+        "QPdfSearchModel",
+        "QStringListModel"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QAbstractItemModel",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "int"
+        }
+      ]
+    },
+    {
+      "signature": "hasChildren(QModelIndex)const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 8,
+      "classes": [
+        "QAbstractListModel",
+        "QAbstractTableModel",
+        "QPdfLinkModel",
+        "QPdfSearchModel",
+        "QSqlQueryModel",
+        "QSqlRelationalTableModel",
+        "QSqlTableModel",
+        "QStringListModel"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QAbstractItemModel",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "bool"
+        }
+      ]
+    },
+    {
+      "signature": "parent(QModelIndex)const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 8,
+      "classes": [
+        "QAbstractListModel",
+        "QAbstractTableModel",
+        "QPdfLinkModel",
+        "QPdfSearchModel",
+        "QSqlQueryModel",
+        "QSqlRelationalTableModel",
+        "QSqlTableModel",
+        "QStringListModel"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QAbstractItemModel",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "QModelIndex"
+        }
+      ]
+    },
+    {
+      "signature": "QAbstractTransition(QState*)",
+      "reason": "Retention requires one observable object property",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QAbstractTransition"
+      ],
+      "category": "documented_constructor",
+      "status": "fixed_focused_native_validated",
+      "detail": "An omitted native default parent was incorrectly retained as if supplied by Bend. Empty constructor calls now require no argument leases; nonempty constructor retention is unchanged. A fresh Hub-format consumer built with stock Bend passed all four constructors, native virtual dispatch, source-state parenting, borrowed/stale guards and zero-handle cleanup.",
+      "alternatives": [
+        "QAbstractTransition.newOverride",
+        "QAbstractTransition.newOverride__QState",
+        "QEventTransition.newOverride__NoArgs",
+        "QEventTransition.newOverride__QState"
+      ],
+      "evidence": [
+        "generator/retention.py",
+        "scripts/fixtures/transition-constructors.bend",
+        "build/residual-callback-audit/transition-constructors.json",
+        "build/transition-constructors/typecheck.log",
+        "build/transition-constructors/native/receipt.json",
+        "build/transition-constructors/native/consumer/transition-constructors-d8300283.log"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QAbstractTransition",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "filter(QSensorReading*)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 16,
+      "classes": [
+        "QAccelerometerFilter",
+        "QAmbientLightFilter",
+        "QAmbientTemperatureFilter",
+        "QCompassFilter",
+        "QGyroscopeFilter",
+        "QHumidityFilter",
+        "QIRProximityFilter",
+        "QLidFilter",
+        "QLightFilter",
+        "QMagnetometerFilter",
+        "QOrientationFilter",
+        "QPressureFilter",
+        "QProximityFilter",
+        "QRotationFilter",
+        "QTapFilter",
+        "QTiltFilter"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring. Sensor-specific typed filter overloads remain the authoring route.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QSensorFilter",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "bool"
+        }
+      ]
+    },
+    {
+      "signature": "virtual_hook(int,void*)",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": false,
+      "inherited_rows": 3,
+      "classes": [
+        "QAccessibleInterface",
+        "QAccessibleObject",
+        "QAccessibleWidget"
+      ],
+      "category": "qt_internal_unused_abi_hook",
+      "status": "excluded_from_documented_default_target",
+      "detail": "Qt marks this binary-compatibility extension hook internal and currently unused. Specialized documented accessibility interface authoring is supported separately.",
+      "alternatives": [],
+      "evidence": [
+        "https://github.com/qt/qtbase/blob/v6.12.0/src/gui/accessible/qaccessible.cpp#L1813-L1823"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QAccessibleInterface",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "textAfterOffset(int,QAccessible::TextBoundaryType,int*,int*)const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QAccessibleTextInterface"
+      ],
+      "category": "upstream_removed_reverse_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned type-system removal prevents this native virtual from dispatching Python overrides. Remaining direct helpers and supported virtuals are distinct contracts.",
+      "alternatives": [],
+      "evidence": [
+        "pinned PySide type-system remove=all metadata",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/removed-native-dispatch.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QAccessibleTextInterface",
+          "private": false,
+          "protected": false,
+          "removed": true,
+          "return_type": "QString"
+        }
+      ]
+    },
+    {
+      "signature": "textAtOffset(int,QAccessible::TextBoundaryType,int*,int*)const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QAccessibleTextInterface"
+      ],
+      "category": "upstream_removed_reverse_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned type-system removal prevents this native virtual from dispatching Python overrides. Remaining direct helpers and supported virtuals are distinct contracts.",
+      "alternatives": [],
+      "evidence": [
+        "pinned PySide type-system remove=all metadata",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/removed-native-dispatch.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QAccessibleTextInterface",
+          "private": false,
+          "protected": false,
+          "removed": true,
+          "return_type": "QString"
+        }
+      ]
+    },
+    {
+      "signature": "textBeforeOffset(int,QAccessible::TextBoundaryType,int*,int*)const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QAccessibleTextInterface"
+      ],
+      "category": "upstream_removed_reverse_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned type-system removal prevents this native virtual from dispatching Python overrides. Remaining direct helpers and supported virtuals are distinct contracts.",
+      "alternatives": [],
+      "evidence": [
+        "pinned PySide type-system remove=all metadata",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/removed-native-dispatch.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QAccessibleTextInterface",
+          "private": false,
+          "protected": false,
+          "removed": true,
+          "return_type": "QString"
+        }
+      ]
+    },
+    {
+      "signature": "QEventTransition(QState*)",
+      "reason": "Retention requires one observable object property",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QEventTransition"
+      ],
+      "category": "documented_constructor",
+      "status": "fixed_focused_native_validated",
+      "detail": "An omitted native default parent was incorrectly retained as if supplied by Bend. Empty constructor calls now require no argument leases; nonempty constructor retention is unchanged. A fresh Hub-format consumer built with stock Bend passed all four constructors, native virtual dispatch, source-state parenting, borrowed/stale guards and zero-handle cleanup.",
+      "alternatives": [
+        "QAbstractTransition.newOverride",
+        "QAbstractTransition.newOverride__QState",
+        "QEventTransition.newOverride__NoArgs",
+        "QEventTransition.newOverride__QState"
+      ],
+      "evidence": [
+        "generator/retention.py",
+        "scripts/fixtures/transition-constructors.bend",
+        "build/residual-callback-audit/transition-constructors.json",
+        "build/transition-constructors/typecheck.log",
+        "build/transition-constructors/native/receipt.json",
+        "build/transition-constructors/native/consumer/transition-constructors-d8300283.log"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QEventTransition",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "drawItems(QPainter*,int,QGraphicsItem*[],const QStyleOptionGraphicsItem[],QWidget*)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QGraphicsScene"
+      ],
+      "category": "upstream_removed_reverse_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned type-system removal prevents this native virtual from dispatching Python overrides. Remaining direct helpers and supported virtuals are distinct contracts.",
+      "alternatives": [],
+      "evidence": [
+        "pinned PySide type-system remove=all metadata",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QGraphicsScene",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "initStyleOption(QStyleOptionFrame*)const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QHeaderView"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QFrame",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "changeEvent(QEvent*)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 2,
+      "classes": [
+        "QHelpSearchQueryWidget",
+        "QHelpSearchResultWidget"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QWidget",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "focusInEvent(QFocusEvent*)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QHelpSearchQueryWidget"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QWidget",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "QImage(QImage&&)",
+      "reason": "Proxy constructor needs ordinary value inputs",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QImage"
+      ],
+      "category": "cpp_rvalue_constructor",
+      "status": "language_adaptation",
+      "detail": "Pinned Shiboken excludes functions using rvalue references. Python construction uses owning value copies; no Python std::move authoring contract.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:277"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QImage",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "QImage(const char*const[])",
+      "reason": "Proxy constructor needs ordinary value inputs",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QImage"
+      ],
+      "category": "proxy_constructor_import_variant",
+      "status": "composition_alternative",
+      "detail": "Owning XPM import exists. A blank observing proxy can receive the imported native value by assignment. Direct XPM proxy construction and copied-value proxy constructors are not generated.",
+      "alternatives": [
+        "QImage.new__List_String",
+        "QPixmap.new__List_String",
+        "QImage.newOverride",
+        "QPixmap.newOverride",
+        "QImage.op_assign",
+        "QPixmap.op_assign"
+      ],
+      "evidence": [
+        "generator/buffers.py",
+        "generator/callbacks.py",
+        "packages/qt612/qt.bend"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QImage",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "QImage(uchar*,int,int,QImage::Format,QImageCleanupFunction,void*)",
+      "reason": "Image-buffer cleanup constructors use the owning QImage.fromBuffer adapter; proxy construction requires the copied-image constructor",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QImage"
+      ],
+      "category": "proxy_constructor_external_pixels",
+      "status": "composition_alternative",
+      "detail": "Owning aligned pixel backing and Qt cleanup callback use QImage.fromBuffer. Direct raw-buffer observing proxy construction is excluded; a proxy can receive a native image value through assignment. Direct copied-value proxy constructor is not generated.",
+      "alternatives": [
+        "QImage.fromBuffer",
+        "QImage.newOverride",
+        "QImage.op_assign"
+      ],
+      "evidence": [
+        "generator/image_buffers.py",
+        "generator/callbacks.py",
+        "scripts/fixtures/image-buffers.bend"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QImage",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "QImage(uchar*,int,int,qsizetype,QImage::Format,QImageCleanupFunction,void*)",
+      "reason": "Image-buffer cleanup constructors use the owning QImage.fromBuffer adapter; proxy construction requires the copied-image constructor",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QImage"
+      ],
+      "category": "proxy_constructor_external_pixels",
+      "status": "composition_alternative",
+      "detail": "Owning aligned pixel backing and Qt cleanup callback use QImage.fromBuffer. Direct raw-buffer observing proxy construction is excluded; a proxy can receive a native image value through assignment. Direct copied-value proxy constructor is not generated.",
+      "alternatives": [
+        "QImage.fromBuffer",
+        "QImage.newOverride",
+        "QImage.op_assign"
+      ],
+      "evidence": [
+        "generator/image_buffers.py",
+        "generator/callbacks.py",
+        "scripts/fixtures/image-buffers.bend"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QImage",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "setModel(QAbstractItemModel*)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 3,
+      "classes": [
+        "QListWidget",
+        "QTableWidget",
+        "QTreeWidget"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QAbstractItemView",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "compositor()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QNativeInterface::QWaylandApplication"
+      ],
+      "category": "platform_provider_wrapper_disabled",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "Pinned PySide disables native Wayland/X11 interface wrappers; even Python subclasses cannot instantiate them. Forward platform-capability queries are implemented.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/pyside6/PySide6/QtGui/typesystem_gui_nativeinterface.xml:12-23",
+        "build/residual-callback-audit/platform-interface-constructors.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QNativeInterface::QWaylandApplication",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "wl_compositor *"
+        }
+      ]
+    },
+    {
+      "signature": "display()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 2,
+      "classes": [
+        "QNativeInterface::QWaylandApplication",
+        "QNativeInterface::QX11Application"
+      ],
+      "category": "platform_provider_wrapper_disabled",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "Pinned PySide disables native Wayland/X11 interface wrappers; even Python subclasses cannot instantiate them. Forward platform-capability queries are implemented.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/pyside6/PySide6/QtGui/typesystem_gui_nativeinterface.xml:12-23",
+        "build/residual-callback-audit/platform-interface-constructors.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QNativeInterface::QWaylandApplication",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "wl_display *"
+        },
+        {
+          "owner": "QNativeInterface::QX11Application",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "_XDisplay *"
+        }
+      ]
+    },
+    {
+      "signature": "keyboard()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QNativeInterface::QWaylandApplication"
+      ],
+      "category": "platform_provider_wrapper_disabled",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "Pinned PySide disables native Wayland/X11 interface wrappers; even Python subclasses cannot instantiate them. Forward platform-capability queries are implemented.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/pyside6/PySide6/QtGui/typesystem_gui_nativeinterface.xml:12-23",
+        "build/residual-callback-audit/platform-interface-constructors.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QNativeInterface::QWaylandApplication",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "wl_keyboard *"
+        }
+      ]
+    },
+    {
+      "signature": "lastInputSeat()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QNativeInterface::QWaylandApplication"
+      ],
+      "category": "platform_provider_wrapper_disabled",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "Pinned PySide disables native Wayland/X11 interface wrappers; even Python subclasses cannot instantiate them. Forward platform-capability queries are implemented.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/pyside6/PySide6/QtGui/typesystem_gui_nativeinterface.xml:12-23",
+        "build/residual-callback-audit/platform-interface-constructors.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QNativeInterface::QWaylandApplication",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "wl_seat *"
+        }
+      ]
+    },
+    {
+      "signature": "pointer()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QNativeInterface::QWaylandApplication"
+      ],
+      "category": "platform_provider_wrapper_disabled",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "Pinned PySide disables native Wayland/X11 interface wrappers; even Python subclasses cannot instantiate them. Forward platform-capability queries are implemented.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/pyside6/PySide6/QtGui/typesystem_gui_nativeinterface.xml:12-23",
+        "build/residual-callback-audit/platform-interface-constructors.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QNativeInterface::QWaylandApplication",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "wl_pointer *"
+        }
+      ]
+    },
+    {
+      "signature": "seat()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QNativeInterface::QWaylandApplication"
+      ],
+      "category": "platform_provider_wrapper_disabled",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "Pinned PySide disables native Wayland/X11 interface wrappers; even Python subclasses cannot instantiate them. Forward platform-capability queries are implemented.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/pyside6/PySide6/QtGui/typesystem_gui_nativeinterface.xml:12-23",
+        "build/residual-callback-audit/platform-interface-constructors.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QNativeInterface::QWaylandApplication",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "wl_seat *"
+        }
+      ]
+    },
+    {
+      "signature": "touch()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QNativeInterface::QWaylandApplication"
+      ],
+      "category": "platform_provider_wrapper_disabled",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "Pinned PySide disables native Wayland/X11 interface wrappers; even Python subclasses cannot instantiate them. Forward platform-capability queries are implemented.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/pyside6/PySide6/QtGui/typesystem_gui_nativeinterface.xml:12-23",
+        "build/residual-callback-audit/platform-interface-constructors.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QNativeInterface::QWaylandApplication",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "wl_touch *"
+        }
+      ]
+    },
+    {
+      "signature": "xkbContext()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QNativeInterface::QWaylandApplication"
+      ],
+      "category": "platform_provider_wrapper_disabled",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "Pinned PySide disables native Wayland/X11 interface wrappers; even Python subclasses cannot instantiate them. Forward platform-capability queries are implemented.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/pyside6/PySide6/QtGui/typesystem_gui_nativeinterface.xml:12-23",
+        "build/residual-callback-audit/platform-interface-constructors.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QNativeInterface::QWaylandApplication",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "xkb_context *"
+        }
+      ]
+    },
+    {
+      "signature": "connection()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QNativeInterface::QX11Application"
+      ],
+      "category": "platform_provider_wrapper_disabled",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "Pinned PySide disables native Wayland/X11 interface wrappers; even Python subclasses cannot instantiate them. Forward platform-capability queries are implemented.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/pyside6/PySide6/QtGui/typesystem_gui_nativeinterface.xml:12-23",
+        "build/residual-callback-audit/platform-interface-constructors.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QNativeInterface::QX11Application",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "xcb_connection_t *"
+        }
+      ]
+    },
+    {
+      "signature": "surfaceHandle()const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 9,
+      "classes": [
+        "QOffscreenSurface",
+        "QOpenGLWindow",
+        "QPaintDeviceWindow",
+        "QQuickView",
+        "QQuickWindow",
+        "QRasterWindow",
+        "QWebView",
+        "QWindow",
+        "Qt3DExtras::Qt3DWindow"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QSurface",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "QPlatformSurface *"
+        }
+      ]
+    },
+    {
+      "signature": "paintEngine()const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 3,
+      "classes": [
+        "QOpenGLWindow",
+        "QPaintDeviceWindow",
+        "QRasterWindow"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QPaintDevice",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "QPaintEngine *"
+        }
+      ]
+    },
+    {
+      "signature": "QPixmap(QPixmap&&)",
+      "reason": "Proxy constructor needs ordinary value inputs",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QPixmap"
+      ],
+      "category": "cpp_rvalue_constructor",
+      "status": "language_adaptation",
+      "detail": "Pinned Shiboken excludes functions using rvalue references. Python construction uses owning value copies; no Python std::move authoring contract.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:277"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QPixmap",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "QPixmap(const char*const[])",
+      "reason": "Proxy constructor needs ordinary value inputs",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QPixmap"
+      ],
+      "category": "proxy_constructor_import_variant",
+      "status": "composition_alternative",
+      "detail": "Owning XPM import exists. A blank observing proxy can receive the imported native value by assignment. Direct XPM proxy construction and copied-value proxy constructors are not generated.",
+      "alternatives": [
+        "QImage.new__List_String",
+        "QPixmap.new__List_String",
+        "QImage.newOverride",
+        "QPixmap.newOverride",
+        "QImage.op_assign",
+        "QPixmap.op_assign"
+      ],
+      "evidence": [
+        "generator/buffers.py",
+        "generator/callbacks.py",
+        "packages/qt612/qt.bend"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QPixmap",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "initialize()",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QRemoteObjectRegistry"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QRemoteObjectReplica",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "beginFullDynamicBufferUpdateForCurrentFrame()",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QRhiBuffer"
+      ],
+      "category": "upstream_removed_reverse_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned type-system removal prevents this native virtual from dispatching Python overrides. Remaining direct helpers and supported virtuals are distinct contracts.",
+      "alternatives": [],
+      "evidence": [
+        "pinned PySide type-system remove=all metadata",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QRhiBuffer",
+          "private": false,
+          "protected": false,
+          "removed": true,
+          "return_type": "char *"
+        }
+      ]
+    },
+    {
+      "signature": "fullDynamicBufferUpdateForCurrentFrame(const void*,quint32)",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QRhiBuffer"
+      ],
+      "category": "rhi_backend_implementation",
+      "status": "not_a_pyside_authoring_contract",
+      "detail": "QRhiBuffer cannot be instantiated or subclass-constructed in pinned PySide. Forward dynamic-buffer mapping and checked writes are supported; implementing a private QRhi backend is a separate contract.",
+      "alternatives": [],
+      "evidence": [
+        "build/residual-callback-audit/abstract-native-wrappers.json",
+        "generator/rhi_lifetimes.py"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QRhiBuffer",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "get(const char*)const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QSGRenderNode::RenderState"
+      ],
+      "category": "reserved_backend_extension",
+      "status": "excluded_from_documented_default_target",
+      "detail": "Pinned Python override dispatch works with VoidPtr. Qt describes the base hook as reserved for future use and returns nullptr. Ordinary render-state consumers use typed matrix/clip/stencil getters. No application workflow for the reserved extension was established.",
+      "alternatives": [],
+      "evidence": [
+        "https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/scenegraph/coreapi/qsgrendernode.cpp#L441-L449",
+        "build/residual-callback-audit/raw-provider-safe.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QSGRenderNode::RenderState",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void *"
+        }
+      ]
+    },
+    {
+      "signature": "getResource(QQuickWindow*,QSGRendererInterface::Resource)const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QSGRendererInterface"
+      ],
+      "category": "renderer_backend_provider_override",
+      "status": "outside_public_pyside_backend_workflow",
+      "detail": "Pinned Python subclasses can return exact native resource pointers through both overloads in a standalone C++ dispatch probe. All 1,677 extracted classes and installed Qt headers contain no public parameter or field accepting a QSGRendererInterface provider. QQuickWindow.rendererInterface returns Qt-owned backend state supplied by the private QSGContext. Installing a replacement requires private scene-graph backend interfaces, outside the package requirement to preserve Qt Quick internally managed backends. Documented forward resource consumption remains implemented.",
+      "alternatives": [],
+      "evidence": [
+        "https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/scenegraph/coreapi/qsgrendererinterface.cpp#L7-L32",
+        "https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/items/qquickwindow.cpp#L3868-L3877",
+        "https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/scenegraph/qsgcontext_p.h#L7-L15",
+        "https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/scenegraph/qsgcontext.cpp#L386-L403",
+        "build/residual-callback-audit/raw-provider-safe.json",
+        "build/residual-callback-audit/renderer-provider-reachability.json",
+        "generator/native_interop.py"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QSGRendererInterface",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void *"
+        }
+      ]
+    },
+    {
+      "signature": "getResource(QQuickWindow*,const char*)const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QSGRendererInterface"
+      ],
+      "category": "renderer_backend_provider_override",
+      "status": "outside_public_pyside_backend_workflow",
+      "detail": "Pinned Python subclasses can return exact native resource pointers through both overloads in a standalone C++ dispatch probe. All 1,677 extracted classes and installed Qt headers contain no public parameter or field accepting a QSGRendererInterface provider. QQuickWindow.rendererInterface returns Qt-owned backend state supplied by the private QSGContext. Installing a replacement requires private scene-graph backend interfaces, outside the package requirement to preserve Qt Quick internally managed backends. Documented forward resource consumption remains implemented.",
+      "alternatives": [],
+      "evidence": [
+        "https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/scenegraph/coreapi/qsgrendererinterface.cpp#L7-L32",
+        "https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/items/qquickwindow.cpp#L3868-L3877",
+        "https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/scenegraph/qsgcontext_p.h#L7-L15",
+        "https://github.com/qt/qtdeclarative/blob/v6.12.0/src/quick/scenegraph/qsgcontext.cpp#L386-L403",
+        "build/residual-callback-audit/raw-provider-safe.json",
+        "build/residual-callback-audit/renderer-provider-reachability.json",
+        "generator/native_interop.py"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QSGRendererInterface",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "void *"
+        }
+      ]
+    },
+    {
+      "signature": "close()",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QSaveFile"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring. QSaveFile.close native dispatch ignores a Python override and aborts; commit/cancelWriting are the usable documented operations.",
+      "alternatives": [
+        "QSaveFile.commit",
+        "QSaveFile.cancelWriting"
+      ],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json",
+        "build/residual-callback-audit/pyside-save-close-abort.log"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QIODevice",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "dataNames(int*)const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QScxmlTableData"
+      ],
+      "category": "compiled_scxml_table_plumbing",
+      "status": "upstream_unusable_buffer_return",
+      "detail": "Qt limits the class to internal/compiler-generated state tables. Pinned Python wrappers request scalar int results and reject VoidPtr/list/None instead of returning a valid persistent native table buffer.",
+      "alternatives": [],
+      "evidence": [
+        "https://github.com/qt/qtscxml/blob/v6.12.0/src/scxml/qscxmltabledata.cpp#L11-L20",
+        "build/residual-callback-audit/raw-provider-table.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QScxmlTableData",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "int *"
+        }
+      ]
+    },
+    {
+      "signature": "instructions()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QScxmlTableData"
+      ],
+      "category": "compiled_scxml_table_plumbing",
+      "status": "upstream_unusable_buffer_return",
+      "detail": "Qt limits the class to internal/compiler-generated state tables. Pinned Python wrappers request scalar int results and reject VoidPtr/list/None instead of returning a valid persistent native table buffer.",
+      "alternatives": [],
+      "evidence": [
+        "https://github.com/qt/qtscxml/blob/v6.12.0/src/scxml/qscxmltabledata.cpp#L11-L20",
+        "build/residual-callback-audit/raw-provider-table.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QScxmlTableData",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "int *"
+        }
+      ]
+    },
+    {
+      "signature": "stateMachineTable()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QScxmlTableData"
+      ],
+      "category": "compiled_scxml_table_plumbing",
+      "status": "upstream_unusable_buffer_return",
+      "detail": "Qt limits the class to internal/compiler-generated state tables. Pinned Python wrappers request scalar int results and reject VoidPtr/list/None instead of returning a valid persistent native table buffer.",
+      "alternatives": [],
+      "evidence": [
+        "https://github.com/qt/qtscxml/blob/v6.12.0/src/scxml/qscxmltabledata.cpp#L11-L20",
+        "build/residual-callback-audit/raw-provider-table.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QScxmlTableData",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "const qint32 *"
+        }
+      ]
+    },
+    {
+      "signature": "handle()const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QSqlDriver"
+      ],
+      "category": "upstream_removed_reverse_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned type-system removal prevents this native virtual from dispatching Python overrides. Remaining direct helpers and supported virtuals are distinct contracts.",
+      "alternatives": [],
+      "evidence": [
+        "pinned PySide type-system remove=all metadata",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/removed-native-dispatch.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QSqlDriver",
+          "private": false,
+          "protected": false,
+          "removed": true,
+          "return_type": "QVariant"
+        }
+      ]
+    },
+    {
+      "signature": "virtual_hook(int,void*)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QSqlResult"
+      ],
+      "category": "upstream_removed_reverse_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned type-system removal prevents this native virtual from dispatching Python overrides. Remaining direct helpers and supported virtuals are distinct contracts.",
+      "alternatives": [],
+      "evidence": [
+        "pinned PySide type-system remove=all metadata",
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QSqlResult",
+          "private": false,
+          "protected": true,
+          "removed": true,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "surfaceHandle()const",
+      "reason": "Raw pointer conversion is not implemented",
+      "pure": true,
+      "inherited_rows": 1,
+      "classes": [
+        "QSurface"
+      ],
+      "category": "platform_surface_provider",
+      "status": "upstream_native_dispatch_unusable",
+      "detail": "A Python QSurface subclass can be constructed, but native dispatch of its platform-surface pure virtual returning None crashes the pinned runtime in the isolated control. QWindow and QOffscreenSurface reject their own getters as private; explicitly calling the QSurface base getter rejects as unimplemented pure virtual. This is not classified as an explicitly internal public declaration. Normal QWindow/QOffscreenSurface construction and consumption are supported.",
+      "alternatives": [],
+      "evidence": [
+        "build/residual-callback-audit/raw-provider-dispatch.log",
+        "build/residual-callback-audit/surface-provider-values.json",
+        "QtGui/qsurface.h"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QSurface",
+          "private": false,
+          "protected": false,
+          "removed": false,
+          "return_type": "QPlatformSurface *"
+        }
+      ]
+    },
+    {
+      "signature": "readData(char*,qint64)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QWaveDecoder"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QIODevice",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "qint64"
+        }
+      ]
+    },
+    {
+      "signature": "writeData(const char*,qint64)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "QWaveDecoder"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "QIODevice",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "qint64"
+        }
+      ]
+    },
+    {
+      "signature": "executeCommand(QStringList)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 6,
+      "classes": [
+        "Qt3DAnimation::QAnimationAspect",
+        "Qt3DCore::QAbstractAspect",
+        "Qt3DCore::QCoreAspect",
+        "Qt3DInput::QInputAspect",
+        "Qt3DLogic::QLogicAspect",
+        "Qt3DRender::QRenderAspect"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DCore::QAbstractAspect",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "QVariant"
+        }
+      ]
+    },
+    {
+      "signature": "frameDone()",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 6,
+      "classes": [
+        "Qt3DAnimation::QAnimationAspect",
+        "Qt3DCore::QAbstractAspect",
+        "Qt3DCore::QCoreAspect",
+        "Qt3DInput::QInputAspect",
+        "Qt3DLogic::QLogicAspect",
+        "Qt3DRender::QRenderAspect"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DCore::QAbstractAspect",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "jobsDone()",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 6,
+      "classes": [
+        "Qt3DAnimation::QAnimationAspect",
+        "Qt3DCore::QAbstractAspect",
+        "Qt3DCore::QCoreAspect",
+        "Qt3DInput::QInputAspect",
+        "Qt3DLogic::QLogicAspect",
+        "Qt3DRender::QRenderAspect"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DCore::QAbstractAspect",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "jobsToExecute(qint64)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 6,
+      "classes": [
+        "Qt3DAnimation::QAnimationAspect",
+        "Qt3DCore::QAbstractAspect",
+        "Qt3DCore::QCoreAspect",
+        "Qt3DInput::QInputAspect",
+        "Qt3DLogic::QLogicAspect",
+        "Qt3DRender::QRenderAspect"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DCore::QAbstractAspect",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "std::vector<QSharedPointer<Qt3DCore::QAspectJob>>"
+        }
+      ]
+    },
+    {
+      "signature": "onEngineShutdown()",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 6,
+      "classes": [
+        "Qt3DAnimation::QAnimationAspect",
+        "Qt3DCore::QAbstractAspect",
+        "Qt3DCore::QCoreAspect",
+        "Qt3DInput::QInputAspect",
+        "Qt3DLogic::QLogicAspect",
+        "Qt3DRender::QRenderAspect"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DCore::QAbstractAspect",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "onEngineStartup()",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 6,
+      "classes": [
+        "Qt3DAnimation::QAnimationAspect",
+        "Qt3DCore::QAbstractAspect",
+        "Qt3DCore::QCoreAspect",
+        "Qt3DInput::QInputAspect",
+        "Qt3DLogic::QLogicAspect",
+        "Qt3DRender::QRenderAspect"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DCore::QAbstractAspect",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "onRegistered()",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 6,
+      "classes": [
+        "Qt3DAnimation::QAnimationAspect",
+        "Qt3DCore::QAbstractAspect",
+        "Qt3DCore::QCoreAspect",
+        "Qt3DInput::QInputAspect",
+        "Qt3DLogic::QLogicAspect",
+        "Qt3DRender::QRenderAspect"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DCore::QAbstractAspect",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "onUnregistered()",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 6,
+      "classes": [
+        "Qt3DAnimation::QAnimationAspect",
+        "Qt3DCore::QAbstractAspect",
+        "Qt3DCore::QCoreAspect",
+        "Qt3DInput::QInputAspect",
+        "Qt3DLogic::QLogicAspect",
+        "Qt3DRender::QRenderAspect"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DCore::QAbstractAspect",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "moveCamera(Qt3DExtras::QAbstractCameraController::InputState,float)",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 2,
+      "classes": [
+        "Qt3DExtras::QFirstPersonCameraController",
+        "Qt3DExtras::QOrbitCameraController"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DExtras::QAbstractCameraController",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "void"
+        }
+      ]
+    },
+    {
+      "signature": "dataGenerator()const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 2,
+      "classes": [
+        "Qt3DRender::QPaintedTextureImage",
+        "Qt3DRender::QTextureImage"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DRender::QAbstractTextureImage",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "QSharedPointer<Qt3DRender::QTextureImageDataGenerator>"
+        }
+      ]
+    },
+    {
+      "signature": "dependencies()const",
+      "reason": "Inaccessible, removed, or language-specific virtual",
+      "pure": false,
+      "inherited_rows": 1,
+      "classes": [
+        "Qt3DRender::QRenderAspect"
+      ],
+      "category": "upstream_private_override",
+      "status": "not_a_pyside_reverse_contract",
+      "detail": "Pinned Shiboken does not generate nonabstract private virtual overrides. Inherited public base behavior and private implementation bridges are separate from Python authoring.",
+      "alternatives": [],
+      "evidence": [
+        "pyside-setup/sources/shiboken6_generator/generator/shiboken/shibokengenerator.cpp:284-324",
+        "build/residual-callback-audit/pyside-runtime.json"
+      ],
+      "native_declarations": [
+        {
+          "owner": "Qt3DCore::QAbstractAspect",
+          "private": true,
+          "protected": false,
+          "removed": false,
+          "return_type": "QStringList"
+        }
+      ]
+    }
+  ],
+  "verification": "Focused pinned-runtime C++ dispatch controls and exact upstream metadata/source references. Final native package validation is separate; these dispositions do not establish strict PySide parity or every possible override capability."
+}

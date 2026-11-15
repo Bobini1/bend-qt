@@ -1,0 +1,417 @@
+{
+  "copyright": [
+    "Copyright 1991-2006 Silicon Graphics, Inc.",
+    "Copyright 2010-2014 Khronos Group"
+  ],
+  "families": {
+    "color_table": {
+      "GL_COLOR_TABLE_ALPHA_SIZE": {
+        "enum": 32989,
+        "length": 1
+      },
+      "GL_COLOR_TABLE_BIAS": {
+        "enum": 32983,
+        "length": 4
+      },
+      "GL_COLOR_TABLE_BLUE_SIZE": {
+        "enum": 32988,
+        "length": 1
+      },
+      "GL_COLOR_TABLE_FORMAT": {
+        "enum": 32984,
+        "length": 1
+      },
+      "GL_COLOR_TABLE_GREEN_SIZE": {
+        "enum": 32987,
+        "length": 1
+      },
+      "GL_COLOR_TABLE_INTENSITY_SIZE": {
+        "enum": 32991,
+        "length": 1
+      },
+      "GL_COLOR_TABLE_LUMINANCE_SIZE": {
+        "enum": 32990,
+        "length": 1
+      },
+      "GL_COLOR_TABLE_RED_SIZE": {
+        "enum": 32986,
+        "length": 1
+      },
+      "GL_COLOR_TABLE_SCALE": {
+        "enum": 32982,
+        "length": 4
+      },
+      "GL_COLOR_TABLE_WIDTH": {
+        "enum": 32985,
+        "length": 1
+      }
+    },
+    "convolution": {
+      "GL_CONVOLUTION_BORDER_COLOR": {
+        "enum": 33108,
+        "length": 4
+      },
+      "GL_CONVOLUTION_BORDER_MODE": {
+        "enum": 32787,
+        "length": 1
+      },
+      "GL_CONVOLUTION_FILTER_BIAS": {
+        "enum": 32789,
+        "length": 4
+      },
+      "GL_CONVOLUTION_FILTER_SCALE": {
+        "enum": 32788,
+        "length": 4
+      },
+      "GL_CONVOLUTION_FORMAT": {
+        "enum": 32791,
+        "length": 1
+      },
+      "GL_CONVOLUTION_HEIGHT": {
+        "enum": 32793,
+        "length": 1
+      },
+      "GL_CONVOLUTION_WIDTH": {
+        "enum": 32792,
+        "length": 1
+      },
+      "GL_MAX_CONVOLUTION_HEIGHT": {
+        "enum": 32795,
+        "length": 1
+      },
+      "GL_MAX_CONVOLUTION_WIDTH": {
+        "enum": 32794,
+        "length": 1
+      }
+    },
+    "fog": {
+      "GL_FOG_COLOR": {
+        "enum": 2918,
+        "length": 4
+      },
+      "GL_FOG_COORD_SRC": {
+        "enum": 33872,
+        "length": 1
+      },
+      "GL_FOG_DENSITY": {
+        "enum": 2914,
+        "length": 1
+      },
+      "GL_FOG_END": {
+        "enum": 2916,
+        "length": 1
+      },
+      "GL_FOG_INDEX": {
+        "enum": 2913,
+        "length": 1
+      },
+      "GL_FOG_MODE": {
+        "enum": 2917,
+        "length": 1
+      },
+      "GL_FOG_START": {
+        "enum": 2915,
+        "length": 1
+      }
+    },
+    "histogram": {
+      "GL_HISTOGRAM_ALPHA_SIZE": {
+        "enum": 32811,
+        "length": 1
+      },
+      "GL_HISTOGRAM_BLUE_SIZE": {
+        "enum": 32810,
+        "length": 1
+      },
+      "GL_HISTOGRAM_FORMAT": {
+        "enum": 32807,
+        "length": 1
+      },
+      "GL_HISTOGRAM_GREEN_SIZE": {
+        "enum": 32809,
+        "length": 1
+      },
+      "GL_HISTOGRAM_LUMINANCE_SIZE": {
+        "enum": 32812,
+        "length": 1
+      },
+      "GL_HISTOGRAM_RED_SIZE": {
+        "enum": 32808,
+        "length": 1
+      },
+      "GL_HISTOGRAM_SINK": {
+        "enum": 32813,
+        "length": 1
+      },
+      "GL_HISTOGRAM_WIDTH": {
+        "enum": 32806,
+        "length": 1
+      }
+    },
+    "light": {
+      "GL_AMBIENT": {
+        "enum": 4608,
+        "length": 4
+      },
+      "GL_CONSTANT_ATTENUATION": {
+        "enum": 4615,
+        "length": 1
+      },
+      "GL_DIFFUSE": {
+        "enum": 4609,
+        "length": 4
+      },
+      "GL_LINEAR_ATTENUATION": {
+        "enum": 4616,
+        "length": 1
+      },
+      "GL_POSITION": {
+        "enum": 4611,
+        "length": 4
+      },
+      "GL_QUADRATIC_ATTENUATION": {
+        "enum": 4617,
+        "length": 1
+      },
+      "GL_SPECULAR": {
+        "enum": 4610,
+        "length": 4
+      },
+      "GL_SPOT_CUTOFF": {
+        "enum": 4614,
+        "length": 1
+      },
+      "GL_SPOT_DIRECTION": {
+        "enum": 4612,
+        "length": 3
+      },
+      "GL_SPOT_EXPONENT": {
+        "enum": 4613,
+        "length": 1
+      }
+    },
+    "light_model": {
+      "GL_LIGHT_MODEL_AMBIENT": {
+        "enum": 2899,
+        "length": 4
+      },
+      "GL_LIGHT_MODEL_COLOR_CONTROL": {
+        "enum": 33272,
+        "length": 1
+      },
+      "GL_LIGHT_MODEL_LOCAL_VIEWER": {
+        "enum": 2897,
+        "length": 1
+      },
+      "GL_LIGHT_MODEL_TWO_SIDE": {
+        "enum": 2898,
+        "length": 1
+      }
+    },
+    "material": {
+      "GL_AMBIENT": {
+        "enum": 4608,
+        "length": 4
+      },
+      "GL_AMBIENT_AND_DIFFUSE": {
+        "enum": 5634,
+        "length": 4
+      },
+      "GL_COLOR_INDEXES": {
+        "enum": 5635,
+        "length": 3
+      },
+      "GL_DIFFUSE": {
+        "enum": 4609,
+        "length": 4
+      },
+      "GL_EMISSION": {
+        "enum": 5632,
+        "length": 4
+      },
+      "GL_SHININESS": {
+        "enum": 5633,
+        "length": 1
+      },
+      "GL_SPECULAR": {
+        "enum": 4610,
+        "length": 4
+      }
+    },
+    "minmax": {
+      "GL_MINMAX_FORMAT": {
+        "enum": 32815,
+        "length": 1
+      },
+      "GL_MINMAX_SINK": {
+        "enum": 32816,
+        "length": 1
+      }
+    },
+    "point": {
+      "GL_POINT_DISTANCE_ATTENUATION": {
+        "enum": 33065,
+        "length": 3
+      },
+      "GL_POINT_FADE_THRESHOLD_SIZE": {
+        "enum": 33064,
+        "length": 1
+      },
+      "GL_POINT_SIZE_MAX": {
+        "enum": 33063,
+        "length": 1
+      },
+      "GL_POINT_SIZE_MIN": {
+        "enum": 33062,
+        "length": 1
+      },
+      "GL_POINT_SPRITE_COORD_ORIGIN": {
+        "enum": 36000,
+        "length": 1
+      }
+    },
+    "tex_env": {
+      "GL_ALPHA_SCALE": {
+        "enum": 3356,
+        "length": 1
+      },
+      "GL_COMBINE_ALPHA": {
+        "enum": 34162,
+        "length": 1
+      },
+      "GL_COMBINE_RGB": {
+        "enum": 34161,
+        "length": 1
+      },
+      "GL_COORD_REPLACE": {
+        "enum": 34914,
+        "length": 1
+      },
+      "GL_OPERAND0_ALPHA": {
+        "enum": 34200,
+        "length": 1
+      },
+      "GL_OPERAND0_RGB": {
+        "enum": 34192,
+        "length": 1
+      },
+      "GL_OPERAND1_ALPHA": {
+        "enum": 34201,
+        "length": 1
+      },
+      "GL_OPERAND1_RGB": {
+        "enum": 34193,
+        "length": 1
+      },
+      "GL_OPERAND2_ALPHA": {
+        "enum": 34202,
+        "length": 1
+      },
+      "GL_OPERAND2_RGB": {
+        "enum": 34194,
+        "length": 1
+      },
+      "GL_RGB_SCALE": {
+        "enum": 34163,
+        "length": 1
+      },
+      "GL_SRC0_ALPHA": {
+        "enum": 34184,
+        "length": 1
+      },
+      "GL_SRC0_RGB": {
+        "enum": 34176,
+        "length": 1
+      },
+      "GL_SRC1_ALPHA": {
+        "enum": 34185,
+        "length": 1
+      },
+      "GL_SRC1_RGB": {
+        "enum": 34177,
+        "length": 1
+      },
+      "GL_SRC2_ALPHA": {
+        "enum": 34186,
+        "length": 1
+      },
+      "GL_SRC2_RGB": {
+        "enum": 34178,
+        "length": 1
+      },
+      "GL_TEXTURE_ENV_COLOR": {
+        "enum": 8705,
+        "length": 4
+      },
+      "GL_TEXTURE_ENV_MODE": {
+        "enum": 8704,
+        "length": 1
+      },
+      "GL_TEXTURE_LOD_BIAS": {
+        "enum": 34049,
+        "length": 1
+      }
+    },
+    "tex_gen": {
+      "GL_EYE_PLANE": {
+        "enum": 9474,
+        "length": 4
+      },
+      "GL_OBJECT_PLANE": {
+        "enum": 9473,
+        "length": 4
+      },
+      "GL_TEXTURE_GEN_MODE": {
+        "enum": 9472,
+        "length": 1
+      }
+    }
+  },
+  "revision": "4bdf67a73d040f79bd7b087f5c1e588809e1f329",
+  "sources": [
+    {
+      "sha256": "2b0d33700437b715952cb16d606dd50fbdb7bd11aff3a343928ee1d4dd300d3f",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glFog.xml"
+    },
+    {
+      "sha256": "5c520ffbb736360f604977cf4c1414fe7da74be1b2dd958f2fde12852f895eb1",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glLight.xml"
+    },
+    {
+      "sha256": "11c3b934bd7f07ad117b5016180a6bcc4b53f49711dc6e793f09f0b07a75ded7",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glLightModel.xml"
+    },
+    {
+      "sha256": "12c3b800b8e3ae12e778c03caacb0dc93fb1211cc1c1272c9e83eef9b358f232",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glMaterial.xml"
+    },
+    {
+      "sha256": "45ad102ea5a9aee89f711adeb7f1d350032f606425b67abb40ac65b99392233d",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glPointParameter.xml"
+    },
+    {
+      "sha256": "5e4cab1798d98d91945baee9848f3e65385b0d6ea8f6703f0bbcc0b2b297445f",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glGetTexEnv.xml"
+    },
+    {
+      "sha256": "4b02d36e8e3498db94a75fc5dc6eaaabe0e6aeac871cf0a0980640426dce3759",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glGetTexGen.xml"
+    },
+    {
+      "sha256": "e1a00540213d2adc6bc8effce37a4e3714ba0b57d8bc79bdd80fc10eaee06b9a",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glGetColorTableParameter.xml"
+    },
+    {
+      "sha256": "057f45ab766ed3a5639502fd8dbce7ffa9187584e34eecd67481260361ce7729",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glGetConvolutionParameter.xml"
+    },
+    {
+      "sha256": "38136dcb28c6fd0fbd602812d942d4fe13201748cb2d5c885cd763f6fc14a07d",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glGetHistogramParameter.xml"
+    },
+    {
+      "sha256": "b9f00eb102b261fdcaa94554e7a5014ca7ac0770e4232ff44988eb55a6e8ce35",
+      "url": "https://raw.githubusercontent.com/KhronosGroup/OpenGL-Refpages/4bdf67a73d040f79bd7b087f5c1e588809e1f329/gl2.1/glGetMinmaxParameter.xml"
+    }
+  ]
+}

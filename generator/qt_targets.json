@@ -1,0 +1,36 @@
+{
+  "6.10.3": {
+    "shiboken_commit": "863e6b6e6269fbd401db06e2066119b9014fcf0d",
+    "webview_commit": "7f278b23eddd22bad3de6bf18c6418cceb814aad",
+    "extractor_source": "sources/shiboken6/ApiExtractor",
+    "installer_arch": "linux_gcc_64",
+    "binding_revision": 1,
+    "unavailable_modules": ["QtCanvasPainter", "QtLabsStyleKit"]
+  },
+  "6.11.3": {
+    "shiboken_commit": "c76f06aa6ca36abbccdf211c6ea24c34d71ee43f",
+    "webview_commit": "b80be6d94ba345bd0e2513ddddf394ee69ca25ca",
+    "extractor_source": "sources/shiboken6_generator/ApiExtractor",
+    "installer_arch": "linux_gcc_64",
+    "binding_revision": 1,
+    "unavailable_modules": ["QtLabsStyleKit"],
+    "source_metadata_variants": [
+      {
+        "repository": "qt/qtremoteobjects",
+        "revision": "41d90a9f3fb441929e9d978370f00b9757a09b24",
+        "path": ".tag",
+        "source_spdx_sha1": "45becfaee0223d326786846bc48f212dea7461e5",
+        "delivered_sha1": "c08bd06d7ea4264d86a4ae91dd4f0fd64e72dddb",
+        "reason": "The public 6.11.3 Git archive and official source tarball contain the released repository commit stamp. The installer source SPDX names a different stamp. Every other inventoried file must match exactly."
+      }
+    ]
+  },
+  "6.12.0": {
+    "shiboken_commit": "f50facb83fc3dc5f3240c854668c7a6dd93871b2",
+    "webview_commit": "5774c23849cdad2bcdf71ad8c8bd6946dcae38f0",
+    "extractor_source": "sources/shiboken6_generator/ApiExtractor",
+    "installer_arch": "linux_gcc_64",
+    "binding_revision": 1,
+    "unavailable_modules": []
+  }
+}

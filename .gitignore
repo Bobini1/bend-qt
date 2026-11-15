@@ -1,0 +1,10 @@
+/build/
+/.bend-install.sh
+__pycache__/
+*.pyc
+/aqtinstall.log
+
+# Generated distributions are CI artifacts, including embedded Qt binaries.
+/packages/*/*
+!/packages/*/README.md
+/.ci-tools/
