@@ -15,6 +15,10 @@ the standard 16 GB runner. The three version jobs run independently.
 `scripts/ci-qt-build.py` exposes preparation, generation and verification as
 separate steps. Preparation checks corresponding sources and notices before
 creating the runtime manifest. Generation compiles every selected native group.
+All preparation steps use the maintainer virtual environment, including its
+pinned REUSE resolver. If GitHub's public source-tree API is rate limited,
+source preparation obtains the same pinned submodule revisions through Git.
+Archive and source checksums remain mandatory with either transport.
 The Qt 6.12 job runs the complete canonical check, including generator and
 bundled-runtime rejection controls. Older versions run fresh full-package
 Core, mixed-module and fourteen-module QML consumers, plus version-specific
