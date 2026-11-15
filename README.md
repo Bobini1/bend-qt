@@ -23,8 +23,21 @@ Focused passes do not establish full release readiness.
 
 ## Build and verify
 
-Maintainers need Ubuntu 24.04, Clang/LLVM 19, Python 3.12, CMake, Ninja,
-Bend 2.0.40 and Lean 4.34.0. Consumers do not need these maintainer commands.
+The reference build environment is Ubuntu 24.04 with Python 3.12, CMake 3.25
+or newer, and Ninja. Current maintainer scripts select Clang/LLVM 19. The
+native effects and proof checks are pinned to Bend 2.0.40 and Lean 4.34.0.
+Ubuntu and Python versions describe the reference environment; they are not
+checks that reject every other distribution or Python release.
+
+The native packaging backend currently supports Linux x86-64. Other Linux
+distributions need compatible system C/C++ libraries and Qt platform
+dependencies; distribution compatibility has not yet been broadly validated.
+Native Windows, macOS and ARM backends are not implemented. Development on
+Windows currently uses Linux through WSL2.
+
+Consumers compile with Bend 2.0.40 and its normal native build toolchain. They
+do not need the binding generator, Qt development SDK or maintainer proof
+toolchain.
 
 ```bash
 bash scripts/setup-qt-generator.sh --qt-version 6.12.0
