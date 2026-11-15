@@ -2,12 +2,9 @@
 
 Qt bindings for Bend 2.0.40 on Linux x86-64. The generator uses the matching,
 pinned PySide Shiboken ApiExtractor and upstream type systems. The initial CI
-matrix targets Qt 6.10.3, 6.11.3 and 6.12.0. These are configured build targets;
-release readiness depends on their required validation checks passing.
+matrix targets Qt 6.10.3, 6.11.3 and 6.12.0.
 
-Each generated distribution bundles its matching Qt runtime. Consumers use a
-BendHub import and `bend main.bend -o app`, without a separate binding SDK,
-generator or Qt development headers. Public BendHub publication is pending.
+Each generated distribution bundles its matching Qt runtime.
 The intended Hub name is `bend-qt-bindings`; the import alias is `Qt`.
 
 Qt and Bend share the process main thread. Signals and virtual-method handlers
@@ -16,28 +13,12 @@ and connections on success and failure. See the [API examples](packages/qt612/RE
 [embedding model](docs/embedding.md) and [application feature tests](docs/application-features.md).
 
 The API target is the pinned PySide binding scope for the selected modules.
-Generated coverage reports keep unsupported signatures visible. Native tests
-cover callbacks, ownership, dynamic properties, QML registration, custom
-materials, image providers and mixed Charts/Graphs/DataVisualization consumers.
-Focused passes do not establish full release readiness.
 
 ## Build and verify
 
 The reference build environment is Ubuntu 24.04 with Python 3.12, CMake 3.25
 or newer, and Ninja. Current maintainer scripts select Clang/LLVM 19. The
 native effects and proof checks are pinned to Bend 2.0.40 and Lean 4.34.0.
-Ubuntu and Python versions describe the reference environment; they are not
-checks that reject every other distribution or Python release.
-
-The native packaging backend currently supports Linux x86-64. Other Linux
-distributions need compatible system C/C++ libraries and Qt platform
-dependencies; distribution compatibility has not yet been broadly validated.
-Native Windows, macOS and ARM backends are not implemented. Development on
-Windows currently uses Linux through WSL2.
-
-Consumers compile with Bend 2.0.40 and its normal native build toolchain. They
-do not need the binding generator, Qt development SDK or maintainer proof
-toolchain.
 
 ```bash
 bash scripts/setup-qt-generator.sh --qt-version 6.12.0
