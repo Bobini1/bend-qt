@@ -1,12 +1,10 @@
 # Bend Qt
 
 Qt bindings for Bend 2.0.40 on Linux x86-64. The generator uses the matching,
-pinned PySide Shiboken ApiExtractor and upstream type systems. Supported build
-targets are Qt 6.10.3, 6.11.3 and 6.12.0.
+pinned PySide Shiboken ApiExtractor and upstream type systems. The initial CI
+matrix targets Qt 6.10.3, 6.11.3 and 6.12.0.
 
-Each generated distribution bundles its matching Qt runtime. Consumers use a
-BendHub import and `bend main.bend -o app`, without a separate binding SDK,
-generator or Qt development headers. Public BendHub publication is pending.
+Each generated distribution bundles its matching Qt runtime.
 The intended Hub name is `bend-qt-bindings`; the import alias is `Qt`.
 
 Qt and Bend share the process main thread. Signals and virtual-method handlers
@@ -15,15 +13,12 @@ and connections on success and failure. See the [API examples](packages/qt612/RE
 [embedding model](docs/embedding.md) and [application feature tests](docs/application-features.md).
 
 The API target is the pinned PySide binding scope for the selected modules.
-Generated coverage reports keep unsupported signatures visible. Native tests
-cover callbacks, ownership, dynamic properties, QML registration, custom
-materials, image providers and mixed Charts/Graphs/DataVisualization consumers.
-Focused passes do not establish full release readiness.
 
 ## Build and verify
 
-Maintainers need Ubuntu 24.04, Clang/LLVM 19, Python 3.12, CMake, Ninja,
-Bend 2.0.40 and Lean 4.34.0. Consumers do not need these maintainer commands.
+The reference build environment is Ubuntu 24.04 with Python 3.12, CMake 3.25
+or newer, and Ninja. Current maintainer scripts select Clang/LLVM 19. The
+native effects and proof checks are pinned to Bend 2.0.40 and Lean 4.34.0.
 
 ```bash
 bash scripts/setup-qt-generator.sh --qt-version 6.12.0

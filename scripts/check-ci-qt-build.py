@@ -15,6 +15,9 @@ for version in ci.TARGETS:
     generated = list(map(str, ci.commands(config, 'generate')[0]))
     assert str(config['profile']) in generated and str(config['package']) in generated
     assert '--runtime-manifest' in generated
+    for row in ci.commands(config, 'prepare'):
+        assert Path(row[0]) == config['cache'] / 'venv/bin/python', (
+            'Every release preparation stage needs the pinned REUSE environment', row)
     verified = [list(map(str, row)) for row in ci.commands(config, 'verify')]
     if version == '6.12.0':
         assert len(verified) == 1

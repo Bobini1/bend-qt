@@ -26,6 +26,41 @@ def read_url(url):
     return urllib.request.urlopen(request, timeout=60)
 
 
+def github_source_tree(repository, revision, cache):
+    """Read exact gitlinks even when a hosted runner's public API quota is spent."""
+    tree_cache = Path(cache) / ('tree-' + repository.replace('/', '-') + '-' + revision + '.json')
+    if tree_cache.is_file():
+        return json.loads(tree_cache.read_text())
+    try:
+        with read_url(f'https://api.github.com/repos/{repository}/git/trees/{revision}?recursive=1') as response:
+            tree = json.load(response)
+    except urllib.error.HTTPError as error:
+        if error.code not in (403, 429):
+            raise
+        # The public Git transport has a separate quota. Fetch the same pinned
+        # revision without blobs, then ask Git for the actual submodule IDs.
+        directory = Path(cache) / 'git' / ('metadata-' + repository.replace('/', '-') + '-' + revision)
+        directory.parent.mkdir(parents=True, exist_ok=True)
+        if not directory.is_dir():
+            subprocess.run(['git', 'init', '--bare', str(directory)],
+                           capture_output=True, text=True, check=True)
+        subprocess.run(['git', '-C', str(directory), 'fetch', '--depth=1', '--filter=blob:none',
+                        'https://github.com/' + repository + '.git', revision],
+                       capture_output=True, text=True, check=True)
+        result = subprocess.run(['git', '-C', str(directory), 'ls-tree', '-r', revision],
+                                capture_output=True, text=True, check=True)
+        rows = []
+        for line in result.stdout.splitlines():
+            if line.startswith('160000 '):
+                metadata, path = line.split('\t', 1)
+                rows.append(dict(path=path, mode='160000', sha=metadata.split()[2]))
+        tree = dict(tree=rows, truncated=False, source='git-ls-tree')
+    if tree.get('truncated'):
+        raise ValueError('The source tree inventory is truncated: ' + repository + '@' + revision)
+    tree_cache.write_text(json.dumps(tree, sort_keys=True) + '\n')
+    return tree
+
+
 def github_repository(location):
     match = re.fullmatch(r'(?:git|https)://code\.qt\.io/(?:cgit/)?qt/([a-z0-9-]+)\.git@([0-9a-f]{40})', location)
     if match:
@@ -209,13 +244,7 @@ def prepare(location, cache, *, _active=None):
                 tree = subprocess.run(['git', '-C', str(git_cache), 'ls-tree', '-r', revision], text=True, capture_output=True, check=True)
                 links = {line.split('\t', 1)[1]: line.split()[2] for line in tree.stdout.splitlines() if line.startswith('160000 ')}
             else:
-                tree_cache = cache / ('tree-' + repository.replace('/', '-') + '-' + revision + '.json')
-                if tree_cache.is_file():
-                    tree = json.loads(tree_cache.read_text())
-                else:
-                    with read_url(f'https://api.github.com/repos/{repository}/git/trees/{revision}?recursive=1') as response:
-                        tree = json.load(response)
-                    tree_cache.write_text(json.dumps(tree, sort_keys=True) + '\n')
+                tree = github_source_tree(repository, revision, cache)
                 if tree.get('truncated'):
                     raise ValueError('The source tree inventory is truncated: ' + location)
                 links = {row['path']: row['sha'] for row in tree['tree'] if row['mode'] == '160000'}
