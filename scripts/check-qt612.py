@@ -169,6 +169,8 @@ def package_file_names(package_dir):
         if license_path.is_file():
             names.add(license_path.relative_to(root).as_posix())
     if (root / 'README.md').is_file():
+        if (root / 'README.md').stat().st_size > 65536:
+            raise ValueError('Package README exceeds Bend 2.0.40\'s 65536-byte publication limit')
         names.add('README.md')
     return sorted(names)
 
@@ -216,7 +218,12 @@ def check_package(package_dir, programs, env, runtimes, output, jobs=1, bundle=F
 
             def log_message(self, *args): pass
 
-        server = http.server.ThreadingHTTPServer(
+        class RegistryServer(http.server.ThreadingHTTPServer):
+            # Each fresh Bend consumer fetches runtime assets concurrently.
+            # The default backlog of five can drop bursts from parallel builds.
+            request_queue_size = 256
+
+        server = RegistryServer(
             ("127.0.0.1", 0), functools.partial(Handler, directory=str(registry)))
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
@@ -579,7 +586,8 @@ def main():
         print(native_signals.stdout, end="", flush=True)
         receipt["native_signal_guards"] = json.loads((OUT / "signal-native/receipt.json").read_text())
         native_conversions = run(["python3", ROOT / "scripts/check-qt612-conversions-native.py",
-                                  "--qt-root", args.qt_prefix], env, ROOT, timeout=1800)
+                                  "--qt-root", args.qt_prefix, "--extractor", args.extractor],
+                                 env, ROOT, timeout=1800)
         print(native_conversions.stdout, end="", flush=True)
         receipt['native_conversion_guards'] = json.loads((ROOT / 'build/qt612/conversions-native-check/receipt.json').read_text())
         explicit_copies = run(['python3', ROOT / 'scripts/check-qt-explicit-copies.py',
@@ -624,6 +632,7 @@ def main():
             raise RuntimeError('The maintainer workflow regression gate did not execute its tests')
         receipt['maintenance_workflow'] = dict(passed=True, tests=int(count[1]))
         for name, script, extra in (
+            ('native_aliases', 'check-qt-native-aliases.py', ['--mutation-checks']),
             ('native_linker', 'check-qt-native-linker.py', []),
             ('qt_link_dependencies', 'check-qt-link-dependencies.py', []),
             ('linked_runtime_preloads', 'check-qt-linked-preloads.py', []),

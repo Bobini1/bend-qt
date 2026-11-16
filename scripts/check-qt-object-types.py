@@ -15,7 +15,8 @@ def check(package, output):
     output.mkdir(parents=True, exist_ok=True)
     module = (package / 'qt.bend').read_text()
     hashes = {}
-    for name in ('runtime_enums.bend', 'qt_object_types.bend', 'qt_objects.bend', 'qt_object_qml.bend', 'generic_variants.bend'):
+    for name in ('runtime_enums.bend', 'qt_object_types.bend', 'qt_objects.bend', 'qt_object_qml.bend',
+                 'object_type_access.bend', 'qml_registrations.bend', 'generic_variants.bend'):
         source = (ROOT / 'generator/templates' / name).read_text()
         if module.count(source) != 1:
             raise RuntimeError('Generated module differs from ' + name)
@@ -26,15 +27,15 @@ import @IMPORT@ as Qt
 
 def age() -> Qt.Property:
   Qt.Property.define("age", Qt.int32())
-def Person() -> Qt.QtObject:
+def Person() -> Qt.ObjectType:
   Qt.QObject.define("TypedPerson", [Qt.Property.withReset(age())])
-def Other() -> Qt.QtObject:
+def Other() -> Qt.ObjectType:
   Qt.QObject.define("OtherPerson", [])
 
-def Child() -> Qt.QtObject:
-  Qt.QtObject.derive(~Person(), "ChildPerson", [])
+def Child() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~Person(), "ChildPerson", [])
 def peer() -> Qt.Property:
-  Qt.Property.define("peer", Qt.QtObject.arg(~Person()))
+  Qt.Property.define("peer", Qt.ObjectType.arg(~Person()))
 def describe() -> Qt.Method:
   Qt.Method.define("describe", [Qt.int32()], Qt.string())
 def handler(state: Unit, value: Qt.Int32) -> Qt.Action(String):
@@ -50,11 +51,11 @@ def store(object: Qt.QObject) -> Qt.Action(Unit):
 '''
     cases = {
         'valid_members': (prefix + valid, True),
-        'valid_derived_native_base': (prefix + valid + '''def base(value: Qt.QtObject.Instance(Child())) -> Qt.QObject:
-  Qt.QtObject.asNativeBase(~Child(), value)
+        'valid_derived_native_base': (prefix + valid + '''def base(value: Qt.ObjectType.Instance(Child())) -> Qt.QObject:
+  Qt.ObjectType.asNativeBase(~Child(), value)
 ''', True),
-        'wrong_derived_native_base': (prefix + valid + '''def base(value: Qt.QtObject.Instance(Child())) -> Qt.QQuickItem:
-  Qt.QtObject.asNativeBase(~Child(), value)
+        'wrong_derived_native_base': (prefix + valid + '''def base(value: Qt.ObjectType.Instance(Child())) -> Qt.QQuickItem:
+  Qt.ObjectType.asNativeBase(~Child(), value)
 ''', False),
         'wrong_property_value': (prefix + valid.replace('Qt.Property.set(~age(), object, Qt.Int32{42})',
                                                        'Qt.Property.set(~age(), object, "wrong")'), False),
@@ -63,30 +64,49 @@ def store(object: Qt.QObject) -> Qt.Action(Unit):
         'wrong_handler_argument': (prefix.replace('value: Qt.Int32', 'value: String') + valid, False),
         'wrong_handler_result': (prefix.replace('-> Qt.Action(String):', '-> Qt.Action(Bool):')
                                 .replace('Qt.Action.pure(String, "typed")', 'Qt.Action.pure(Bool, True{})') + valid, False),
-        'valid_concrete_object': (prefix + '''def store_peer(object: Qt.QObject, value: Qt.QtObject.Instance(Person())) -> Qt.Action(Unit):
+        'valid_concrete_object': (prefix + '''def store_peer(object: Qt.QObject, value: Qt.ObjectType.Instance(Person())) -> Qt.Action(Unit):
   Qt.Property.set(~peer(), object, value)
 ''', True),
-        'wrong_concrete_object': (prefix + '''def store_peer(object: Qt.QObject, value: Qt.QtObject.Instance(Other())) -> Qt.Action(Unit):
+        'wrong_concrete_object': (prefix + '''def store_peer(object: Qt.QObject, value: Qt.ObjectType.Instance(Other())) -> Qt.Action(Unit):
   Qt.Property.set(~peer(), object, value)
 ''', False),
     }
-    qml = prefix + '''def Provider() -> Qt.QtObject:
-  Qt.QtObject.withAttached(Person(), Other())
+    qml = prefix + '''def Provider() -> Qt.ObjectType:
+  Qt.ObjectType.withAttached(Person(), Other())
 
-def initialize(state: Unit, object: Qt.QtObject.Instance(Provider())) -> Qt.Action(Unit):
+def initialize(state: Unit, object: Qt.ObjectType.Instance(Provider())) -> Qt.Action(Unit):
   Qt.Action.pure(Unit, Unit{})
 
-def attached(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.QtObject.Instance(Other())):
-  Qt.QtObject.new(~Other())
+def attached(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.ObjectType.Instance(Other())):
+  Qt.ObjectType.new(~Other())
 
-def install_qml(+registration: Qt.QObject) -> Qt.Action(Unit):
+def install_qml(+registration: Qt.Qml.Registration(Provider())) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.Qml.handleCreate(~Provider(), ~Unit, ~initialize, registration, Unit{})
     Qt.Qml.handleAttached(~Provider(), ~Unit, ~attached, registration, Unit{})
 '''
     cases['valid_qml_factories'] = (qml, True)
-    cases['wrong_qml_initializer'] = (qml.replace('object: Qt.QtObject.Instance(Provider())', 'object: Qt.QtObject.Instance(Other())'), False)
-    cases['wrong_qml_attached_result'] = (qml.replace('-> Qt.Action(Qt.QtObject.Instance(Other())):', '-> Qt.Action(Qt.QtObject.Instance(Person())):').replace('Qt.QtObject.new(~Other())', 'Qt.QtObject.new(~Person())'), False)
+    cases['wrong_registration_schema'] = (qml.replace('Qt.Qml.Registration(Provider())', 'Qt.Qml.Registration(Other())'), False)
+    cases['object_as_registration'] = (qml.replace('registration: Qt.Qml.Registration(Provider())', 'registration: Qt.QObject'), False)
+    cases['registration_as_object'] = (prefix + '''def wrong(value: Qt.Qml.Registration(Person())) -> Qt.Action(Unit):
+  Qt.QObject.setObjectName(value, "not an instance")
+''', False)
+    cases['registration_as_instance'] = (prefix + '''def wrong(value: Qt.Qml.Registration(Person())) -> Qt.Action(Unit):
+  Qt.ObjectType.set(~Person(), ~age(), value, Qt.Int32{42})
+''', False)
+    cases['script_registration_as_instance'] = (prefix + '''def wrong(value: Qt.Qml.RegistrationHandle) -> Qt.Action(Unit):
+  Qt.QObject.setObjectName(value, "not an instance")
+''', False)
+    typed = '''def access(+object: Qt.ObjectType.Instance(Person())) -> Qt.Action(Qt.Int32):
+  do Qt.Action<Qt.Int32>:
+    Qt.ObjectType.set(~Person(), ~age(), object, Qt.Int32{42})
+    Qt.ObjectType.get(~Person(), ~age(), object)
+'''
+    cases['valid_typed_access'] = (prefix + typed, True)
+    cases['wrong_typed_instance'] = (prefix + typed.replace('object: Qt.ObjectType.Instance(Person())', 'object: Qt.ObjectType.Instance(Other())'), False)
+    cases['wrong_typed_value'] = (prefix + typed.replace('object, Qt.Int32{42}', 'object, "wrong"'), False)
+    cases['wrong_qml_initializer'] = (qml.replace('object: Qt.ObjectType.Instance(Provider())', 'object: Qt.ObjectType.Instance(Other())'), False)
+    cases['wrong_qml_attached_result'] = (qml.replace('-> Qt.Action(Qt.ObjectType.Instance(Other())):', '-> Qt.Action(Qt.ObjectType.Instance(Person())):').replace('Qt.ObjectType.new(~Other())', 'Qt.ObjectType.new(~Person())'), False)
     resetter = '''def reset_age(state: Unit) -> Qt.Action(Unit):
   Qt.Action.pure(Unit, Unit{})
 

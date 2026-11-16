@@ -6,10 +6,10 @@ def Internal.Revision.checkedMajor(valid: Bool, major: U32) -> U32:
 def Internal.Revision.major(+major: U32) -> U32:
   Internal.Revision.checkedMajor(U32.is_lt(major, 255), major)
 
-type SignalArgument is Type:
-  SignalArgument{Value: Data, name: String, encode: Value -> Wire, decode: Wire -> Maybe<&2, Value>, dependency: Action(Wire)}
+type TypeDescriptor is Type:
+  TypeDescriptor{Value: Data, name: String, encode: Value -> Wire, decode: Wire -> Maybe<&2, Value>, dependency: Action(Wire)}
   BendArgument{Value: Data, witness: Value -> Value}
-  QmlListArgument{element: SignalArgument}
+  QmlListArgument{element: TypeDescriptor}
 
 type QmlListView<-Element: String> is Data:
   QmlListView{word: U32}
@@ -29,34 +29,34 @@ def Internal.QmlList.elementName(name: String) -> String:
     case SCon{Chr{42}, SNil{}}: SNil{}
     case SCon{head, tail}: SCon{head, Internal.QmlList.elementName(tail)}
 
-def SignalArgument.name(argument: SignalArgument) -> String:
+def TypeDescriptor.name(argument: TypeDescriptor) -> String:
   match argument:
-    case SignalArgument{Value, name, encode, decode, dependency}: name
+    case TypeDescriptor{Value, name, encode, decode, dependency}: name
     case BendArgument{Value, witness}: "BendData"
-    case QmlListArgument{element}: "QQmlListProperty<" ++ Internal.QmlList.elementName(SignalArgument.name(element)) ++ ">"
+    case QmlListArgument{element}: "QQmlListProperty<" ++ Internal.QmlList.elementName(TypeDescriptor.name(element)) ++ ">"
 
-def SignalArgument.Value(argument: SignalArgument) -> Data:
+def TypeDescriptor.Value(argument: TypeDescriptor) -> Data:
   match argument:
-    case SignalArgument{Value, name, encode, decode, dependency}: Value
+    case TypeDescriptor{Value, name, encode, decode, dependency}: Value
     case BendArgument{Value, witness}: Value
-    case QmlListArgument{element}: QmlListView<SignalArgument.name(element)>
+    case QmlListArgument{element}: QmlListView<TypeDescriptor.name(element)>
 
-def Internal.QmlList.name(element: SignalArgument) -> String:
-  "QQmlListProperty<" ++ Internal.QmlList.elementName(SignalArgument.name(element)) ++ ">"
+def Internal.QmlList.name(element: TypeDescriptor) -> String:
+  "QQmlListProperty<" ++ Internal.QmlList.elementName(TypeDescriptor.name(element)) ++ ">"
 
 # Native container declarations use closed argument codecs. Opaque Bend Data
 # stays available as Qt.arg(~List<...>); it is not silently made a native QList.
-def Internal.NativeArgument.encode(argument: SignalArgument, value: SignalArgument.Value(argument)) -> Wire:
+def Internal.NativeArgument.encode(argument: TypeDescriptor, value: TypeDescriptor.Value(argument)) -> Wire:
   match argument:
-    case SignalArgument{Value, name, encode, decode, dependency}: encode(value)
+    case TypeDescriptor{Value, name, encode, decode, dependency}: encode(value)
     case BendArgument{Value, witness}: WireScalar{0, 0}
-    case QmlListArgument{element}: Internal.QmlListView.encode(SignalArgument.name(element), value)
+    case QmlListArgument{element}: Internal.QmlListView.encode(TypeDescriptor.name(element), value)
 
-def Internal.NativeArgument.decode(argument: SignalArgument, value: Wire) -> Maybe<&2, SignalArgument.Value(argument)>:
+def Internal.NativeArgument.decode(argument: TypeDescriptor, value: Wire) -> Maybe<&2, TypeDescriptor.Value(argument)>:
   match argument:
-    case SignalArgument{Value, name, encode, decode, dependency}: decode(value)
+    case TypeDescriptor{Value, name, encode, decode, dependency}: decode(value)
     case BendArgument{Value, witness}: None{}
-    case QmlListArgument{element}: Internal.QmlListView.decode(SignalArgument.name(element), value)
+    case QmlListArgument{element}: Internal.QmlListView.decode(TypeDescriptor.name(element), value)
 
 def Internal.QmlList.schema(wire: Wire) -> Wire:
   match wire:
@@ -65,51 +65,51 @@ def Internal.QmlList.schema(wire: Wire) -> Wire:
         WireSequence{[WireText{"qml_list"}, WireSequence{WireText{name} <> tail}]}]}
     case _: WireScalar{0, 0}
 
-def SignalArgument.schema(argument: SignalArgument) -> Action(Wire):
+def TypeDescriptor.schema(argument: TypeDescriptor) -> Action(Wire):
   match argument:
-    case SignalArgument{Value, name, encode, decode, dependency}:
+    case TypeDescriptor{Value, name, encode, decode, dependency}:
       do Action<Wire>:
         wire: Wire <- dependency
         return WireSequence{[WireText{name}, wire]}
     case BendArgument{Value, witness}: Action.pure(Wire, WireSequence{[WireText{"BendData"}, WireScalar{0, 0}]})
     case QmlListArgument{element}:
       do Action<Wire>:
-        wire: Wire <- SignalArgument.schema(element)
+        wire: Wire <- TypeDescriptor.schema(element)
         return Internal.QmlList.schema(wire)
 
-def Internal.NativeArgument.dependencies(arguments: List<&1, SignalArgument>) -> Action(Wire):
+def Internal.NativeArgument.dependencies(arguments: List<&1, TypeDescriptor>) -> Action(Wire):
   match arguments:
     case Nil{}: Action.pure(Wire, WireScalar{0, 0})
     case argument <> rest:
       do Action<Wire>:
-        wire: Wire <- SignalArgument.schema(argument)
+        wire: Wire <- TypeDescriptor.schema(argument)
         Internal.NativeArgument.dependencies(rest)
 
-def Internal.NativeArgument.sequence(element: SignalArgument) -> Action(Wire):
+def Internal.NativeArgument.sequence(element: TypeDescriptor) -> Action(Wire):
   do Action<Wire>:
-    wire: Wire <- SignalArgument.schema(element)
+    wire: Wire <- TypeDescriptor.schema(element)
     return WireSequence{[WireText{"Bend.Sequence"}, wire]}
 
-def list(~element: SignalArgument) -> SignalArgument:
-  SignalArgument{List<&2, SignalArgument.Value(element)>, "QList<" ++ SignalArgument.name(element) ++ ">",
-    values => Codec.encode_list(~SignalArgument.Value(element), ~(value => Internal.NativeArgument.encode(element, value)), values),
-    wire => Codec.decode_list(~SignalArgument.Value(element), ~(value => Internal.NativeArgument.decode(element, value)), wire),
+def list(~element: TypeDescriptor) -> TypeDescriptor:
+  TypeDescriptor{List<&2, TypeDescriptor.Value(element)>, "QList<" ++ TypeDescriptor.name(element) ++ ">",
+    values => Codec.encode_list(~TypeDescriptor.Value(element), ~(value => Internal.NativeArgument.encode(element, value)), values),
+    wire => Codec.decode_list(~TypeDescriptor.Value(element), ~(value => Internal.NativeArgument.decode(element, value)), wire),
     Internal.NativeArgument.sequence(element)}
 
-def set(~element: SignalArgument) -> SignalArgument:
-  SignalArgument{List<&2, SignalArgument.Value(element)>, "QSet<" ++ SignalArgument.name(element) ++ ">",
-    values => Codec.encode_list(~SignalArgument.Value(element), ~(value => Internal.NativeArgument.encode(element, value)), values),
-    wire => Codec.decode_list(~SignalArgument.Value(element), ~(value => Internal.NativeArgument.decode(element, value)), wire), Internal.NativeArgument.dependencies([element])}
+def set(~element: TypeDescriptor) -> TypeDescriptor:
+  TypeDescriptor{List<&2, TypeDescriptor.Value(element)>, "QSet<" ++ TypeDescriptor.name(element) ++ ">",
+    values => Codec.encode_list(~TypeDescriptor.Value(element), ~(value => Internal.NativeArgument.encode(element, value)), values),
+    wire => Codec.decode_list(~TypeDescriptor.Value(element), ~(value => Internal.NativeArgument.decode(element, value)), wire), Internal.NativeArgument.dependencies([element])}
 
-def vector(~element: SignalArgument) -> SignalArgument:
+def vector(~element: TypeDescriptor) -> TypeDescriptor:
   list(~element)
 
-def array(~element: SignalArgument, ~count: U32) -> SignalArgument:
-  SignalArgument{List<&2, SignalArgument.Value(element)>, "std::array<" ++ SignalArgument.name(element) ++ "," ++ U32.show(count) ++ ">",
-    values => Codec.encode_list(~SignalArgument.Value(element), ~(value => Internal.NativeArgument.encode(element, value)), values),
-    wire => Codec.decode_array(~SignalArgument.Value(element), ~(value => Internal.NativeArgument.decode(element, value)), count, wire), Internal.NativeArgument.dependencies([element])}
+def array(~element: TypeDescriptor, ~count: U32) -> TypeDescriptor:
+  TypeDescriptor{List<&2, TypeDescriptor.Value(element)>, "std::array<" ++ TypeDescriptor.name(element) ++ "," ++ U32.show(count) ++ ">",
+    values => Codec.encode_list(~TypeDescriptor.Value(element), ~(value => Internal.NativeArgument.encode(element, value)), values),
+    wire => Codec.decode_array(~TypeDescriptor.Value(element), ~(value => Internal.NativeArgument.decode(element, value)), count, wire), Internal.NativeArgument.dependencies([element])}
 
-def Internal.NativeArgument.encodePair(~first: SignalArgument, ~second: SignalArgument, value: PairValue<SignalArgument.Value(first), SignalArgument.Value(second)>) -> Wire:
+def Internal.NativeArgument.encodePair(~first: TypeDescriptor, ~second: TypeDescriptor, value: PairValue<TypeDescriptor.Value(first), TypeDescriptor.Value(second)>) -> Wire:
   match value:
     case PairValue{left, right}: Codec.pair(Internal.NativeArgument.encode(first, left), Internal.NativeArgument.encode(second, right))
 
@@ -118,69 +118,69 @@ def Internal.NativeArgument.pairDecoded(-A: Data, -B: Data, first: Maybe<&2, A>,
     case Some{first} Some{second}: Some{PairValue{first, second}}
     case _ _: None{}
 
-def Internal.NativeArgument.decodePair(~first: SignalArgument, ~second: SignalArgument, wire: Wire) -> Maybe<&2, PairValue<SignalArgument.Value(first), SignalArgument.Value(second)>>:
+def Internal.NativeArgument.decodePair(~first: TypeDescriptor, ~second: TypeDescriptor, wire: Wire) -> Maybe<&2, PairValue<TypeDescriptor.Value(first), TypeDescriptor.Value(second)>>:
   match wire:
     case WireSequence{left <> right <> Nil{}}:
-      Internal.NativeArgument.pairDecoded(SignalArgument.Value(first), SignalArgument.Value(second),
+      Internal.NativeArgument.pairDecoded(TypeDescriptor.Value(first), TypeDescriptor.Value(second),
         Internal.NativeArgument.decode(first, left), Internal.NativeArgument.decode(second, right))
     case _: None{}
 
-def pair(~first: SignalArgument, ~second: SignalArgument) -> SignalArgument:
-  SignalArgument{PairValue<SignalArgument.Value(first), SignalArgument.Value(second)>,
-    "std::pair<" ++ SignalArgument.name(first) ++ "," ++ SignalArgument.name(second) ++ ">",
+def pair(~first: TypeDescriptor, ~second: TypeDescriptor) -> TypeDescriptor:
+  TypeDescriptor{PairValue<TypeDescriptor.Value(first), TypeDescriptor.Value(second)>,
+    "std::pair<" ++ TypeDescriptor.name(first) ++ "," ++ TypeDescriptor.name(second) ++ ">",
     value => Internal.NativeArgument.encodePair(~first, ~second, value),
     wire => Internal.NativeArgument.decodePair(~first, ~second, wire), Internal.NativeArgument.dependencies([first, second])}
 
-def Internal.NativeArgument.map(~key: SignalArgument, ~value: SignalArgument, name: String) -> SignalArgument:
-  SignalArgument{List<&2, PairValue<SignalArgument.Value(key), SignalArgument.Value(value)>>,
-    name ++ "<" ++ SignalArgument.name(key) ++ "," ++ SignalArgument.name(value) ++ ">",
-    entries => Codec.encode_list(~PairValue<SignalArgument.Value(key), SignalArgument.Value(value)>,
+def Internal.NativeArgument.map(~key: TypeDescriptor, ~value: TypeDescriptor, name: String) -> TypeDescriptor:
+  TypeDescriptor{List<&2, PairValue<TypeDescriptor.Value(key), TypeDescriptor.Value(value)>>,
+    name ++ "<" ++ TypeDescriptor.name(key) ++ "," ++ TypeDescriptor.name(value) ++ ">",
+    entries => Codec.encode_list(~PairValue<TypeDescriptor.Value(key), TypeDescriptor.Value(value)>,
       ~(entry => Internal.NativeArgument.encodePair(~key, ~value, entry)), entries),
-    wire => Codec.decode_list(~PairValue<SignalArgument.Value(key), SignalArgument.Value(value)>,
+    wire => Codec.decode_list(~PairValue<TypeDescriptor.Value(key), TypeDescriptor.Value(value)>,
       ~(entry => Internal.NativeArgument.decodePair(~key, ~value, entry)), wire), Internal.NativeArgument.dependencies([key, value])}
 
-def map(~key: SignalArgument, ~value: SignalArgument) -> SignalArgument:
+def map(~key: TypeDescriptor, ~value: TypeDescriptor) -> TypeDescriptor:
   Internal.NativeArgument.map(~key, ~value, "QMap")
 
-def hash(~key: SignalArgument, ~value: SignalArgument) -> SignalArgument:
+def hash(~key: TypeDescriptor, ~value: TypeDescriptor) -> TypeDescriptor:
   Internal.NativeArgument.map(~key, ~value, "QHash")
 
-def multiMap(~key: SignalArgument, ~value: SignalArgument) -> SignalArgument:
+def multiMap(~key: TypeDescriptor, ~value: TypeDescriptor) -> TypeDescriptor:
   Internal.NativeArgument.map(~key, ~value, "QMultiMap")
 
-def multiHash(~key: SignalArgument, ~value: SignalArgument) -> SignalArgument:
+def multiHash(~key: TypeDescriptor, ~value: TypeDescriptor) -> TypeDescriptor:
   Internal.NativeArgument.map(~key, ~value, "QMultiHash")
 
-def optional(~element: SignalArgument) -> SignalArgument:
-  SignalArgument{Maybe<&2, SignalArgument.Value(element)>, "std::optional<" ++ SignalArgument.name(element) ++ ">",
-    value => Codec.encode_optional(~SignalArgument.Value(element), ~(value => Internal.NativeArgument.encode(element, value)), value),
-    wire => Codec.decode_optional(~SignalArgument.Value(element), ~(value => Internal.NativeArgument.decode(element, value)), wire), Internal.NativeArgument.dependencies([element])}
+def optional(~element: TypeDescriptor) -> TypeDescriptor:
+  TypeDescriptor{Maybe<&2, TypeDescriptor.Value(element)>, "std::optional<" ++ TypeDescriptor.name(element) ++ ">",
+    value => Codec.encode_optional(~TypeDescriptor.Value(element), ~(value => Internal.NativeArgument.encode(element, value)), value),
+    wire => Codec.decode_optional(~TypeDescriptor.Value(element), ~(value => Internal.NativeArgument.decode(element, value)), wire), Internal.NativeArgument.dependencies([element])}
 
-def SignalArgument.encode(argument: SignalArgument, value: SignalArgument.Value(argument)) -> Action(Wire):
+def TypeDescriptor.encode(argument: TypeDescriptor, value: TypeDescriptor.Value(argument)) -> Action(Wire):
   match argument:
-    case SignalArgument{Value, name, encode, decode, dependency}: Action.pure(Wire, encode(value))
+    case TypeDescriptor{Value, name, encode, decode, dependency}: Action.pure(Wire, encode(value))
     case BendArgument{Value, witness}: Internal.Data.encode(Value, witness, value)
-    case QmlListArgument{element}: Action.pure(Wire, Internal.QmlListView.encode(SignalArgument.name(element), value))
+    case QmlListArgument{element}: Action.pure(Wire, Internal.QmlListView.encode(TypeDescriptor.name(element), value))
 
-def SignalArgument.decoded(-A: Data, value: Maybe<&2, A>) -> Action(A):
+def TypeDescriptor.decoded(-A: Data, value: Maybe<&2, A>) -> Action(A):
   match value:
     case Some{value}: Action.pure(A, value)
     case None{}: Action.fail(A, 22, "Qt value has the wrong declared type")
 
-def SignalArgument.decode(argument: SignalArgument, value: Wire) -> Action(SignalArgument.Value(argument)):
+def TypeDescriptor.decode(argument: TypeDescriptor, value: Wire) -> Action(TypeDescriptor.Value(argument)):
   match argument:
-    case SignalArgument{Value, name, encode, decode, dependency}: SignalArgument.decoded(Value, decode(value))
+    case TypeDescriptor{Value, name, encode, decode, dependency}: TypeDescriptor.decoded(Value, decode(value))
     case BendArgument{Value, witness}: Internal.Data.decode(Value, witness, value)
-    case QmlListArgument{element}: SignalArgument.decoded(QmlListView<SignalArgument.name(element)>, Internal.QmlListView.decode(SignalArgument.name(element), value))
+    case QmlListArgument{element}: TypeDescriptor.decoded(QmlListView<TypeDescriptor.name(element)>, Internal.QmlListView.decode(TypeDescriptor.name(element), value))
 
-def EncodedArguments.add(-A: Type, argument: SignalArgument, value: SignalArgument.Value(argument), previous: EncodedArguments(A)) -> EncodedArguments(A):
-  next => previous(values => Wire.withData(A, SignalArgument.encode(argument, value), wire => next(wire <> values)))
+def EncodedArguments.add(-A: Type, argument: TypeDescriptor, value: TypeDescriptor.Value(argument), previous: EncodedArguments(A)) -> EncodedArguments(A):
+  next => previous(values => Wire.withData(A, TypeDescriptor.encode(argument, value), wire => next(wire <> values)))
 
 type SignalArguments is Type:
   NoSignalArguments{}
-  MoreSignalArguments{argument: SignalArgument, rest: SignalArguments}
+  MoreSignalArguments{argument: TypeDescriptor, rest: SignalArguments}
 
-def SignalArguments.fromList(arguments: List<&1, SignalArgument>) -> SignalArguments:
+def SignalArguments.fromList(arguments: List<&1, TypeDescriptor>) -> SignalArguments:
   match arguments:
     case Nil{}: NoSignalArguments{}
     case argument <> rest: MoreSignalArguments{argument, SignalArguments.fromList(rest)}
@@ -188,12 +188,12 @@ def SignalArguments.fromList(arguments: List<&1, SignalArgument>) -> SignalArgum
 def SignalArguments.Values(arguments: SignalArguments) -> Data:
   match arguments:
     case NoSignalArguments{}: Unit
-    case MoreSignalArguments{argument, rest}: PairValue<SignalArgument.Value(argument), SignalArguments.Values(rest)>
+    case MoreSignalArguments{argument, rest}: PairValue<TypeDescriptor.Value(argument), SignalArguments.Values(rest)>
 
 def SignalArguments.Handler(arguments: SignalArguments) -> Type:
   match arguments:
     case NoSignalArguments{}: Action(Unit)
-    case MoreSignalArguments{argument, rest}: SignalArgument.Value(argument) -> SignalArguments.Handler(rest)
+    case MoreSignalArguments{argument, rest}: TypeDescriptor.Value(argument) -> SignalArguments.Handler(rest)
 
 def SignalArguments.pair(-A: Data, -B: Data, head: Maybe<&2, A>, tail: Maybe<&2, B>) -> Maybe<&2, PairValue<A, B>>:
   match head tail:
@@ -204,11 +204,11 @@ def SignalArguments.decode(arguments: SignalArguments, wires: List<&2, Wire>) ->
   match arguments wires:
     case NoSignalArguments{} Nil{}: Action.pure(Unit, Unit{})
     case MoreSignalArguments{argument, rest} head <> tail:
-      Action.bind(SignalArgument.Value(argument), SignalArguments.Values(MoreSignalArguments{argument, rest}),
-        SignalArgument.decode(argument, head), first =>
-          Action.bind(SignalArguments.Values(rest), PairValue<SignalArgument.Value(argument), SignalArguments.Values(rest)>,
+      Action.bind(TypeDescriptor.Value(argument), SignalArguments.Values(MoreSignalArguments{argument, rest}),
+        TypeDescriptor.decode(argument, head), first =>
+          Action.bind(SignalArguments.Values(rest), PairValue<TypeDescriptor.Value(argument), SignalArguments.Values(rest)>,
             SignalArguments.decode(rest, tail), last =>
-              Action.pure(PairValue<SignalArgument.Value(argument), SignalArguments.Values(rest)>, PairValue{first, last})))
+              Action.pure(PairValue<TypeDescriptor.Value(argument), SignalArguments.Values(rest)>, PairValue{first, last})))
     case _ _: Action.fail(SignalArguments.Values(arguments), 22, "Signal argument mismatch")
 
 def SignalArguments.apply(arguments: SignalArguments, handler: SignalArguments.Handler(arguments), values: SignalArguments.Values(arguments)) -> Action(Unit):
@@ -228,7 +228,7 @@ def SignalArguments.emit(arguments: SignalArguments, sink: List<&2, Wire> -> Act
 type Signal is Type:
   Signal{name: String, arguments: SignalArguments, names: List<&1, String>, flags: U32, major: U32, minor: U32}
 
-def Signal.define(name: String, arguments: List<&1, SignalArgument>) -> Signal:
+def Signal.define(name: String, arguments: List<&1, TypeDescriptor>) -> Signal:
   Signal{name, SignalArguments.fromList(arguments), Nil{}, 0, 0, 0}
 
 def Signal.withArgumentNames(signal: Signal, names: List<&1, String>) -> Signal:
@@ -255,7 +255,7 @@ def SignalArguments.names(arguments: SignalArguments) -> Action(List<&2, Wire>):
     case NoSignalArguments{}: Action.pure(List<&2, Wire>, Nil{})
     case MoreSignalArguments{argument, rest}:
       do Action<List<&2, Wire>>:
-        wire: Wire <- SignalArgument.schema(argument)
+        wire: Wire <- TypeDescriptor.schema(argument)
         tail: List<&2, Wire> <- SignalArguments.names(rest)
         return wire <> tail
 

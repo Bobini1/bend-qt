@@ -17,28 +17,28 @@ def title() -> Qt.Property:
 def number() -> Qt.Property:
   Qt.Property.define("number", Qt.int32())
 
-def Mapped() -> Qt.QtObject:
+def Mapped() -> Qt.ObjectType:
   Qt.QQmlPropertyMap.define("SchemaAwarePropertyMap", [title()])
 
-def Child() -> Qt.QtObject:
-  Qt.QtObject.derive(~Mapped(), "SchemaAwareChildMap", [number()])
+def Child() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~Mapped(), "SchemaAwareChildMap", [number()])
 
-def Notifier() -> Qt.QtObject:
+def Notifier() -> Qt.ObjectType:
   Qt.QSocketNotifier.define("SchemaAwareNotifier", [title()])
 
-def Extended() -> Qt.QtObject:
-  Qt.QtObject.withExtension(Qt.QObject.define("SchemaAwareMapExtension", []), Mapped())
+def Extended() -> Qt.ObjectType:
+  Qt.ObjectType.withExtension(Qt.QObject.define("SchemaAwareMapExtension", []), Mapped())
 
-def Attached() -> Qt.QtObject:
-  Qt.QtObject.withAttached(Qt.QObject.define("SchemaAwareMapAttached", []), Mapped())
+def Attached() -> Qt.ObjectType:
+  Qt.ObjectType.withAttached(Qt.QObject.define("SchemaAwareMapAttached", []), Mapped())
 
 def updated(prefix: String, key: String, value: Qt.QVariant) -> Qt.Action(Qt.QVariant):
   do Qt.Action<Qt.QVariant>:
     text: String <- Qt.QVariant.toString(value)
     Qt.QVariant.fromString(prefix ++ text)
 
-def initialize(state: Unit, value: Qt.QtObject.Instance(Mapped())) -> Qt.Action(Unit):
-  Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Mapped(), value), "initialized")
+def initialize(state: Unit, value: Qt.ObjectType.Instance(Mapped())) -> Qt.Action(Unit):
+  Qt.ObjectType.set(~Mapped(), ~title(), value, "initialized")
 
 def load_component(engine: Qt.QQmlEngine, source: String) -> Qt.Action(Qt.QQmlComponent):
   do Qt.Action<Qt.QQmlComponent>:
@@ -50,18 +50,18 @@ def load_component(engine: Qt.QQmlEngine, source: String) -> Qt.Action(Qt.QQmlCo
     require(ready, "Property-map QML did not compile")
     Qt.Action.pure(Qt.QQmlComponent, component)
 
-def qml(+instance: Qt.QtObject.Instance(Mapped())) -> Qt.Action(Unit):
+def qml(+instance: Qt.ObjectType.Instance(Mapped())) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +map: Qt.QQmlPropertyMap = Qt.QtObject.asNativeBase(~Mapped(), instance)
+    +map: Qt.QQmlPropertyMap = Qt.ObjectType.asNativeBase(~Mapped(), instance)
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     context: Qt.QQmlContext <- Qt.QQmlEngine.rootContext(engine)
-    Qt.QQmlContext.setContextProperty__String_QObject(context, "model", Qt.QtObject.as_QObject(~Mapped(), instance))
+    Qt.QQmlContext.setContextProperty__String_QObject(context, "model", Qt.ObjectType.as_QObject(~Mapped(), instance))
     +component: Qt.QQmlComponent <- load_component(engine, "import QtQml\nQtObject { property string result: model.title + '|' + model.item; Component.onCompleted: model.item = 'qml' }")
     +root: Qt.QObject <- Qt.QQmlComponent.create__QQmlContext(component, Qt.QQmlContext{0})
     value: Qt.QVariant <- Qt.QQmlProperty.read__QObject_String(root, "result")
     text: String <- Qt.QVariant.toString(value)
     require(String.eq(text, "Bend|updated:qml"), "Static properties, dynamic map data or updateValue override were lost")
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Mapped(), instance), "changed")
+    Qt.ObjectType.set(~Mapped(), ~title(), instance, "changed")
     value: Qt.QVariant <- Qt.QQmlProperty.read__QObject_String(root, "result")
     text: String <- Qt.QVariant.toString(value)
     require(String.eq(text, "changed|updated:qml"), "A declared map property did not notify QML")
@@ -73,42 +73,42 @@ def qml(+instance: Qt.QtObject.Instance(Mapped())) -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +instance: Qt.QtObject.Instance(Mapped()) <- Qt.QtObject.new(~Mapped())
-    +map: Qt.QQmlPropertyMap = Qt.QtObject.asNativeBase(~Mapped(), instance)
+    +instance: Qt.ObjectType.Instance(Mapped()) <- Qt.ObjectType.new(~Mapped())
+    +map: Qt.QQmlPropertyMap = Qt.ObjectType.asNativeBase(~Mapped(), instance)
     Qt.QQmlPropertyMap.Virtual.updateValue.handle(~String, ~updated, map, "updated:")
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Mapped(), instance), "Bend")
+    Qt.ObjectType.set(~Mapped(), ~title(), instance, "Bend")
     value: Qt.QVariant <- Qt.QVariant.fromString("initial")
     Qt.QQmlPropertyMap.insert__String_QVariant(map, "item", value)
     Qt.scoped(Unit, qml(instance))
     +parent: Qt.QObject <- Qt.QObject.new()
-    +parented: Qt.QtObject.Instance(Mapped()) <- Qt.QQmlPropertyMap.newAs__QObject(~Mapped(), parent)
-    object: Qt.QObject <- Qt.QObject.parent(Qt.QtObject.as_QObject(~Mapped(), parented))
+    +parented: Qt.ObjectType.Instance(Mapped()) <- Qt.QQmlPropertyMap.newAs__QObject(~Mapped(), parent)
+    object: Qt.QObject <- Qt.QObject.parent(Qt.ObjectType.as_QObject(~Mapped(), parented))
     require(U32.is_eq(Qt.QObject.word(object), Qt.QObject.word(parent)), "Schema-aware map constructor lost its native argument")
-    +notifier: Qt.QtObject.Instance(Notifier()) <- Qt.QSocketNotifier.newAs__QSocketNotifier_Type_QObject(~Notifier(), Qt.QSocketNotifier.Type.Read(), parent)
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Notifier(), notifier), "constructed")
-    text: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~Notifier(), notifier))
+    +notifier: Qt.ObjectType.Instance(Notifier()) <- Qt.QSocketNotifier.newAs__QSocketNotifier_Type_QObject(~Notifier(), Qt.QSocketNotifier.Type.Read(), parent)
+    Qt.ObjectType.set(~Notifier(), ~title(), notifier, "constructed")
+    text: String <- Qt.ObjectType.get(~Notifier(), ~title(), notifier)
     require(String.eq(text, "constructed"), "Nondefault schema-aware constructor failed")
-    +child: Qt.QtObject.Instance(Child()) <- Qt.QtObject.new(~Child())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Child(), child)
+    +child: Qt.ObjectType.Instance(Child()) <- Qt.ObjectType.new(~Child())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Child(), child)
     Qt.Property.set(~title(), self, "inherited")
     Qt.Property.set(~number(), self, Qt.Int32{42})
     text: String <- Qt.Property.get(~title(), self)
     number: Qt.Int32 <- Qt.Property.get(~number(), self)
     require(String.eq(text, "inherited") && U32.is_eq(Qt.Int32.word(number), 42), "Property-map schema inheritance failed")
-    refused: Result<&1, &1, U32 & String, Qt.QtObject.Instance(Mapped())> <- Qt.Action.attempt(Qt.QtObject.Instance(Mapped()), Qt.QObject.newAs(~Mapped()))
-    expected(Qt.QtObject.Instance(Mapped()), refused, 22)
-    refused: Result<&1, &1, U32 & String, Qt.QtObject.Instance(Mapped())> <- Qt.Action.attempt(Qt.QtObject.Instance(Mapped()),
-      Qt.QtObject.newWith(~Mapped(), Qt.QQmlPropertyMap.newOverride()))
-    expected(Qt.QtObject.Instance(Mapped()), refused, 95)
+    refused: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(Mapped())> <- Qt.Action.attempt(Qt.ObjectType.Instance(Mapped()), Qt.QObject.newAs(~Mapped()))
+    expected(Qt.ObjectType.Instance(Mapped()), refused, 22)
+    refused: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(Mapped())> <- Qt.Action.attempt(Qt.ObjectType.Instance(Mapped()),
+      Qt.ObjectType.attachUsing(~Mapped(), Qt.QQmlPropertyMap.newOverride()))
+    expected(Qt.ObjectType.Instance(Mapped()), refused, 95)
 
 def registered() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +registration: Qt.QObject <- Qt.Qml.registerType(~Mapped(), "Bend.PropertyMapSubclasses", 1, 0, "Mapped")
+    +registration: Qt.Qml.Registration(Mapped()) <- Qt.Qml.registerType(~Mapped(), "Bend.PropertyMapSubclasses", 1, 0, "Mapped")
     Qt.Qml.handleCreate(~Mapped(), ~Unit, ~initialize, registration, Unit{})
-    extended: Result<&1, &1, U32 & String, Qt.QObject> <- Qt.Action.attempt(Qt.QObject,
+    extended: Result<&1, &1, U32 & String, Qt.Qml.Registration(Extended())> <- Qt.Action.attempt(Qt.Qml.Registration(Extended()),
       Qt.Qml.registerType(~Extended(), "Bend.PropertyMapSubclasses", 1, 0, "Extended"))
-    expected(Qt.QObject, extended, 95)
-    +attached: Qt.QObject <- Qt.Qml.registerType(~Attached(), "Bend.PropertyMapSubclasses", 1, 0, "Attached")
+    expected(Qt.Qml.Registration(Extended()), extended, 95)
+    +attached: Qt.Qml.Registration(Attached()) <- Qt.Qml.registerType(~Attached(), "Bend.PropertyMapSubclasses", 1, 0, "Attached")
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +component: Qt.QQmlComponent <- load_component(engine, "import Bend.PropertyMapSubclasses 1.0\nMapped { title: 'qml-created' }")
     +root: Qt.QObject <- Qt.QQmlComponent.create__QQmlContext(component, Qt.QQmlContext{0})
@@ -116,8 +116,8 @@ def registered() -> Qt.Action(Unit):
     require(String.eq(text, "qml-created"), "QML placement construction lost the map schema")
     +component: Qt.QQmlComponent <- load_component(engine, "import Bend.PropertyMapSubclasses 1.0\nAttached { Attached.title: 'attached-map' }")
     +root: Qt.QObject <- Qt.QQmlComponent.create__QQmlContext(component, Qt.QQmlContext{0})
-    value: Qt.QtObject.Instance(Mapped()) <- Qt.Qml.attached(~Attached(), attached, root)
-    text: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~Mapped(), value))
+    value: Qt.ObjectType.Instance(Mapped()) <- Qt.Qml.attached(~Attached(), attached, root)
+    text: String <- Qt.ObjectType.get(~Mapped(), ~title(), value)
     require(String.eq(text, "attached-map"), "An attached property map lost its schema")
 
 def checks() -> Qt.Action(Unit):

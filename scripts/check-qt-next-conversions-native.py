@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'generator'))
 import callbacks, coverage_inventory, native_objects, representations, public_fields
+import qobject_interfaces, qio_pipe
 from generate import Generator
 from lifetime import evaluate_tables, cpp_tables
 from backend import compiler_flags, versioned_include_paths
@@ -37,12 +38,15 @@ def check_bend(work):
 def generate(work,qt,*,rhi=False,api_transform=None,extra_headers=()):
     headers,_,modules,_,_=prepare(Path.home()/'.cache/bend-qt-generator/pyside-setup',qt,MODULES,work,limited_abi=rhi)
     api=json.loads((ROOT/'build/qt612/api.json').read_text())
+    qobject_interfaces.restore(api,work)
+    qio_pipe.restore(api,work)
     if api_transform:api_transform(api)
     if extra_headers:headers.write_text(headers.read_text()+'\n'+'\n'.join('#include <'+name+'>' for name in extra_headers)+'\n')
     traits=json.loads((ROOT/'build/qt612/native-traits.json').read_text())
     packages={'PySide6.'+x for x in modules}
     api['classes']=[c for c in api['classes'] if (c['package'] in packages or c['name'] in FAMILIES or rhi and '/rhi/' in c.get('source_file','')) and (rhi or '/rhi/' not in c.get('source_file',''))]
     api['global_functions']=[f for f in api.get('global_functions',[]) if f.get('package','PySide6.QtCore') in packages]
+    api['enums']=[e for e in api.get('enums',[]) if e.get('package','PySide6.QtCore') in packages]
     for c in api['classes']:
         if c['name'] in traits:
             c.update(traits[c['name']]);c['native_copyable']=c['copyable'];c['native_movable']=c['movable']

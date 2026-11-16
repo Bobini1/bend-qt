@@ -7,21 +7,20 @@ def title() -> Qt.Property:
 def greeting() -> Qt.Method:
   Qt.Method.define("greet", [Qt.string()], Qt.string())
 
-def Card() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QObject.define("ExampleCard", [title()]), [greeting()])
+def Card() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.QObject.define("ExampleCard", [title()]), [greeting()])
 
-def Settings() -> Qt.QtObject:
+def Settings() -> Qt.ObjectType:
   Qt.QObject.define("ExampleSettings", [title()])
 
 def greet(state: Unit, name: String) -> Qt.Action(String):
   Qt.Action.pure(String, "Hello " ++ name)
 
-def make_card(state: Unit, engine: Qt.QQmlEngine) -> Qt.Action(Qt.QtObject.Instance(Card())):
-  do Qt.Action<Qt.QtObject.Instance(Card())>:
-    +card: Qt.QtObject.Instance(Card()) <- Qt.QtObject.new(~Card())
-    +object: Qt.QObject = Qt.QtObject.as_QObject(~Card(), card)
-    Qt.Property.set(~title(), object, "Bend")
-    Qt.Method.handle(~greeting(), ~Unit, ~greet, object, Unit{})
+def make_card(state: Unit, engine: Qt.QQmlEngine) -> Qt.Action(Qt.ObjectType.Instance(Card())):
+  do Qt.Action<Qt.ObjectType.Instance(Card())>:
+    +card: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.new(~Card())
+    Qt.ObjectType.set(~Card(), ~title(), card, "Bend")
+    Qt.ObjectType.handle(~Card(), ~greeting(), ~Unit, ~greet, card, Unit{})
     return card
 
 def require(ok: Bool, message: String) -> Qt.Action(Unit):
@@ -57,14 +56,14 @@ def load_settings(uri: String, expected: String) -> Qt.Action(Unit):
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    registration: Qt.QObject <- Qt.Qml.registerSingletonFactory(~Card(), ~Unit, ~make_card, "Bend.Example", 1, 0, "Card", Unit{})
+    registration: Qt.Qml.Registration(Card()) <- Qt.Qml.registerSingletonFactory(~Card(), ~Unit, ~make_card, "Bend.Example", 1, 0, "Card", Unit{})
     Qt.scoped(Unit, load())
     Qt.scoped(Unit, load())
-    +settings: Qt.QtObject.Instance(Settings()) <- Qt.QtObject.new(~Settings())
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Settings(), settings), "existing")
-    instance: Qt.QObject <- Qt.Qml.registerSingletonInstance(~Settings(), "Bend.Instance", 1, 0, "Settings", settings)
+    +settings: Qt.ObjectType.Instance(Settings()) <- Qt.ObjectType.new(~Settings())
+    Qt.ObjectType.set(~Settings(), ~title(), settings, "existing")
+    instance: Qt.Qml.Registration(Settings()) <- Qt.Qml.registerSingletonInstance(~Settings(), "Bend.Instance", 1, 0, "Settings", settings)
     Qt.scoped(Unit, load_settings("Bend.Instance", "existing"))
-    defaults: Qt.QObject <- Qt.Qml.registerSingleton(~Settings(), "Bend.Default", 1, 0, "Settings")
+    defaults: Qt.Qml.Registration(Settings()) <- Qt.Qml.registerSingleton(~Settings(), "Bend.Default", 1, 0, "Settings")
     Qt.scoped(Unit, load_settings("Bend.Default", ""))
     Qt.scoped(Unit, load_settings("Bend.Default", ""))
     Qt.Action.lift(Unit, IO.print("QT612_QML_TYPES_OK named_methods=1 singleton_factory=1 engines=2"))

@@ -63,6 +63,7 @@ FIXTURES = [
     ('runtime-enums', 'QT612_RUNTIME_ENUMS_OK', ()),
     ('generic-variants', 'QT612_GENERIC_VARIANTS_OK', ()),
     ('value-types', 'QT612_VALUE_TYPES_OK', ()),
+    ('list-models', 'QT612_LIST_MODELS_OK', ()),
     ('metadata-arguments', 'QT612_METADATA_ARGUMENTS_OK', ()),
     ('metadata-signal-arguments', 'QT612_METADATA_SIGNAL_ARGUMENTS_OK', ()),
     ('convenience-apis', 'QT612_CONVENIENCE_APIS_OK', ()),
@@ -1725,6 +1726,11 @@ def runtime_checks(work, qt, programs, jobs=2):
     receipt['expected_programs'] = [p[0] for p in programs]
     receipt['fixture_sha256'] = {name: hashlib.sha256(source.encode()).hexdigest()
                                  for name, source, marker in programs}
+    if 'runtime-enums' in receipt['expected_programs']:
+        controls = work / 'runtime-enum-control'
+        subprocess.run(['python3', str(ROOT / 'scripts/check-qt-runtime-enums-native.py'),
+                        '--qt-root', str(qt), '--work', str(controls)], check=True)
+        receipt['native_enum_control'] = json.loads((controls / 'receipt.json').read_text())
     if 'post-routines' in receipt['expected_programs']:
         controls = work / 'post-routine-controls'
         subprocess.run(['python3', str(ROOT / 'scripts/check-qt-post-routines.py'),

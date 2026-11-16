@@ -27,6 +27,9 @@ from upstream import prepare
 import callbacks
 import native_objects
 import representations
+import qobject_interfaces
+import qio_pipe
+import native_linker
 OUT = ROOT / "build/qt612/check/signal-native"
 
 DRIVER = r'''#include "@WRAPPERS@"
@@ -233,19 +236,22 @@ def main():
                          *versioned_include_paths(qt, modules)], env=extraction_env)
     (OUT / "extraction.log").write_text(extracted.stdout + extracted.stderr)
     api = json.loads((OUT / "api.json").read_text())
+    qobject_interfaces.restore(api, OUT)
+    qio_pipe.restore(api, OUT)
     native_objects.refine_traits(api, qt, modules, OUT, args.cxx)
     g = Generator(api, profile); g.collect()
     g.methods = [m for m in g.methods if m["bend_name"] == "QActionGroup.connect_triggered"]
     if len(g.methods) != 1:
         raise RuntimeError("Focused profile lost QActionGroup.connect_triggered")
     callbacks.prepare(g)
-    g.callback_classes = []; g.callback_methods = {}; g.callback_qml = False
+    g.callback_classes = []; g.callback_methods = {}; g.callback_functions = []; g.callback_qml = False
     bend, effects, dispatch = g.emit()
     operation = g.methods[0]["operation"]
     abi = (ROOT / "generator/templates/abi.h").read_text().replace("@ARGUMENT_CAPACITY@", str(g.argument_capacity))
     aliases = "".join(f"using {name} = {native};\n" for name, native in api["typedefs"].items() if name in g.ids)
     aliases += representations.aliases(g)
-    native = headers.read_text() + aliases + (ROOT / "generator/templates/runtime.cpp").read_text()
+    prefix, suffix = callbacks.qml_sources(g, qt, OUT)
+    native = headers.read_text() + aliases + prefix + (ROOT / "generator/templates/runtime.cpp").read_text() + suffix
     native = native.replace("// @ABI@", abi).replace("// @LIFETIME@", cpp_tables(evaluate_tables(OUT)))
     native = native.replace("// @NATIVE_OBJECTS@", native_objects.traits(g)).replace("// @DISPATCH@", dispatch)
     wrappers = OUT / "wrappers.cpp"
@@ -265,6 +271,10 @@ def main():
     env = dict(os.environ, LD_LIBRARY_PATH=str(qt / "lib"), QT_QPA_PLATFORM="offscreen",
                QT_PLUGIN_PATH=str(qt / "plugins"),
                QT_QPA_PLATFORM_PLUGIN_PATH=str(qt / "plugins/platforms"))
+    compiler = run([args.cxx, '--version'], env, 10).stdout
+    linker = native_linker.select(args.cxx) if 'clang' in compiler.lower() else None
+    if linker:
+        command_line[1:1] = linker['flags']
     compiled = run(command_line, env, 1100)
     (OUT / "build.log").write_text(compiled.stdout + compiled.stderr)
     tested = run([executable], env, 30)
@@ -278,7 +288,8 @@ def main():
         "profile_modules": modules,
         "operation": operation,
         "qt_prefix": str(qt),
-        "compiler": run([args.cxx, "--version"], env, 10).stdout.splitlines()[0],
+        "compiler": compiler.splitlines()[0],
+        "linker": linker,
         "wrappers_sha256": hashlib.sha256(wrappers.read_bytes()).hexdigest(),
         "coverage_sha256": hashlib.sha256(coverage_path.read_bytes()).hexdigest(),
         "driver_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),

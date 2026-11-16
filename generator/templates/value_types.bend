@@ -39,8 +39,8 @@ def ValueType.decode(~schema: ValueType, wire: Wire) -> Maybe<&2, ValueType.Inst
     case WireScalar{word, 0}: Some{ValueInstance{word}}
     case _: None{}
 
-def value(~schema: ValueType) -> SignalArgument:
-  SignalArgument{ValueType.Instance(schema), ValueType.name(schema),
+def value(~schema: ValueType) -> TypeDescriptor:
+  TypeDescriptor{ValueType.Instance(schema), ValueType.name(schema),
     self => WireScalar{ValueType.word(~schema, self), 0},
     wire => ValueType.decode(~schema, wire), ValueType.schema(schema)}
 
@@ -50,7 +50,7 @@ def ValueType.new(~schema: ValueType) -> Action(ValueType.Instance(schema)):
     word: U32 <- Internal.ValueType.create(declaration, WireSequence{Nil{}}, 0)
     return ValueInstance{word}
 
-def ValueType.argumentList(fields: List<&1, Property>) -> List<&1, SignalArgument>:
+def ValueType.argumentList(fields: List<&1, Property>) -> List<&1, TypeDescriptor>:
   match fields:
     case Nil{}: Nil{}
     case field <> rest: Property.argument(field) <> ValueType.argumentList(rest)
@@ -72,7 +72,7 @@ def ValueType.get(~schema: ValueType, ~field: Property, self: ValueType.Instance
     declaration: Wire <- ValueType.schema(schema)
     property: Wire <- Property.schema(field)
     Wire.withData(Property.Value(field), Internal.ValueType.get(declaration, ValueType.word(~schema, self), property),
-      wire => SignalArgument.decode(Property.argument(field), wire))
+      wire => TypeDescriptor.decode(Property.argument(field), wire))
 
 # Values copy independently. An update returns another owning value.
 def ValueType.updateWire(~schema: ValueType, ~field: Property, self: ValueType.Instance(schema), wire: Wire) -> Action(ValueType.Instance(schema)):
@@ -83,7 +83,7 @@ def ValueType.updateWire(~schema: ValueType, ~field: Property, self: ValueType.I
     return ValueInstance{word}
 
 def ValueType.updated(~schema: ValueType, ~field: Property, self: ValueType.Instance(schema), data: Property.Value(field)) -> Action(ValueType.Instance(schema)):
-  Wire.withData(ValueType.Instance(schema), SignalArgument.encode(Property.argument(field), data),
+  Wire.withData(ValueType.Instance(schema), TypeDescriptor.encode(Property.argument(field), data),
     wire => ValueType.updateWire(~schema, ~field, self, wire))
 
 def ValueType.as_QVariant(~schema: ValueType, self: ValueType.Instance(schema)) -> QVariant:
@@ -98,10 +98,15 @@ def ValueType.release(~schema: ValueType, self: ValueType.Instance(schema)) -> A
 def ValueType.destroy(~schema: ValueType, self: ValueType.Instance(schema)) -> Action(Unit):
   QVariant.destroy(ValueType.as_QVariant(~schema, self))
 
-def ValueType.keep(~schema: ValueType, self: ValueType.Instance(schema)) -> Action(ValueType.Instance(schema)):
+def ValueType.moveToParentScope(~schema: ValueType, self: ValueType.Instance(schema)) -> Action(ValueType.Instance(schema)):
   do Action<ValueType.Instance(schema)>:
-    kept: QVariant <- QVariant.keep(ValueType.as_QVariant(~schema, self))
+    kept: QVariant <- QVariant.moveToParentScope(ValueType.as_QVariant(~schema, self))
     return ValueInstance{QVariant.word(kept)}
+
+def ValueType.detachFromScope(~schema: ValueType, self: ValueType.Instance(schema)) -> Action(ValueType.Instance(schema)):
+  do Action<ValueType.Instance(schema)>:
+    detached: QVariant <- QVariant.detachFromScope(ValueType.as_QVariant(~schema, self))
+    return ValueInstance{QVariant.word(detached)}
 
 def ValueType.with(~schema: ValueType, -A: Type, acquire: Action(ValueType.Instance(schema)), body: ValueType.Instance(schema) -> Action(A)) -> Action(A):
   Action.using(ValueType.Instance(schema), A, acquire, self => Action.cleanup(ValueType.release(~schema, self)), body)

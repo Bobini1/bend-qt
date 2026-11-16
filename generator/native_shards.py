@@ -298,7 +298,7 @@ def _check_syntax(source, work, flags, maximum_operations=2048):
     return receipt
 
 
-def compile_objects(source, work, flags, maximum_operations=2048):
+def compile_objects(source, work, flags, maximum_operations=2048, *, combine=True):
     started = time.monotonic()
     source = source.resolve()
     work = work.resolve()
@@ -450,10 +450,11 @@ def compile_objects(source, work, flags, maximum_operations=2048):
                            + '\n'.join(str(error) for error in failures))
     objects = [part.with_suffix('.o') for part in sources]
     output = work / 'wrappers.o'
-    from native_linker import select
-    linker = select(flags[0])
-    compile_cached([flags[0], *linker['flags'], '-nostdlib', '-r', *objects, '-o', output], 'combined', output, None,
-                   dict(base_key, linker=linker['identity'], objects=[digest(path) for path in objects]))
+    if combine:
+        from native_linker import select
+        linker = select(flags[0])
+        compile_cached([flags[0], *linker['flags'], '-nostdlib', '-r', *objects, '-o', output], 'combined', output, None,
+                       dict(base_key, linker=linker['identity'], objects=[digest(path) for path in objects]))
     # The ordinary cache records all actual inputs, including the generated
     # common header and shards, instead of trusting a stale PCH timestamp.
     (work / 'wrappers.d').write_text('wrappers.o: ' + ' '.join(shlex.quote(path) for path in sorted(paths)) + '\n')
@@ -464,11 +465,14 @@ def compile_objects(source, work, flags, maximum_operations=2048):
         combined_job_peak_rss_measured=False,
         compiler_address_limit_mib=limit // 1024 // 1024,
         compiler_jobs=jobs, shards=resources, cached=cached), indent=2) + '\n')
-    return dict(operation_shards=manifest['shard_count'], operation_count=manifest['operation_count'],
+    result = dict(operation_shards=manifest['shard_count'], operation_count=manifest['operation_count'],
                 auxiliary_shards=manifest['auxiliary_shard_count'],
                 auxiliary_functions=manifest['auxiliary_function_count'],
                 common_header_bytes=manifest['shared_bytes'], shared_runtime='C++17 inline ODR',
                 compiler_address_limit_mib=limit // 1024 // 1024)
+    if not combine:
+        result['object_files'] = [str(path) for path in objects]
+    return result
 
 
 if __name__ == '__main__':

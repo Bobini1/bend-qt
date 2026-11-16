@@ -12,23 +12,23 @@ def changed() -> Qt.Signal:
 def name() -> Qt.Property:
   Qt.Property.withNotify(Qt.Property.define("prénom", Qt.string()), changed())
 
-def Card() -> Qt.QtObject:
-  Qt.QtObject.withSignals(Qt.QObject.define("Élément", [name()]), [changed()])
+def Card() -> Qt.ObjectType:
+  Qt.ObjectType.withSignals(Qt.QObject.define("Élément", [name()]), [changed()])
 
 def notified(self: Qt.QObject, value: String) -> Qt.Action(Unit):
   Qt.QObject.setObjectName(self, value)
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    instance: Qt.QtObject.Instance(Card()) <- Qt.QtObject.new(~Card())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Card(), instance)
+    instance: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.new(~Card())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Card(), instance)
     +probe: Qt.QObject <- Qt.QObject.new()
     connection: Qt.Connection <- Qt.Signal.connect(~changed(), ~Qt.QObject, ~notified, self, probe)
     Qt.Property.set(~name(), self, "Élodie")
     read: String <- Qt.Property.get(~name(), self)
     heard: String <- Qt.QObject.objectName(probe)
     require(String.eq(read, "Élodie") && String.eq(heard, "Élodie"), "Unicode property or notification failed")
-    registration: Qt.QObject <- Qt.Qml.registerType(~Card(), "Bend.Unicode", 1, 0, "Élément")
+    registration: Qt.Qml.Registration(Card()) <- Qt.Qml.registerType(~Card(), "Bend.Unicode", 1, 0, "Élément")
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new__QObject(Qt.QObject{0})
     context: Qt.QQmlContext <- Qt.QQmlEngine.rootContext(engine)
     Qt.QQmlContext.setContextProperty__String_QObject(context, "personne", self)

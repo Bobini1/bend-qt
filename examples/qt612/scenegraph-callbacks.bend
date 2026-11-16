@@ -96,7 +96,7 @@ def trace(+probe: Qt.QObject, old: Qt.QSGNode) -> Qt.Action(Unit):
 def render_resource(+probe: Qt.QObject, window: Qt.QQuickWindow, interface: Qt.QSGRendererInterface) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     acquired: Qt.NativeRenderResource <- Qt.QSGRendererInterface.getResource__QQuickWindow_String(interface, window, "bend-fixture-unknown-resource")
-    +resource: Qt.NativeRenderResource <- Qt.NativeRenderResource.keep(acquired)
+    +resource: Qt.NativeRenderResource <- Qt.NativeRenderResource.detachFromScope(acquired)
     valid: Bool <- Qt.NativeRenderResource.isNull(resource)
     require(valid, "Unknown renderer resource key was not null")
     remember(probe, "resource", Qt.NativeRenderResource.word(resource))
@@ -111,7 +111,7 @@ def inspect_transform(+probe: Qt.QObject, +data: Qt.QQuickItem.UpdatePaintNodeDa
     copied: Qt.QQuickItem.UpdatePaintNodeData <- Qt.QQuickItem.UpdatePaintNodeData.new(data)
     # Keep the handle for the expiry check below, past this callback's pool.
     # This does not extend the native transform's call-scoped lifetime.
-    +copy: Qt.QQuickItem.UpdatePaintNodeData <- Qt.QQuickItem.UpdatePaintNodeData.keep(copied)
+    +copy: Qt.QQuickItem.UpdatePaintNodeData <- Qt.QQuickItem.UpdatePaintNodeData.detachFromScope(copied)
     Qt.QQuickItem.UpdatePaintNodeData.Fields.set_transformNode(copy, transform)
     remember(probe, "transform", Qt.QSGTransformNode.word(transform))
     remember(probe, "copy", Qt.QQuickItem.UpdatePaintNodeData.word(copy))

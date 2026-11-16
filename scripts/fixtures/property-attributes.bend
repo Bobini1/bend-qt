@@ -44,31 +44,31 @@ def virtualText() -> Qt.Property:
 def finalText() -> Qt.Property:
   Qt.Property.withFinal(Qt.Property.define("finalText", Qt.string()), True{})
 
-def Parent() -> Qt.QtObject:
+def Parent() -> Qt.ObjectType:
   Qt.QObject.define("PropertyAttributeParent", [virtualText(), finalText()])
 
-def Child() -> Qt.QtObject:
-  Qt.QtObject.derive(~Parent(), "PropertyAttributeChild", [Qt.Property.withOverride(Qt.Property.define("virtualText", Qt.string()), True{})])
+def Child() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~Parent(), "PropertyAttributeChild", [Qt.Property.withOverride(Qt.Property.define("virtualText", Qt.string()), True{})])
 
-def Grandchild() -> Qt.QtObject:
-  Qt.QtObject.derive(~Child(), "PropertyAttributeGrandchild", [Qt.Property.withOverride(Qt.Property.define("virtualText", Qt.string()), True{})])
+def Grandchild() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~Child(), "PropertyAttributeGrandchild", [Qt.Property.withOverride(Qt.Property.define("virtualText", Qt.string()), True{})])
 
-def invalidFinal() -> Qt.QtObject:
-  Qt.QtObject.derive(~Parent(), "PropertyAttributeInvalidFinal", [Qt.Property.define("finalText", Qt.string())])
+def invalidFinal() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~Parent(), "PropertyAttributeInvalidFinal", [Qt.Property.define("finalText", Qt.string())])
 
-def invalidOverride() -> Qt.QtObject:
+def invalidOverride() -> Qt.ObjectType:
   Qt.QObject.define("PropertyAttributeInvalidOverride", [Qt.Property.withOverride(Qt.Property.define("missing", Qt.string()), True{})])
 
-def invalidNotifier() -> Qt.QtObject:
+def invalidNotifier() -> Qt.ObjectType:
   Qt.QObject.define("PropertyAttributeInvalidNotify", [Qt.Property.withNotify(Qt.Property.define("wrong", Qt.string()), Qt.Signal.define("wrongChanged", [Qt.int32()]))])
 
-def invalidConstant() -> Qt.QtObject:
+def invalidConstant() -> Qt.ObjectType:
   Qt.QObject.define("PropertyAttributeInvalidConstant", [Qt.Property.withNotify(Qt.Property.constant("fixed", Qt.string()), changed())])
 
-def Flags() -> Qt.QtObject:
-  Qt.QtObject.withClassInfo(Qt.QtObject.withSignals(Qt.QObject.define("PropertyAttributeFlags", [title(), hidden(), user(), silent()]), [changed()]), "Purpose", "property coverage")
+def Flags() -> Qt.ObjectType:
+  Qt.ObjectType.withClassInfo(Qt.ObjectType.withSignals(Qt.QObject.define("PropertyAttributeFlags", [title(), hidden(), user(), silent()]), [changed()]), "Purpose", "property coverage")
 
-def Namespaced() -> Qt.QtObject:
+def Namespaced() -> Qt.ObjectType:
   Qt.QObject.define("BendCoverage::Namespaced", [Qt.Property.define("value", Qt.string())])
 
 def notified(self: Qt.QObject, value: String) -> Qt.Action(Unit):
@@ -76,13 +76,13 @@ def notified(self: Qt.QObject, value: String) -> Qt.Action(Unit):
 
 def metadata() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    namespaced: Qt.QtObject.Instance(Namespaced()) <- Qt.QtObject.new(~Namespaced())
-    +qualified: Qt.QObject = Qt.QtObject.as_QObject(~Namespaced(), namespaced)
+    namespaced: Qt.ObjectType.Instance(Namespaced()) <- Qt.ObjectType.new(~Namespaced())
+    +qualified: Qt.QObject = Qt.ObjectType.as_QObject(~Namespaced(), namespaced)
     Qt.Property.set(~Qt.Property.define("value", Qt.string()), qualified, "qualified")
     qualified_value: String <- Qt.Property.get(~Qt.Property.define("value", Qt.string()), qualified)
     require(String.eq(qualified_value, "qualified"), "A qualified QObject class name was rejected")
-    instance: Qt.QtObject.Instance(Flags()) <- Qt.QtObject.new(~Flags())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Flags(), instance)
+    instance: Qt.ObjectType.Instance(Flags()) <- Qt.ObjectType.new(~Flags())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Flags(), instance)
     hidden_meta: Qt.QMetaProperty <- meta_property(self, "hidden")
     +hidden_property: Qt.QMetaProperty = hidden_meta
     designable: Bool <- Qt.QMetaProperty.isDesignable(hidden_property)
@@ -107,8 +107,8 @@ def metadata() -> Qt.Action(Unit):
     Qt.Property.set(~silent(), self, "quiet")
     refused: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.Property.notify(~silent(), self))
     expected(Unit, refused, 95)
-    child: Qt.QtObject.Instance(Grandchild()) <- Qt.QtObject.new(~Grandchild())
-    +derived: Qt.QObject = Qt.QtObject.as_QObject(~Grandchild(), child)
+    child: Qt.ObjectType.Instance(Grandchild()) <- Qt.ObjectType.new(~Grandchild())
+    +derived: Qt.QObject = Qt.ObjectType.as_QObject(~Grandchild(), child)
     Qt.Property.set(~virtualText(), derived, "overridden")
     text: String <- Qt.Property.get(~virtualText(), derived)
     require(String.eq(text, "overridden"), "Property override resolved the base field")
@@ -118,14 +118,14 @@ def metadata() -> Qt.Action(Unit):
     final_meta: Qt.QMetaProperty <- meta_property(derived, "finalText")
     final_flag: Bool <- Qt.QMetaProperty.isFinal(final_meta)
     require(final_flag, "FINAL metadata was ignored")
-    refused: Result<&1, &1, U32 & String, Qt.QtObject.Instance(invalidFinal())> <- Qt.Action.attempt(Qt.QtObject.Instance(invalidFinal()), Qt.QtObject.new(~invalidFinal()))
-    expected(Qt.QtObject.Instance(invalidFinal()), refused, 1)
-    refused: Result<&1, &1, U32 & String, Qt.QtObject.Instance(invalidOverride())> <- Qt.Action.attempt(Qt.QtObject.Instance(invalidOverride()), Qt.QtObject.new(~invalidOverride()))
-    expected(Qt.QtObject.Instance(invalidOverride()), refused, 22)
-    refused: Result<&1, &1, U32 & String, Qt.QtObject.Instance(invalidNotifier())> <- Qt.Action.attempt(Qt.QtObject.Instance(invalidNotifier()), Qt.QtObject.new(~invalidNotifier()))
-    expected(Qt.QtObject.Instance(invalidNotifier()), refused, 22)
-    refused: Result<&1, &1, U32 & String, Qt.QtObject.Instance(invalidConstant())> <- Qt.Action.attempt(Qt.QtObject.Instance(invalidConstant()), Qt.QtObject.new(~invalidConstant()))
-    expected(Qt.QtObject.Instance(invalidConstant()), refused, 22)
+    refused: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(invalidFinal())> <- Qt.Action.attempt(Qt.ObjectType.Instance(invalidFinal()), Qt.ObjectType.new(~invalidFinal()))
+    expected(Qt.ObjectType.Instance(invalidFinal()), refused, 1)
+    refused: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(invalidOverride())> <- Qt.Action.attempt(Qt.ObjectType.Instance(invalidOverride()), Qt.ObjectType.new(~invalidOverride()))
+    expected(Qt.ObjectType.Instance(invalidOverride()), refused, 22)
+    refused: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(invalidNotifier())> <- Qt.Action.attempt(Qt.ObjectType.Instance(invalidNotifier()), Qt.ObjectType.new(~invalidNotifier()))
+    expected(Qt.ObjectType.Instance(invalidNotifier()), refused, 22)
+    refused: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(invalidConstant())> <- Qt.Action.attempt(Qt.ObjectType.Instance(invalidConstant()), Qt.ObjectType.new(~invalidConstant()))
+    expected(Qt.ObjectType.Instance(invalidConstant()), refused, 22)
 
 def future() -> Qt.Property:
   Qt.Property.withRevision(Qt.Property.define("future", Qt.string()), 1)
@@ -133,17 +133,17 @@ def future() -> Qt.Property:
 def versioned() -> Qt.Property:
   Qt.Property.withVersionRevision(Qt.Property.define("versioned", Qt.string()), 2, 3)
 
-def Revisioned() -> Qt.QtObject:
+def Revisioned() -> Qt.ObjectType:
   Qt.QObject.define("PropertyAttributeRevisioned", [future(), versioned()])
 
 def requiredName() -> Qt.Property:
   Qt.Property.withRequired(Qt.Property.define("requiredName", Qt.string()), True{})
 
-def Required() -> Qt.QtObject:
+def Required() -> Qt.ObjectType:
   Qt.QObject.define("PropertyAttributeRequired", [requiredName()])
 
-def DefaultContent() -> Qt.QtObject:
-  Qt.QtObject.withDefaultProperty(Qt.QObject.define("PropertyAttributeDefaultContent", [Qt.Property.define("content", Qt.qobject())]), "content")
+def DefaultContent() -> Qt.ObjectType:
+  Qt.ObjectType.withDefaultProperty(Qt.QObject.define("PropertyAttributeDefaultContent", [Qt.Property.define("content", Qt.qobject())]), "content")
 
 def qml_component(engine: Qt.QQmlEngine, source: String) -> Qt.Action(Qt.QQmlComponent):
   do Qt.Action<Qt.QQmlComponent>:
@@ -155,11 +155,11 @@ def qml_component(engine: Qt.QQmlEngine, source: String) -> Qt.Action(Qt.QQmlCom
 
 def qml() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    registration0: Qt.QObject <- Qt.Qml.registerTypeRevision(~Revisioned(), "Bend.PropertyAttributes", 1, 0, "Revisioned", 0)
-    registration1: Qt.QObject <- Qt.Qml.registerTypeRevision(~Revisioned(), "Bend.PropertyAttributes", 1, 1, "Revisioned", 1)
-    registration2: Qt.QObject <- Qt.Qml.registerType(~Required(), "Bend.PropertyAttributes", 1, 0, "Required")
-    registration3: Qt.QObject <- Qt.Qml.registerType(~Flags(), "Bend.PropertyAttributes", 1, 0, "Flags")
-    registration4: Qt.QObject <- Qt.Qml.registerType(~DefaultContent(), "Bend.PropertyAttributes", 1, 0, "DefaultContent")
+    registration0: Qt.Qml.Registration(Revisioned()) <- Qt.Qml.registerTypeRevision(~Revisioned(), "Bend.PropertyAttributes", 1, 0, "Revisioned", 0)
+    registration1: Qt.Qml.Registration(Revisioned()) <- Qt.Qml.registerTypeRevision(~Revisioned(), "Bend.PropertyAttributes", 1, 1, "Revisioned", 1)
+    registration2: Qt.Qml.Registration(Required()) <- Qt.Qml.registerType(~Required(), "Bend.PropertyAttributes", 1, 0, "Required")
+    registration3: Qt.Qml.Registration(Flags()) <- Qt.Qml.registerType(~Flags(), "Bend.PropertyAttributes", 1, 0, "Flags")
+    registration4: Qt.Qml.Registration(DefaultContent()) <- Qt.Qml.registerType(~DefaultContent(), "Bend.PropertyAttributes", 1, 0, "DefaultContent")
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new__QObject(Qt.QObject{0})
     rejected: Qt.QQmlComponent <- qml_component(engine, "import Bend.PropertyAttributes 1.0\nRevisioned { future: 'hidden' }")
     error: Bool <- Qt.QQmlComponent.isError(rejected)
@@ -199,9 +199,9 @@ def qml() -> Qt.Action(Unit):
     child: Qt.QObject <- Qt.Property.get(~Qt.Property.define("content", Qt.qobject()), default_root)
     child_name: String <- Qt.QObject.objectName(child)
     require(String.eq(child_name, "default child"), "QML default property lost its child")
-    invalid_revision: Result<&1, &1, U32 & String, Qt.QObject> <- Qt.Action.attempt(Qt.QObject,
+    invalid_revision: Result<&1, &1, U32 & String, Qt.Qml.Registration(Revisioned())> <- Qt.Action.attempt(Qt.Qml.Registration(Revisioned()),
       Qt.Qml.registerTypeVersionRevision(~Revisioned(), "Bend.PropertyAttributes.Invalid", 1, 0, "Invalid", 65535, 1))
-    expected(Qt.QObject, invalid_revision, 34)
+    expected(Qt.Qml.Registration(Revisioned()), invalid_revision, 34)
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

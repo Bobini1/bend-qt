@@ -15,8 +15,8 @@ def second() -> Qt.Property:
 def delivered() -> Qt.Signal:
   Qt.Signal.define("delivered", [Qt.QWebSocketCorsAuthenticator.valueArg()])
 
-def Holder() -> Qt.QtObject:
-  Qt.QtObject.withSignals(Qt.QObject.define("ExplicitCopyValues", [first(), second()]), [delivered()])
+def Holder() -> Qt.ObjectType:
+  Qt.ObjectType.withSignals(Qt.QObject.define("ExplicitCopyValues", [first(), second()]), [delivered()])
 
 def copied_body(+probe: Qt.QObject, +value: Qt.QWebSocketCorsAuthenticator) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -32,8 +32,8 @@ def cases() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +source: Qt.QWebSocketCorsAuthenticator <- Qt.QWebSocketCorsAuthenticator.new__String("https://bend.example")
     Qt.QWebSocketCorsAuthenticator.setAllowed(source, False{})
-    +holder: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Holder(), holder)
+    +holder: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Holder(), holder)
     +probe: Qt.QObject <- Qt.QObject.new()
     Qt.Property.set(~first(), self, source)
     Qt.Property.bind(~second(), ~first(), self, self)

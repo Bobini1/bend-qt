@@ -50,8 +50,8 @@ def emit(g):
         name = c['name'].replace('::', '.')
         if name + '.define' in native_names:
             raise ValueError('Native method conflicts with QObject class declaration: ' + name + '.define')
-        g.bend += [f'def {name}.define(name: String, properties: List<&1, Property>) -> QtObject:',
-                   f'  Internal.QtObject.define(name, QtBase{{{name}, {g.ids[c["name"]]}, {schema_dependency(g)}, value => {name}.word(value), word => {name}{{word}}}}, properties)', '']
+        g.bend += [f'def {name}.define(name: String, properties: List<&1, Property>) -> ObjectType:',
+                   f'  Internal.ObjectType.define(name, QtBase{{{name}, {g.ids[c["name"]]}, {schema_dependency(g)}, value => {name}.word(value), word => {name}{{word}}}}, properties)', '']
     g.qt_object_constructors = []
     for c in g.qt_object_bases:
         for constructor in c.get('schema_constructors', []):
@@ -59,16 +59,16 @@ def emit(g):
             g.next_id += 1
             public = constructor['name']
             inputs = [(f'arg{i}', t) for i, t in enumerate(constructor['inputs'])]
-            internal = 'Internal.QtObject.new_' + str(operation)
+            internal = 'Internal.ObjectType.new_' + str(operation)
             from callbacks import ident
             body = f'return RuntimeQtObjects::create_with(r, {constructor["operation"]}, {g.ids[c["name"]]}, &BqtProxy_{ident(c["name"])}::bqt_create_{constructor["operation"]});'
             g.cases.append(f'case {operation}: {{\n    ' + abi_cohorts.operation(g, operation, body) + '\n}')
             g.emit_effect(internal, [('schema', WIRE), *inputs], WORD, operation)
             parameters = ', '.join(('+' if t['raw'] == 'U32 & U32' else '') + name + ': ' + t['bend'] for name, t in inputs)
             arguments = ', '.join(name for name, _ in inputs)
-            g.bend += [f'def {public}(~schema: QtObject' + (', ' + parameters if parameters else '') + ') -> Action(QtObject.Instance(schema)):',
-                       '  do Action<QtObject.Instance(schema)>:',
-                       '    declaration: Wire <- QtObject.schema(schema)',
+            g.bend += [f'def {public}(~schema: ObjectType' + (', ' + parameters if parameters else '') + ') -> Action(ObjectType.Instance(schema)):',
+                       '  do Action<ObjectType.Instance(schema)>:',
+                       '    declaration: Wire <- ObjectType.schema(schema)',
                        f'    word: U32 <- {internal}(declaration' + (', ' + arguments if arguments else '') + ')',
                        '    return QtInstance{word}', '']
             g.qt_object_constructors.append(dict(name=public, native_base=c['name'], operation=operation,
@@ -92,7 +92,7 @@ def emit(g):
         g.next_id += 1
         g.qt_object_operations[native] = operation
         g.cases.append(f'case {operation}: {{\n    return RuntimeQtObjects::{native}(r);\n}}')
-        g.emit_effect('QtObject.' + public, params, result, operation, has_self=self)
+        g.emit_effect('ObjectType.' + public, params, result, operation, has_self=self)
     g.bend += [(HERE / 'templates/qt_objects.bend').read_text()]
     import custom_signals
     custom_signals.emit_destinations(g)
@@ -100,7 +100,7 @@ def emit(g):
     g.next_id += 1
     g.qt_object_operations['install'] = operation
     handler = effect_transport.handler('', '')
-    raw = effect_transport.reserve(g, 'QtObject.install', [('self', OBJECT), ('member', WIRE),
+    raw = effect_transport.reserve(g, 'ObjectType.install', [('self', OBJECT), ('member', WIRE),
                                    ('kind', WORD), ('handler', handler)], UNIT, operation, has_self=True)
     g.cases.append(f'case {operation}: {{\n    return RuntimeQtObjects::install(r);\n}}')
     for public, descriptor, callback, signature, kind in [
@@ -114,6 +114,9 @@ def emit(g):
         g.bend += [f'def {public}(~{descriptor}, ~S: Data, ~f: S -> {signature}, self: QObject, state: S) -> Action(Unit):',
             '  do Action<Unit>:', f'    schema: Wire <- {schema}',
             f'    {raw["name"]}(S, {operation}, QObject.word(self), schema, {kind}, pair => run(Unit, Method.invoke(~{callback}, ~S, ~f, pair)), state)', '']
+    # Script singleton convenience APIs also use registration handles when
+    # virtual QML callback support is disabled in a focused profile.
+    g.bend += [(HERE / 'templates/qml_registrations.bend').read_text()]
     if g.callback_qml:
         params = [('schema', WIRE), ('uri', TEXT), ('major', WORD), ('minor', WORD), ('name', TEXT)]
         for public, tail, function in [
@@ -129,15 +132,15 @@ def emit(g):
             else:
                 raw = effect_transport.reserve(g, 'Qml.' + public, params + tail, OBJECT, operation)
                 g.bend += [
-                    'def Internal.Qml.registerSingletonFactoryRevision(~object: QtObject, ~S: Data, ~f: S -> Method.Handler(~Qml.factoryMethod(object)), uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32, state: S) -> Action(QObject):',
-                    '  do Action<QObject>:', '    schema: Wire <- QtObject.qmlSchema(object)',
+                    'def Internal.Qml.registerSingletonFactoryRevision(~object: ObjectType, ~S: Data, ~f: S -> Method.Handler(~Qml.factoryMethod(object)), uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32, state: S) -> Action(Qml.Registration(object)):',
+                    '  do Action<Qml.Registration(object)>:', '    schema: Wire <- ObjectType.qmlSchema(object)',
                     f'    word: U32 <- {raw["name"]}(S, {operation}, 0, schema, uri, major, minor, name, WireScalar{{revisionMajor, revisionMinor}}, pair => run(Unit, Method.invoke(~Qml.factoryMethod(object), ~S, ~f, pair)), state)',
-                    '    return QObject{word}', '',
-                    'def Qml.registerSingletonFactoryVersionRevision(~object: QtObject, ~S: Data, ~f: S -> Method.Handler(~Qml.factoryMethod(object)), uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32, state: S) -> Action(QObject):',
+                    '    return QmlRegistration{word}', '',
+                    'def Qml.registerSingletonFactoryVersionRevision(~object: ObjectType, ~S: Data, ~f: S -> Method.Handler(~Qml.factoryMethod(object)), uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32, state: S) -> Action(Qml.Registration(object)):',
                     '  Internal.Qml.registerSingletonFactoryRevision(~object, ~S, ~f, uri, major, minor, name, Internal.Revision.major(revisionMajor), revisionMinor, state)', '',
-                    'def Qml.registerSingletonFactoryRevision(~object: QtObject, ~S: Data, ~f: S -> Method.Handler(~Qml.factoryMethod(object)), uri: String, major: U32, minor: U32, name: String, revision: U32, state: S) -> Action(QObject):',
+                    'def Qml.registerSingletonFactoryRevision(~object: ObjectType, ~S: Data, ~f: S -> Method.Handler(~Qml.factoryMethod(object)), uri: String, major: U32, minor: U32, name: String, revision: U32, state: S) -> Action(Qml.Registration(object)):',
                     '  Internal.Qml.registerSingletonFactoryRevision(~object, ~S, ~f, uri, major, minor, name, 65535, revision, state)', '',
-                    'def Qml.registerSingletonFactory(~object: QtObject, ~S: Data, ~f: S -> Method.Handler(~Qml.factoryMethod(object)), uri: String, major: U32, minor: U32, name: String, state: S) -> Action(QObject):',
+                    'def Qml.registerSingletonFactory(~object: ObjectType, ~S: Data, ~f: S -> Method.Handler(~Qml.factoryMethod(object)), uri: String, major: U32, minor: U32, name: String, state: S) -> Action(Qml.Registration(object)):',
                     '  Internal.Qml.registerSingletonFactoryRevision(~object, ~S, ~f, uri, major, minor, name, 65535, 0, state)', '']
         for public, arguments, function in [
             ('type_mode_raw', params + [('mode', WORD), ('reason', TEXT)], 'register_type_mode'),
@@ -162,9 +165,10 @@ def emit(g):
         g.cases.append(f'case {operation}: {{\n    return RuntimeQtObjects::install_qml(r);\n}}')
         raw = effect_transport.reserve(g, 'Qml.install', [('self', OBJECT), ('schema', WIRE), ('kind', WORD), ('handler', handler)], UNIT, operation, has_self=True)
         for public, descriptor, kind in [('handleCreate', 'creationMethod', 0), ('handleAttached', 'attachedMethod', 1), ('handleExtension', 'extensionMethod', 2), ('handleConstructor', 'constructorMethod', 3)]:
-            g.bend += [f'def Qml.{public}(~object: QtObject, ~S: Data, ~f: S -> Method.Handler(~Qml.{descriptor}(object)), registration: QObject, state: S) -> Action(Unit):',
-                '  do Action<Unit>:', '    schema: Wire <- QtObject.qmlSchema(object)',
-                f'    {raw["name"]}(S, {operation}, QObject.word(registration), schema, {kind}, pair => run(Unit, Method.invoke(~Qml.{descriptor}(object), ~S, ~f, pair)), state)', '']
+            g.bend += [f'def Qml.{public}(~object: ObjectType, ~S: Data, ~f: S -> Method.Handler(~Qml.{descriptor}(object)), registration: Qml.Registration(object), state: S) -> Action(Unit):',
+                '  do Action<Unit>:', '    schema: Wire <- ObjectType.qmlSchema(object)',
+                f'    {raw["name"]}(S, {operation}, Internal.Qml.registrationWord(ObjectType.name(object), registration), schema, {kind}, pair => run(Unit, Method.invoke(~Qml.{descriptor}(object), ~S, ~f, pair)), state)', '']
+    g.bend += [(HERE / 'templates/object_type_access.bend').read_text()]
 
 
 def _base_info_parts(g):
@@ -241,7 +245,7 @@ def inventory(g):
         native_proxy_constructible=getattr(g, 'callback_native_constructible', {}).get(c['name']))
         for c in getattr(g, 'qt_object_bases', [])}
     return dict(available=True, bases=bases,
-        derive='QtObject.derive(~parentSchema, name, properties)',
+        derive='ObjectType.derive(~parentSchema, name, properties)',
         constructors=getattr(g, 'qt_object_constructors', []),
         operations=getattr(g, 'qt_object_operations', {}),
         members='Stored and accessor properties, authored typed QQmlListProperty views, every Qt property attribute, typed notifications, bindings, named methods, class info, enums and native virtual handlers',

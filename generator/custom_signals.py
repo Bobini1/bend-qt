@@ -23,6 +23,7 @@ def native_meta_type_body(native):
     # deprecated registration paths that reference optional extern helpers.
     return [f'static const QMetaType meta = QMetaType::fromType<{native}>();',
             'static const bool registered = [] {',
+            '    (void)meta.id(); // Allocate the ID before installing aliases.',
             f'    QMetaType::registerNormalizedTypedef(QByteArrayLiteral("{native}"), meta);',
             '    return true;', ' }();', '(void)registered;', 'return meta;']
 
@@ -253,19 +254,19 @@ def emit(g):
         exports = getattr(g, 'partition_export_packages', None)
         if exports and enum and enum.get('package') not in exports:
             continue
-        g.bend += [f'def {public}() -> SignalArgument:',
-            f'  SignalArgument{{{t["bend"]}, "{cpp}", value => {t["codec"]}.encode(value), wire => {t["codec"]}.decode(wire), {schema_dependency(g)}}}', '']
+        g.bend += [f'def {public}() -> TypeDescriptor:',
+            f'  TypeDescriptor{{{t["bend"]}, "{cpp}", value => {t["codec"]}.encode(value), wire => {t["codec"]}.decode(wire), {schema_dependency(g)}}}', '']
     if 'QObject' in g.ids:
-        g.bend += ['def qobject() -> SignalArgument:', '  QObject.arg()', '']
+        g.bend += ['def qobject() -> TypeDescriptor:', '  QObject.arg()', '']
     if 'QVariant' in g.ids:
-        g.bend += ['def variant() -> SignalArgument:', '  QVariant.arg()', '']
+        g.bend += ['def variant() -> TypeDescriptor:', '  QVariant.arg()', '']
     if not any(public == 'QChar.arg' for public, _, _ in g.custom_signal_arguments):
-        g.bend += ['def QChar.arg() -> SignalArgument:', '  qchar()', '']
+        g.bend += ['def QChar.arg() -> TypeDescriptor:', '  qchar()', '']
     for alias, descriptor in [('qint8', 'int8'), ('quint8', 'u8'), ('qint16', 'int16'), ('quint16', 'u16'),
                               ('qint32', 'int32'), ('quint32', 'u32'), ('qint64', 'int64'), ('quint64', 'u64'),
                               ('short', 'int16'), ('ushort', 'u16'), ('int', 'int32'), ('uint', 'u32'),
                               ('float', 'f32'), ('double', 'f64'), ('qsizetype', 'int64')]:
-        g.bend += [f'def {alias}() -> SignalArgument:', f'  {descriptor}()', '']
+        g.bend += [f'def {alias}() -> TypeDescriptor:', f'  {descriptor}()', '']
     create, connect, emission, available, connect_typed, connect_member = range(g.next_id, g.next_id + 6)
     g.next_id += 6
     g.custom_signal_operations = dict(create=create, connect=connect, emit=emission, available=available,

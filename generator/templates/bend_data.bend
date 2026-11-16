@@ -36,13 +36,13 @@ def EncodedArguments.empty(-A: Type) -> EncodedArguments(A):
 
 # @PUBLIC@
 
-def arg(~A: Data) -> SignalArgument:
+def arg(~A: Data) -> TypeDescriptor:
   BendArgument{A, Internal.Data.witness(~A, 0n)}
 
 # @VARIANT@
 
 def QVariant.fromData(~A: Data, value: A) -> Action(QVariant):
-  Wire.withData(QVariant, SignalArgument.encode(arg(~A), value), Internal.Data.variant_raw)
+  Wire.withData(QVariant, TypeDescriptor.encode(arg(~A), value), Internal.Data.variant_raw)
 
 def QVariant.toData(~A: Data, value: QVariant) -> Action(A):
-  Wire.withData(A, Internal.Data.from_variant_raw(value), wire => SignalArgument.decode(arg(~A), wire))
+  Wire.withData(A, Internal.Data.from_variant_raw(value), wire => TypeDescriptor.decode(arg(~A), wire))

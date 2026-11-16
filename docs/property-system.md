@@ -2,17 +2,18 @@
 
 The property API follows [Qt 6.12's property system](https://doc.qt.io/qt-6/properties.html).
 Property declarations are ordinary Bend values, and operations on an instance
-return `Action`. This source checkpoint was reviewed on 2026-11-15 against the
-installed Qt 6.12 headers and the pinned PySide `Property` implementation.
-Every Qt property attribute has an implementation below. That statement is
-about the source API; the current combined native run and fresh generated-package
-validation are still pending.
+return `Action`. The declarations follow the installed Qt 6.12 headers and the
+pinned PySide `Property` implementation. Every Qt property attribute has an
+implementation below. The canonical validation receipt in
+`build/qt612/check/receipt.json` records the full package's verification status.
+See [Bend types in QML](bend-qml-types.md) for schemas, typed member access and
+registration examples.
 
 | Qt feature | Bend API | Behavior exercised by the fixtures |
 | --- | --- | --- |
 | `READ` | `Property.get`, `Property.handleGetter` | A getter returns the declared value type. |
 | `WRITE` | `Property.set`, `Property.handleSetter` | A setter receives the declared value type. |
-| `MEMBER` | Default property storage, `readStorage`, `store` | Storage works without custom accessors. Internal access bypasses accessor handlers. |
+| `MEMBER` | Default property storage, `readStorage`, `writeStorage` | Storage works without custom accessors. Internal access bypasses accessor handlers. |
 | `RESET` | `Property.withReset`, `handleResetter`, `reset` | Bend, `QMetaProperty.reset` and QML `undefined` invoke the reset handler. |
 | `NOTIFY` | Default `<name>Changed()`, `withNotify`, `withoutNotify`, `notify` | Notifications can have no arguments or carry the property's new value. |
 | `REVISION` | `Property.withRevision`, `withVersionRevision` | Qt reports the encoded revision, and QML imports control access. |
@@ -34,13 +35,13 @@ Boolean metadata modifiers take the property followed by a `Bool`. For example,
 version segment must be between 0 and 254.
 
 The default declaration supplies backing storage and a change signal. A custom
-setter that calls `Property.store` gets a notification when the value changes.
+setter that calls `Property.writeStorage` gets a notification when the value changes.
 A setter that updates external storage calls `Property.notify` explicitly after
 checking that the value changed. An explicit NOTIFY signal can be shared with
-other properties or declared through `QtObject.withSignals`.
+other properties or declared through `ObjectType.withSignals`.
 
 Internal backing operations can update a read-only property. In particular,
-`Property.store` and an internal binding can supply its value, while QML and
+`Property.writeStorage` and an internal binding can supply its value, while QML and
 `QMetaProperty` still see a read-only property. Constant properties cannot receive
 a binding that changes their value.
 
@@ -71,8 +72,11 @@ Classes already exposed as values keep their owning `arg()` descriptor.
 
 The container constructors select native instantiations from the generated
 conversion inventory. They do not replace an unavailable native container with
-a QVariant container. Unsupported signatures and descriptor types stay visible
-in `coverage.json`.
+a QVariant container. `list` also covers element types that have no compiled
+`QList`, such as Bend-declared classes and values or nested lists: their
+`QList` type is created at run time, and Qt and QML iterate it through the
+ordinary sequence conversion. Unsupported signatures and descriptor types stay
+visible in `coverage.json`.
 
 This inventory is the boundary for native C++ metatypes. It does not claim codecs
 for arbitrary plugin-defined C++ classes. Arbitrary Bend Data values use
@@ -118,9 +122,9 @@ the setter. Bend declarations provide native READ/backing storage as required by
 the documented Q_PROPERTY contract. A setter-only Python descriptor is not
 counted as an additional working native Qt property mode.
 
-`QtObject.withClassInfo(schema, key, value)` adds `Q_CLASSINFO` metadata.
+`ObjectType.withClassInfo(schema, key, value)` adds `Q_CLASSINFO` metadata.
 `withDefaultProperty(schema, name)` supplies QML's `DefaultProperty` entry.
-`QtObject.withEnums` exports Q_ENUM and Q_FLAG declarations through `QMetaEnum`
+`ObjectType.withEnums` exports Q_ENUM and Q_FLAG declarations through `QMetaEnum`
 and QML. Qualified QObject and enum names follow C++ namespace spelling.
 
 Register a type with `Qml.registerTypeRevision` or
@@ -181,10 +185,10 @@ package readiness.
 
 ```bend
 def guests() -> Qt.Property:
-  Qt.Property.qmlList("guests", Qt.QtObject.arg(~Guest()))
+  Qt.Property.qmlList("guests", Qt.ObjectType.arg(~Guest()))
 
-def Party() -> Qt.QtObject:
-  Qt.QtObject.withDefaultProperty(
+def Party() -> Qt.ObjectType:
+  Qt.ObjectType.withDefaultProperty(
     Qt.QObject.define("Party", [guests()]), "guests")
 ```
 
@@ -207,7 +211,7 @@ synthesize replacement or removal from the other available operations.
 `Property.get` returns a typed `QmlListView`; it does not materialize a copied
 list. `QmlListView.reference(~elementDescriptor, view)` creates an ordinary
 `QQmlListReference`. `qmlList(elementDescriptor)` also supplies a descriptor
-for signals, methods and QVariant boxing. `Property.store` and accessor
+for signals, methods and QVariant boxing. `Property.writeStorage` and accessor
 handlers can return a different view while keeping the declared element type.
 The property itself is read-only by default, while its list contents remain
 mutable. Other property attributes apply through the existing Property API.

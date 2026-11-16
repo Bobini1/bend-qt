@@ -30,7 +30,7 @@ These are local audit receipts, not consumer dependencies.
 | --- | --- |
 | QObject connections and signal emission | Generated `connect_signal` helpers and descriptor-based `Signal.connect`, connection modes, method connections and `Signal.emit`. |
 | Finding children | Typed class `findIn`, `findAllIn` and regular-expression searches. Explicit Qt child-search options have a separate regression fixture. |
-| Translation | Native class `tr` uses that class's static metaobject. `QtObject.tr` uses the declared runtime schema. |
+| Translation | Native class `tr` uses that class's static metaobject. `ObjectType.tr` uses the declared runtime schema. |
 | Python callable action and shortcut constructors | Construct the QAction or QShortcut, configure it and connect its ordinary typed signal. |
 | Python bytes, buffers and NumPy inputs | Use owning byte, numeric and point lists, or checked native views. Python array strides and pickle protocols are not Qt values. |
 | Directory iteration | `QDirListing.entries` returns owning QFileInfo snapshots. Native DirEntry values borrow iterator internals. |

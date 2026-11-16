@@ -25,7 +25,8 @@ if args.negative_readback_post:
     start=source.index('    try {\n        if (readback_post_fail)')
     end=source.index('\n}\nstatic void rhi_cancel_readback',start)
     source=source[:start]+source[start:end].split('    try {\n',1)[1].split('    } catch (...) {',1)[0]+source[end:]
-wrappers.write_text(source)
+# The generated file stays as written; the fault-injected copy is compiled.
+injected=work/'wrappers-injected.cpp';injected.write_text(source)
 defines=[]
 for name,owner,signature in [('MAP','QRhiBuffer','beginFullDynamicBufferUpdateForCurrentFrame()'),
  ('UNMAP','QRhiBuffer','endFullDynamicBufferUpdateForCurrentFrame()'),('FINISH','QRhi','finish()'),
@@ -40,7 +41,7 @@ defines += [f'#define TYPE_{name} {value}' for name,value in data['ids'].items()
 config=work/'fixture-config.h';config.write_text('\n'.join(defines)+'\n')
 fixture=ROOT/'examples/qt612/next-rhi-buffers-native.cpp';exe=work/'native'
 cmd=[x for x in module.compiler_flags(qt,'clang++-19',data['modules']) if x not in ('-O1','-DNDEBUG')]
-cmd += ['-O0','-ferror-limit=12','-DBQT_GENERATED_WRAPPERS="'+str(work/'wrappers.cpp')+'"','-include',str(config),str(fixture),
+cmd += ['-O0','-ferror-limit=12','-DBQT_GENERATED_WRAPPERS="'+str(injected)+'"','-include',str(config),str(fixture),
  '-L'+str(qt/'lib'),'-Wl,-rpath,'+str(qt/'lib'),*['-lQt6'+x[2:] for x in reversed(data['modules'])],'-pthread','-o',str(exe)]
 with (work/'compile.log').open('w') as log:
     compiled=subprocess.run(['flock','-x','/tmp/bendqt-focused-compile.lock',*cmd],stdout=log,stderr=subprocess.STDOUT,timeout=1800)
@@ -53,6 +54,6 @@ assert result.returncode==0 and 'QT612_NEXT_RHI_BUFFERS_OK' in output,f'Native R
  readback_cleanup_checks=['readback handler runs although posting the storage sweep fails',
                          'finished result storage stays alive until later safe sweep',
                          'shutdown retires an abandoned readback and frame'],
- source_sha256=hashlib.sha256((work/'wrappers.cpp').read_bytes()).hexdigest(),
+ source_sha256=hashlib.sha256(injected.read_bytes()).hexdigest(),
  fixture_sha256=hashlib.sha256(fixture.read_bytes()).hexdigest()),indent=2))
 print(output)

@@ -781,9 +781,9 @@
       "status": "alternative_implemented",
       "detail": "Qt-generated metaObject/qt_metacall entry points are supplied by the runtime schema system, not ordinary Python virtual dispatch.",
       "alternatives": [
-        "QtObject.define",
-        "QtObject.withMethods",
-        "QtObject.withSignals"
+        "QObject.define",
+        "ObjectType.withMethods",
+        "ObjectType.withSignals"
       ],
       "evidence": [
         "generator/qt_objects.py",

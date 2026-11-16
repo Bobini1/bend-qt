@@ -24,8 +24,8 @@ def increment() -> Qt.Method:
 def failWork() -> Qt.Method:
   Qt.Method.define("failWork", [], Qt.unit())
 
-def WorkerObject() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QObject.define("BendWorkerMembers", [stored(), computed(), written()]), [increment(), failWork()])
+def WorkerObject() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.QObject.define("BendWorkerMembers", [stored(), computed(), written()]), [increment(), failWork()])
 
 def on_main() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -62,8 +62,8 @@ def expected(result: Result<&1, &1, U32 & String, Bool>) -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +value: Qt.QtObject.Instance(WorkerObject()) <- Qt.QtObject.new(~WorkerObject())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~WorkerObject(), value)
+    +value: Qt.ObjectType.Instance(WorkerObject()) <- Qt.ObjectType.new(~WorkerObject())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~WorkerObject(), value)
     +setter_probe: Qt.QObject <- Qt.QObject.new__QObject(Qt.QObject{0})
     +notify_probe: Qt.QObject <- Qt.QObject.new__QObject(Qt.QObject{0})
     Qt.Property.set(~stored(), self, Qt.Int32{5})

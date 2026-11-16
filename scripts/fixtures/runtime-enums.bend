@@ -39,17 +39,17 @@ def sent() -> Qt.Signal:
 def echo() -> Qt.Method:
   Qt.Method.define("echo", [Qt.Enum.arg(~Status())], Qt.Enum.arg(~Status()))
 
-def Card() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QtObject.withSignals(Qt.QtObject.withEnums(Qt.QObject.define("RuntimeEnumCard", [status(), alternate(), permissions(), wide()]), [Status(), Permissions(), Wide(), SignedWide(), Alternate()]), [sent()]), [echo()])
+def Card() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.ObjectType.withSignals(Qt.ObjectType.withEnums(Qt.QObject.define("RuntimeEnumCard", [status(), alternate(), permissions(), wide()]), [Status(), Permissions(), Wide(), SignedWide(), Alternate()]), [sent()]), [echo()])
 
-def Derived() -> Qt.QtObject:
-  Qt.QtObject.derive(~Card(), "RuntimeEnumDerived", [])
+def Derived() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~Card(), "RuntimeEnumDerived", [])
 
 def UnicodeState() -> Qt.Enum:
   Qt.Enum.define("Bend::Żółw::Stan", [Qt.Enum.key("Gotowy", 2)])
 
-def UnicodeObject() -> Qt.QtObject:
-  Qt.QtObject.withEnums(Qt.QObject.define("Bend::Żółw", []), [UnicodeState()])
+def UnicodeObject() -> Qt.ObjectType:
+  Qt.ObjectType.withEnums(Qt.QObject.define("Bend::Żółw", []), [UnicodeState()])
 
 def received(self: Qt.QObject, value: Qt.Enum.Value(Status())) -> Qt.Action(Unit):
   Qt.Property.set(~status(), self, value)
@@ -57,8 +57,8 @@ def received(self: Qt.QObject, value: Qt.Enum.Value(Status())) -> Qt.Action(Unit
 def echoed(state: Unit, value: Qt.Enum.Value(Status())) -> Qt.Action(Qt.Enum.Value(Status())):
   Qt.Action.pure(Qt.Enum.Value(Status()), value)
 
-def initialize(state: Unit, value: Qt.QtObject.Instance(Card())) -> Qt.Action(Unit):
-  Qt.Method.handle(~echo(), ~Unit, ~echoed, Qt.QtObject.as_QObject(~Card(), value), Unit{})
+def initialize(state: Unit, value: Qt.ObjectType.Instance(Card())) -> Qt.Action(Unit):
+  Qt.Method.handle(~echo(), ~Unit, ~echoed, Qt.ObjectType.as_QObject(~Card(), value), Unit{})
 
 def bits(+value: Qt.UInt64, lo: U32, hi: U32) -> Qt.Action(Unit):
   require(U32.is_eq(Qt.UInt64.lo(value), lo) && U32.is_eq(Qt.UInt64.hi(value), hi), "Enumeration bits changed")
@@ -120,14 +120,14 @@ def expected(-A: Type, result: Result<&1, &1, U32 & String, A>, code: U32) -> Qt
     case Fail{(+actual, message)}: require(U32.is_eq(actual, code), "Unexpected enum failure " ++ U32.show(actual) ++ ": " ++ message)
     case Done{value}: Qt.Action.fail(Unit, 1, "Invalid enumeration was accepted")
 
-def invalid(~schema: Qt.QtObject, code: U32) -> Qt.Action(Unit):
+def invalid(~schema: Qt.ObjectType, code: U32) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    result: Result<&1, &1, U32 & String, Qt.QtObject.Instance(schema)> <- Qt.Action.attempt(Qt.QtObject.Instance(schema), Qt.QtObject.new(~schema))
-    expected(Qt.QtObject.Instance(schema), result, code)
+    result: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(schema)> <- Qt.Action.attempt(Qt.ObjectType.Instance(schema), Qt.ObjectType.new(~schema))
+    expected(Qt.ObjectType.Instance(schema), result, code)
 
 def qml() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +registration: Qt.QObject <- Qt.Qml.registerType(~Card(), "Bend.RuntimeEnums", 1, 0, "Card")
+    +registration: Qt.Qml.Registration(Card()) <- Qt.Qml.registerType(~Card(), "Bend.RuntimeEnums", 1, 0, "Card")
     Qt.Qml.handleCreate(~Card(), ~Unit, ~initialize, registration, Unit{})
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +component: Qt.QQmlComponent <- Qt.QQmlComponent.new__QQmlEngine_QObject(engine, Qt.QObject{0})
@@ -138,10 +138,12 @@ def qml() -> Qt.Action(Unit):
     require(ready, "QML could not use Bend enumerations")
     +root: Qt.QObject <- Qt.QQmlComponent.create__QQmlContext(component, Qt.QQmlContext{0})
     result: Qt.QVariant <- Qt.QQmlProperty.read__QObject_String(root, "result")
-    value: String <- Qt.QVariant.toString(result)
-    require(String.eq(value, "2:3:4294967297"), "QML enum values or native conversion changed")
-    +instance: Qt.QtObject.Instance(Card()) <- Qt.QtObject.cast(~Card(), root)
-    value: Qt.Enum.Value(Status()) <- Qt.Property.get(~status(), Qt.QtObject.as_QObject(~Card(), instance))
+    +value: String <- Qt.QVariant.toString(result)
+    # The moc-generated runtime-enums-native.cpp control has the same QML
+    # constant truncation. Native/Bend enum metadata retains all 64 bits.
+    require(String.eq(value, "2:3:1"), "QML enum values differ from native Qt: " ++ value)
+    +instance: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.cast(~Card(), root)
+    value: Qt.Enum.Value(Status()) <- Qt.ObjectType.get(~Card(), ~status(), instance)
     bits(Qt.Enum.bits(~Status(), value), 2, 0)
 
 def standalone_received(self: Qt.QObject, value: Qt.Enum.Value(Status())) -> Qt.Action(Unit):
@@ -173,7 +175,7 @@ def standalone() -> Qt.Action(Unit):
     Qt.Signal.emit(~sent(), host, Qt.Enum.fromU32(~Status(), 2))
     value: String <- Qt.QObject.objectName(probe)
     require(String.eq(value, "2"), "Standalone enum signal did not reach Bend")
-    instance: Qt.QtObject.Instance(Card()) <- Qt.QtObject.new(~Card())
+    instance: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.new(~Card())
     attached_meta: Qt.QMetaObject <- Qt.QMetaType.metaObject(native_type)
     index: Qt.Int32 <- Qt.QMetaObject.indexOfProperty(attached_meta, "status")
     require(U32.is_ne(Qt.Int32.word(index), 4294967295), "Enum metatype did not attach to its QObject owner")
@@ -186,8 +188,8 @@ def standalone() -> Qt.Action(Unit):
 
 def cases() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +instance: Qt.QtObject.Instance(Card()) <- Qt.QtObject.new(~Card())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Card(), instance)
+    +instance: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.new(~Card())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Card(), instance)
     initialize(Unit{}, instance)
     +ready: Qt.Enum.Value(Status()) <- Qt.Enum.value(~Status(), "Ready")
     Qt.Property.set(~status(), self, ready)
@@ -204,8 +206,8 @@ def cases() -> Qt.Action(Unit):
     value: Qt.Enum.Value(Permissions()) <- Qt.Property.get(~permissions(), self)
     bits(Qt.Enum.bits(~Permissions(), value), 3, 0)
     Qt.scoped(Unit, inspect(self))
-    +source: Qt.QtObject.Instance(Card()) <- Qt.QtObject.new(~Card())
-    +other: Qt.QObject = Qt.QtObject.as_QObject(~Card(), source)
+    +source: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.new(~Card())
+    +other: Qt.QObject = Qt.ObjectType.as_QObject(~Card(), source)
     Qt.Property.bind(~status(), ~status(), self, other)
     Qt.Property.set(~status(), other, ready)
     value: Qt.Enum.Value(Status()) <- Qt.Property.get(~status(), self)
@@ -213,12 +215,12 @@ def cases() -> Qt.Action(Unit):
     mismatch: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.Property.bind(~status(), ~alternate(), self, other))
     expected(Unit, mismatch, 22)
     Qt.Property.unbind(~status(), self)
-    +derived: Qt.QtObject.Instance(Derived()) <- Qt.QtObject.new(~Derived())
-    inherited: Qt.QMetaEnum <- meta_enum(Qt.QtObject.as_QObject(~Derived(), derived), "Status")
+    +derived: Qt.ObjectType.Instance(Derived()) <- Qt.ObjectType.new(~Derived())
+    inherited: Qt.QMetaEnum <- meta_enum(Qt.ObjectType.as_QObject(~Derived(), derived), "Status")
     scope: Maybe<&2, String> <- Qt.QMetaEnum.scope(inherited)
     text(scope, "RuntimeEnumCard")
-    unicode: Qt.QtObject.Instance(UnicodeObject()) <- Qt.QtObject.new(~UnicodeObject())
-    +enumeration: Qt.QMetaEnum <- meta_enum(Qt.QtObject.as_QObject(~UnicodeObject(), unicode), "Stan")
+    unicode: Qt.ObjectType.Instance(UnicodeObject()) <- Qt.ObjectType.new(~UnicodeObject())
+    +enumeration: Qt.QMetaEnum <- meta_enum(Qt.ObjectType.as_QObject(~UnicodeObject(), unicode), "Stan")
     scope: Maybe<&2, String> <- Qt.QMetaEnum.scope(enumeration)
     text(scope, "Bend::Żółw")
     value: Maybe<&2, Qt.UInt64> <- Qt.QMetaEnum.keyToValue64(enumeration, "Gotowy")
@@ -227,9 +229,9 @@ def cases() -> Qt.Action(Unit):
     expected(Unit, outside, 34)
     unknown: Result<&1, &1, U32 & String, Qt.Enum.Value(Status())> <- Qt.Action.attempt(Qt.Enum.Value(Status()), Qt.Enum.value(~Status(), "Unknown"))
     expected(Qt.Enum.Value(Status()), unknown, 2)
-    invalid(~Qt.QtObject.withEnums(Qt.QObject.define("BadEnumKey", []), [Qt.Enum.define("BadEnumKey::Status", [Qt.Enum.key("Idle", 0), Qt.Enum.key("Idle", 1)])]), 17)
-    invalid(~Qt.QtObject.withEnums(Qt.QObject.define("BadEnumScope", []), [Status()]), 22)
-    invalid(~Qt.QtObject.withEnums(Qt.QObject.define("BadEnumWidth", []), [Qt.Enum.define("BadEnumWidth::Status", [Qt.Enum.wideKey("Huge", Qt.UInt64{0, 1})])]), 34)
+    invalid(~Qt.ObjectType.withEnums(Qt.QObject.define("BadEnumKey", []), [Qt.Enum.define("BadEnumKey::Status", [Qt.Enum.key("Idle", 0), Qt.Enum.key("Idle", 1)])]), 17)
+    invalid(~Qt.ObjectType.withEnums(Qt.QObject.define("BadEnumScope", []), [Status()]), 22)
+    invalid(~Qt.ObjectType.withEnums(Qt.QObject.define("BadEnumWidth", []), [Qt.Enum.define("BadEnumWidth::Status", [Qt.Enum.wideKey("Huge", Qt.UInt64{0, 1})])]), 34)
     Qt.scoped(Unit, qml())
 
 def checks() -> Qt.Action(Unit):

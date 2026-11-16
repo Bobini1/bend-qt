@@ -6,7 +6,7 @@ focused evidence; the full release validation remains a separate gate.
 
 | Application feature | Bend support and evidence | Current verification |
 | --- | --- | --- |
-| QObject data holders, properties, notifications and QML registration | `QtObject`, `Property`, authored signals, methods and QML registration; property, singleton, value-type and registration fixtures | Implemented; complete release suite pending |
+| QObject data holders, properties, notifications and QML registration | `ObjectType`, `Property`, authored signals, methods and QML registration; property, singleton, value-type and registration fixtures | Implemented; complete release suite pending |
 | Native and authored typed signals, including objects and QVariant containers | Direct and queued connection adapters; mixed-family native fixture | Focused native consumers passed |
 | Mutable item models and value ownership | `QRangeModel.fromValues` and `fromRows`, overrides and model scopes | Native Bend/Qt 6.10 consumer passed edits, QML calls, retained objects, stale metadata and cleanup |
 | Qt Quick scene-graph nodes | `QQuickItem.updatePaintNode`, geometry, material and node ownership adapters | Custom material rendering below passed; the complete scene-graph suite remains a separate gate |

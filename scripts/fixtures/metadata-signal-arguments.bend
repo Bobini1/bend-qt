@@ -14,8 +14,8 @@ def expected(result: Result<&1, &1, U32 & String, Unit>) -> Qt.Action(Unit):
 def metadataReady() -> Qt.Signal:
   Qt.Signal.define("metadataReady", [Qt.QMetaProperty.arg()])
 
-def Host() -> Qt.QtObject:
-  Qt.QtObject.withSignals(Qt.QObject.define("MetadataSignalArguments", [Qt.Property.define("payload", Qt.string())]), [metadataReady()])
+def Host() -> Qt.ObjectType:
+  Qt.ObjectType.withSignals(Qt.QObject.define("MetadataSignalArguments", [Qt.Property.define("payload", Qt.string())]), [metadataReady()])
 
 def named(value: Maybe<&2, String>) -> Qt.Action(Unit):
   match value:
@@ -95,8 +95,8 @@ def immutable_worker(+self: Qt.QObject, +probe: Qt.QObject) -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    host: Qt.QtObject.Instance(Host()) <- Qt.QtObject.new(~Host())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Host(), host)
+    host: Qt.ObjectType.Instance(Host()) <- Qt.ObjectType.new(~Host())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Host(), host)
     +probe: Qt.QObject <- Qt.QObject.new()
     Qt.scoped(Unit, released_source(self, probe))
     Qt.scoped(Unit, invalidated_source(self))

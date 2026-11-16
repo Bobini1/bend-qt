@@ -78,7 +78,7 @@ def icon_clones() -> Qt.Action(Unit):
 def promote() -> Qt.Action(Qt.QRandomGenerator):
   do Qt.Action<Qt.QRandomGenerator>:
     value: Qt.QRandomGenerator <- Qt.QRandomGenerator.global()
-    Qt.QRandomGenerator.keep(value)
+    Qt.QRandomGenerator.moveToParentScope(value)
 
 def static_views() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

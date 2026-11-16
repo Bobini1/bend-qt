@@ -37,6 +37,7 @@ static QMetaType plain(QMetaType native, const char *name, const char *module = 
     for (const auto &row : values) if (row.second->original == native.iface() && row.second->module == module) {
         auto value = row.second; values.emplace(name, value);
         QMetaType result(value.get());
+        (void)result.id();
         QMetaType::registerNormalizedTypedef(QMetaObject::normalizedType(name), result);
         return result;
     }
@@ -119,7 +120,8 @@ template<class Container> static QMetaType native_sequence(const char *name, QMe
             }, meta, iterable);
         return true;
     }();
-    (void)registered; QMetaType::registerNormalizedTypedef(QMetaObject::normalizedType(name), meta); return meta;
+    (void)registered; (void)meta.id();
+    QMetaType::registerNormalizedTypedef(QMetaObject::normalizedType(name), meta); return meta;
 }
 template<class Container> static QMetaType native_association(const char *name, QMetaType key, QMetaType mapped, const char * = "") {
     static const auto meta = QMetaType::fromType<Container>();
@@ -138,7 +140,8 @@ template<class Container> static QMetaType native_association(const char *name, 
             }, meta, iterable);
         return true;
     }();
-    (void)registered; QMetaType::registerNormalizedTypedef(QMetaObject::normalizedType(name), meta); return meta;
+    (void)registered; (void)meta.id();
+    QMetaType::registerNormalizedTypedef(QMetaObject::normalizedType(name), meta); return meta;
 }
 static const Interface *isolated(QMetaType type) {
     for (const auto &row : interfaces()) if (row.second.get() == type.iface()) return row.second.get();

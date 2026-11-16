@@ -1,84 +1,84 @@
-def Qml.factoryMethod(object: QtObject) -> Method:
-  Method.define("createSingleton", [QQmlEngine.arg()], QtObject.argument(object))
+def Qml.factoryMethod(object: ObjectType) -> Method:
+  Method.define("createSingleton", [QQmlEngine.arg()], ObjectType.argument(object))
 
-def Qml.creationMethod(object: QtObject) -> Method:
-  Method.define("initialize", [QtObject.argument(object)], unit())
+def Qml.creationMethod(object: ObjectType) -> Method:
+  Method.define("initialize", [ObjectType.argument(object)], unit())
 
-def Qml.constructorMethod(object: QtObject) -> Method:
-  Method.define("construct", [], QtObject.argument(object))
+def Qml.constructorMethod(object: ObjectType) -> Method:
+  Method.define("construct", [], ObjectType.argument(object))
 
-def Qml.attachedMethod(object: QtObject) -> Method:
-  Method.define("createAttached", [QObject.arg()], QtObject.argument(QtObject.attachedType(object)))
+def Qml.attachedMethod(object: ObjectType) -> Method:
+  Method.define("createAttached", [QObject.arg()], ObjectType.argument(ObjectType.attachedType(object)))
 
-def Qml.extensionMethod(object: QtObject) -> Method:
-  Method.define("createExtension", [QObject.arg()], QtObject.argument(QtObject.extensionType(object)))
+def Qml.extensionMethod(object: ObjectType) -> Method:
+  Method.define("createExtension", [QObject.arg()], ObjectType.argument(ObjectType.extensionType(object)))
 
-def Qml.registerType(~object: QtObject, uri: String, major: U32, minor: U32, name: String) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.type_raw(schema, uri, major, minor, name)
+def Qml.registerType(~object: ObjectType, uri: String, major: U32, minor: U32, name: String) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.type_raw(schema, uri, major, minor, name))
 
-def Qml.registerTypeRevision(~object: QtObject, uri: String, major: U32, minor: U32, name: String, revision: U32) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.type_revision_raw(schema, uri, major, minor, name, WireScalar{65535, revision})
+def Qml.registerTypeRevision(~object: ObjectType, uri: String, major: U32, minor: U32, name: String, revision: U32) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.type_revision_raw(schema, uri, major, minor, name, WireScalar{65535, revision}))
 
-def Qml.registerTypeVersionRevision(~object: QtObject, uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.type_revision_raw(schema, uri, major, minor, name, WireScalar{Internal.Revision.major(revisionMajor), revisionMinor})
+def Qml.registerTypeVersionRevision(~object: ObjectType, uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.type_revision_raw(schema, uri, major, minor, name, WireScalar{Internal.Revision.major(revisionMajor), revisionMinor}))
 
-def Qml.registerUncreatable(~object: QtObject, uri: String, major: U32, minor: U32, name: String, reason: String) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.type_mode_raw(schema, uri, major, minor, name, 1, reason)
+def Qml.registerUncreatable(~object: ObjectType, uri: String, major: U32, minor: U32, name: String, reason: String) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.type_mode_raw(schema, uri, major, minor, name, 1, reason))
 
-def Qml.registerAnonymous(~object: QtObject, uri: String, major: U32) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.type_mode_raw(schema, uri, major, 0, "", 2, "")
+def Qml.registerAnonymous(~object: ObjectType, uri: String, major: U32) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.type_mode_raw(schema, uri, major, 0, "", 2, ""))
 
-def Qml.registerUnavailable(uri: String, major: U32, minor: U32, name: String, reason: String) -> Action(QObject):
-  Qml.unavailable_raw(uri, major, minor, name, reason)
+def Qml.registerUnavailable(uri: String, major: U32, minor: U32, name: String, reason: String) -> Action(Qml.RegistrationHandle):
+  Internal.Qml.registrationHandleResult(Qml.unavailable_raw(uri, major, minor, name, reason))
 
-def Qml.attached(~object: QtObject, registration: QObject, target: QObject) -> Action(QtObject.Instance(QtObject.attachedType(object))):
-  do Action<QtObject.Instance(QtObject.attachedType(object))>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    word: U32 <- Qml.related_raw(registration, target, schema, 0)
+def Qml.attached(~object: ObjectType, registration: Qml.Registration(object), target: QObject) -> Action(ObjectType.Instance(ObjectType.attachedType(object))):
+  do Action<ObjectType.Instance(ObjectType.attachedType(object))>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    word: U32 <- Qml.related_raw(Internal.Qml.registrationObject(~object, registration), target, schema, 0)
     return QtInstance{word}
 
-def Qml.extension(~object: QtObject, registration: QObject, target: QtObject.Instance(object)) -> Action(QtObject.Instance(QtObject.extensionType(object))):
-  do Action<QtObject.Instance(QtObject.extensionType(object))>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    word: U32 <- Qml.related_raw(registration, QtObject.as_QObject(~object, target), schema, 1)
+def Qml.extension(~object: ObjectType, registration: Qml.Registration(object), target: ObjectType.Instance(object)) -> Action(ObjectType.Instance(ObjectType.extensionType(object))):
+  do Action<ObjectType.Instance(ObjectType.extensionType(object))>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    word: U32 <- Qml.related_raw(Internal.Qml.registrationObject(~object, registration), ObjectType.as_QObject(~object, target), schema, 1)
     return QtInstance{word}
 
-def Qml.registerSingletonVersionRevision(~object: QtObject, uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.singleton_raw(schema, uri, major, minor, name, QObject{0}, 0, WireScalar{Internal.Revision.major(revisionMajor), revisionMinor})
+def Qml.registerSingletonVersionRevision(~object: ObjectType, uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.singleton_raw(schema, uri, major, minor, name, QObject{0}, 0, WireScalar{Internal.Revision.major(revisionMajor), revisionMinor}))
 
-def Qml.registerSingletonRevision(~object: QtObject, uri: String, major: U32, minor: U32, name: String, revision: U32) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.singleton_raw(schema, uri, major, minor, name, QObject{0}, 0, WireScalar{65535, revision})
+def Qml.registerSingletonRevision(~object: ObjectType, uri: String, major: U32, minor: U32, name: String, revision: U32) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.singleton_raw(schema, uri, major, minor, name, QObject{0}, 0, WireScalar{65535, revision}))
 
-def Qml.registerSingleton(~object: QtObject, uri: String, major: U32, minor: U32, name: String) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.singleton_raw(schema, uri, major, minor, name, QObject{0}, 0, WireScalar{65535, 0})
+def Qml.registerSingleton(~object: ObjectType, uri: String, major: U32, minor: U32, name: String) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.singleton_raw(schema, uri, major, minor, name, QObject{0}, 0, WireScalar{65535, 0}))
 
-def Qml.registerSingletonInstanceVersionRevision(~object: QtObject, uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32, instance: QtObject.Instance(object)) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.singleton_raw(schema, uri, major, minor, name, QtObject.as_QObject(~object, instance), 1, WireScalar{Internal.Revision.major(revisionMajor), revisionMinor})
+def Qml.registerSingletonInstanceVersionRevision(~object: ObjectType, uri: String, major: U32, minor: U32, name: String, revisionMajor: U32, revisionMinor: U32, instance: ObjectType.Instance(object)) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.singleton_raw(schema, uri, major, minor, name, ObjectType.as_QObject(~object, instance), 1, WireScalar{Internal.Revision.major(revisionMajor), revisionMinor}))
 
-def Qml.registerSingletonInstanceRevision(~object: QtObject, uri: String, major: U32, minor: U32, name: String, revision: U32, instance: QtObject.Instance(object)) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.singleton_raw(schema, uri, major, minor, name, QtObject.as_QObject(~object, instance), 1, WireScalar{65535, revision})
+def Qml.registerSingletonInstanceRevision(~object: ObjectType, uri: String, major: U32, minor: U32, name: String, revision: U32, instance: ObjectType.Instance(object)) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.singleton_raw(schema, uri, major, minor, name, ObjectType.as_QObject(~object, instance), 1, WireScalar{65535, revision}))
 
-def Qml.registerSingletonInstance(~object: QtObject, uri: String, major: U32, minor: U32, name: String, instance: QtObject.Instance(object)) -> Action(QObject):
-  do Action<QObject>:
-    schema: Wire <- QtObject.qmlSchema(object)
-    Qml.singleton_raw(schema, uri, major, minor, name, QtObject.as_QObject(~object, instance), 1, WireScalar{65535, 0})
+def Qml.registerSingletonInstance(~object: ObjectType, uri: String, major: U32, minor: U32, name: String, instance: ObjectType.Instance(object)) -> Action(Qml.Registration(object)):
+  do Action<Qml.Registration(object)>:
+    schema: Wire <- ObjectType.qmlSchema(object)
+    Internal.Qml.registrationResult(ObjectType.name(object), Qml.singleton_raw(schema, uri, major, minor, name, ObjectType.as_QObject(~object, instance), 1, WireScalar{65535, 0}))

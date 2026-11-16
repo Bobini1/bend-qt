@@ -103,7 +103,7 @@ def future_state() -> Qt.Action(Unit):
 def escaped(+mutex: Qt.QMutex) -> Qt.Action(Qt.QMutexLocker):
   do Qt.Action<Qt.QMutexLocker>:
     locker: Qt.QMutexLocker <- Qt.QMutexLocker.new(mutex)
-    Qt.QMutexLocker.keep(locker)
+    Qt.QMutexLocker.moveToParentScope(locker)
 
 def kept() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

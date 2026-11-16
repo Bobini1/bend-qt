@@ -23,8 +23,8 @@ def pointer() -> Qt.Property:
 def ready() -> Qt.Signal:
   Qt.Signal.define("ready", [Qt.QCommandLineOption.valueArg(), Qt.QCollatorSortKey.valueArg()])
 
-def Model() -> Qt.QtObject:
-  Qt.QtObject.withSignals(Qt.QObject.define("NativeValueForms", [option(), key(), pointer()]), [ready()])
+def Model() -> Qt.ObjectType:
+  Qt.ObjectType.withSignals(Qt.QObject.define("NativeValueForms", [option(), key(), pointer()]), [ready()])
 
 def description(value: Qt.QCommandLineOption, expected: String) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -61,20 +61,20 @@ def boxed(+option: Qt.QCommandLineOption, +key: Qt.QCollatorSortKey, +expected_k
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +first: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +second: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Model(), first)
-    +target: Qt.QObject = Qt.QtObject.as_QObject(~Model(), second)
+    +first: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +second: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), first)
+    +target: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), second)
     +probe: Qt.QObject <- Qt.QObject.new()
     +collator: Qt.QCollator <- Qt.QCollator.new()
     +expected_key: Qt.QCollatorSortKey <- Qt.QCollator.sortKey(collator, "Bend")
     +source_key: Qt.QCollatorSortKey <- Qt.QCollator.sortKey(collator, "Bend")
     +source: Qt.QCommandLineOption <- Qt.QCommandLineOption.new__String("mode")
     Qt.QCommandLineOption.setDescription(source, "first")
-    Qt.Property.store(~option(), self, source)
-    Qt.Property.store(~option(), target, source)
-    Qt.Property.store(~key(), self, source_key)
-    Qt.Property.store(~pointer(), self, source)
+    Qt.Property.writeStorage(~option(), self, source)
+    Qt.Property.writeStorage(~option(), target, source)
+    Qt.Property.writeStorage(~key(), self, source_key)
+    Qt.Property.writeStorage(~pointer(), self, source)
     actual_pointer: Qt.QCommandLineOption <- Qt.Property.get(~pointer(), self)
     require(U32.is_eq(Qt.QCommandLineOption.word(actual_pointer), Qt.QCommandLineOption.word(source)), "Default arg stopped representing the native pointer")
     connection: Qt.Connection <- Qt.Signal.connectWith(~ready(), ~Observer, ~received, self,

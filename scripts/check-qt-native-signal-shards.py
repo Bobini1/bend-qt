@@ -34,9 +34,12 @@ def fixture():
         ('QCommandLineOption', dict(kind='value', name='QCommandLineOption')),
         ('QWebSocketCorsAuthenticator', dict(kind='value', name='QWebSocketCorsAuthenticator')),
         ('QMetaProperty', dict(kind='value', name='QMetaProperty')),
-        ('QList<QString>', dict(kind='list', children=[dict(kind='string')])) ,
-        ('QList<QObject*>', dict(kind='list', children=[dict(kind='object', name='QObject')])) ,
-        ('QMap<QString,QMetaProperty>', dict(kind='map', children=[dict(kind='string'), dict(kind='value', name='QMetaProperty')])) ,
+        # Container rows use the conversions' own shapes: element types carry
+        # their C++ spelling, and a map has one pair child holding key and value.
+        ('QList<QString>', dict(kind='list', children=[dict(kind='string', cpp='QString')])),
+        ('QList<QObject*>', dict(kind='list', children=[dict(kind='object', name='QObject', cpp='QObject *')])),
+        ('QMap<QString,QMetaProperty>', dict(kind='map', children=[dict(kind='pair', cpp='std::pair<QString, QMetaProperty>',
+            children=[dict(kind='string', cpp='QString'), dict(kind='value', name='QMetaProperty', cpp='QMetaProperty')])])),
         ('QEvent*', dict(kind='object', name='QEvent')),
         ('UnassignableValue', dict(kind='value', name='UnassignableValue')),
     ]
@@ -44,7 +47,7 @@ def fixture():
         rows.append(('int', dict(kind='i32')))
     rows.append(('RhiOnlyValue', dict(kind='value', name='RhiOnlyValue')))
     arguments = [(None, native, dict(value, native_codec=f'shard_{i}')) for i, (native, value) in enumerate(rows)]
-    generator = SimpleNamespace(custom_signal_arguments=arguments,
+    generator = SimpleNamespace(custom_signal_arguments=arguments, api={'typedefs': {}},
         ids={'QObject': 1, 'QEvent': 2}, callback_qml=False,
         classes={'QObject': dict(qobject=True), 'QEvent': dict(qobject=False)})
     generator.abi_cohort = dict(names={'RhiOnlyValue'}, headers=[], pattern=re.compile(r'\bRhiOnlyValue\b'),
@@ -141,7 +144,9 @@ static BqtValue runtime_argument_write(BqtRequest *r, int, const void *) { fail(
 static bool runtime_argument_assign(BqtRequest *r, int, void *, const void *) { fail(r,ENOTSUP,"unavailable"); return false; }
 '''
     native_snapshots = (ROOT / 'generator/templates/native_snapshots.cpp').read_text()
+    # The production runtime's order: qualified metatypes precede value types.
     values = ((ROOT / 'generator/templates/dynamic_metadata.cpp').read_text()
+              + (ROOT / 'generator/templates/partition_metatypes.cpp').read_text()
               + (ROOT / 'generator/templates/value_types.cpp').read_text())
     shared = setup + values + ''.join(codecs) + native_snapshots + declarations + dispatch + snapshot
     shared += ''.join('// BQT_AUXILIARY_BEGIN ' + family + ' ' + str(identifier) + '\n' + body +

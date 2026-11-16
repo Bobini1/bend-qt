@@ -88,6 +88,7 @@ def main():
         g.methods = [m for m in g.methods if m['bend_name'] in needed]
         callbacks.prepare(g)
         g.callback_classes, g.callback_methods, g.callback_qml = [], {}, False
+        g.callback_functions = []
         for public, params, ret, body in [
             ('Fixture.newIndexModel', [], dict(kind='object', name='QAbstractItemModel', bend='QAbstractItemModel', raw='U32'),
              f'r->result.word = own(r, new QStandardItemModel(2, 1), {g.ids["QStandardItemModel"]}); r->result.owned_handle = r->result.word;'),
@@ -125,7 +126,8 @@ def main():
         dispatch = dispatch.replace(site, 'if (aggregate_test_fail_after && !--aggregate_test_fail_after) throw std::bad_alloc();\n    ' + site)
         abi = (ROOT / 'generator/templates/abi.h').read_text().replace('@ARGUMENT_CAPACITY@', str(g.argument_capacity))
         aliases = ''.join(f'using {name} = {native};\n' for name, native in api['typedefs'].items() if name in g.ids) + representations.aliases(g)
-        source_cpp = headers.read_text() + aliases + FIXTURE + (ROOT / 'generator/templates/runtime.cpp').read_text()
+        prefix, suffix = callbacks.qml_sources(g, args.qt_root, work)
+        source_cpp = headers.read_text() + aliases + prefix + FIXTURE + (ROOT / 'generator/templates/runtime.cpp').read_text() + suffix
         for key, value in [('ABI', abi), ('LIFETIME', cpp_tables(evaluate_tables(work))),
                            ('NATIVE_OBJECTS', native_objects.traits(g)), ('DISPATCH', dispatch)]:
             source_cpp = source_cpp.replace('// @' + key + '@', value)

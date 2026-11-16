@@ -20,10 +20,10 @@ def buttons() -> Qt.Property:
   Qt.Property.qmlList("buttons", Qt.QPushButton.arg())
 
 def items() -> Qt.Property:
-  Qt.Property.qmlList("items", Qt.QtObject.reference("AuthoredListItem"))
+  Qt.Property.qmlList("items", Qt.ObjectType.reference("AuthoredListItem"))
 
 def nodes() -> Qt.Property:
-  Qt.Property.qmlList("nodes", Qt.QtObject.reference("AuthoredListNode"))
+  Qt.Property.qmlList("nodes", Qt.ObjectType.reference("AuthoredListNode"))
 
 def title() -> Qt.Property:
   Qt.Property.define("title", Qt.string())
@@ -31,11 +31,11 @@ def title() -> Qt.Property:
 def list_signal() -> Qt.Signal:
   Qt.Signal.define("listReady", [Qt.qmlList(Qt.QPushButton.arg())])
 
-def Item() -> Qt.QtObject:
+def Item() -> Qt.ObjectType:
   Qt.QObject.define("AuthoredListItem", [title()])
 
-def Node() -> Qt.QtObject:
-  Qt.QtObject.withDefaultProperty(Qt.QObject.define("AuthoredListNode", [items(), nodes(), buttons()]), "items")
+def Node() -> Qt.ObjectType:
+  Qt.ObjectType.withDefaultProperty(Qt.QObject.define("AuthoredListNode", [items(), nodes(), buttons()]), "items")
 
 def equal_count(+count: Qt.Int64, expected: U32) -> Qt.Action(Unit):
   require(U32.is_eq(Qt.Int64.lo(count), expected) && U32.is_eq(Qt.Int64.hi(count), 0), "Authored list count changed")
@@ -71,8 +71,8 @@ def delivered(probe: Qt.QObject, view: Qt.QmlListView<"QPushButton*">) -> Qt.Act
 
 def queued_view() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +source: Qt.QtObject.Instance(Node()) <- Qt.QtObject.new(~Node())
-    +owner: Qt.QObject = Qt.QtObject.as_QObject(~Node(), source)
+    +source: Qt.ObjectType.Instance(Node()) <- Qt.ObjectType.new(~Node())
+    +owner: Qt.QObject = Qt.ObjectType.as_QObject(~Node(), source)
     +button: Qt.QPushButton <- Qt.QPushButton.new()
     Qt.ListProperty.append(~buttons(), owner, button)
     +emitter: Qt.QObject <- Qt.QObject.newWithSignals("AuthoredListEmitter", [list_signal()])
@@ -89,8 +89,8 @@ def queued_view() -> Qt.Action(Unit):
 
 def worker_view() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +source: Qt.QtObject.Instance(Node()) <- Qt.QtObject.new(~Node())
-    +owner: Qt.QObject = Qt.QtObject.as_QObject(~Node(), source)
+    +source: Qt.ObjectType.Instance(Node()) <- Qt.ObjectType.new(~Node())
+    +owner: Qt.QObject = Qt.ObjectType.as_QObject(~Node(), source)
     +button: Qt.QPushButton <- Qt.QPushButton.new()
     Qt.ListProperty.append(~buttons(), owner, button)
     Qt.ListProperty.handleCount(~buttons(), ~Qt.QObject, ~count, owner, owner)
@@ -111,17 +111,17 @@ def worker_view() -> Qt.Action(Unit):
 
 def basic() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +item: Qt.QtObject.Instance(Item()) <- Qt.QtObject.new(~Item())
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Item(), item), "first")
-    +node: Qt.QtObject.Instance(Node()) <- Qt.QtObject.new(~Node())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Node(), node)
+    +item: Qt.ObjectType.Instance(Item()) <- Qt.ObjectType.new(~Item())
+    Qt.ObjectType.set(~Item(), ~title(), item, "first")
+    +node: Qt.ObjectType.Instance(Node()) <- Qt.ObjectType.new(~Node())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Node(), node)
     Qt.ListProperty.append(~items(), self, item)
-    +returned: Qt.QtObject.Instance(Item()) <- Qt.ListProperty.at(~items(), self, Qt.Int64{0, 0})
-    title: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~Item(), returned))
+    +returned: Qt.ObjectType.Instance(Item()) <- Qt.ListProperty.at(~items(), self, Qt.Int64{0, 0})
+    title: String <- Qt.ObjectType.get(~Item(), ~title(), returned)
     require(String.eq(title, "first"), "Runtime element class lost its type")
     Qt.ListProperty.append(~nodes(), self, node)
-    returned: Qt.QtObject.Instance(Node()) <- Qt.ListProperty.at(~nodes(), self, Qt.Int64{0, 0})
-    require(U32.is_eq(Qt.QtObject.word(~Node(), returned), Qt.QtObject.word(~Node(), node)), "List self-reference changed identity")
+    returned: Qt.ObjectType.Instance(Node()) <- Qt.ListProperty.at(~nodes(), self, Qt.Int64{0, 0})
+    require(U32.is_eq(Qt.ObjectType.word(~Node(), returned), Qt.ObjectType.word(~Node(), node)), "List self-reference changed identity")
     Qt.ListProperty.clear(~nodes(), self)
     +first: Qt.QPushButton <- Qt.QPushButton.new()
     Qt.QObject.setObjectName(Qt.QPushButton.as_QObject(first), "first")
@@ -162,10 +162,10 @@ def basic() -> Qt.Action(Unit):
 
 def copied_views() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +source: Qt.QtObject.Instance(Node()) <- Qt.QtObject.new(~Node())
-    +source_object: Qt.QObject = Qt.QtObject.as_QObject(~Node(), source)
-    +target: Qt.QtObject.Instance(Node()) <- Qt.QtObject.new(~Node())
-    +target_object: Qt.QObject = Qt.QtObject.as_QObject(~Node(), target)
+    +source: Qt.ObjectType.Instance(Node()) <- Qt.ObjectType.new(~Node())
+    +source_object: Qt.QObject = Qt.ObjectType.as_QObject(~Node(), source)
+    +target: Qt.ObjectType.Instance(Node()) <- Qt.ObjectType.new(~Node())
+    +target_object: Qt.QObject = Qt.ObjectType.as_QObject(~Node(), target)
     +button: Qt.QPushButton <- Qt.QPushButton.new()
     Qt.QObject.setObjectName(Qt.QPushButton.as_QObject(button), "kept")
     Qt.ListProperty.append(~buttons(), source_object, button)
@@ -173,7 +173,7 @@ def copied_views() -> Qt.Action(Unit):
     +box: Qt.QVariant <- Qt.QVariant.fromValue(~Qt.qmlList(Qt.QPushButton.arg()), view)
     +copy: Qt.QVariant <- Qt.QVariant.copy(box)
     +copied: Qt.Property.Value(buttons()) <- Qt.QVariant.toValue(~Qt.qmlList(Qt.QPushButton.arg()), copy)
-    Qt.Property.store(~buttons(), target_object, copied)
+    Qt.Property.writeStorage(~buttons(), target_object, copied)
     Qt.QmlListView.release("QPushButton*", copied)
     Qt.QVariant.release(box)
     Qt.QVariant.release(copy)
@@ -183,9 +183,9 @@ def copied_views() -> Qt.Action(Unit):
     equal_count(count, 1)
     element: Qt.QPushButton <- Qt.ListProperty.at(~buttons(), target_object, Qt.Int64{0, 0})
     button_name(element, "kept")
-    +other: Qt.QtObject.Instance(Node()) <- Qt.QtObject.new(~Node())
-    Qt.Property.handleGetter(~buttons(), ~Qt.QObject, ~copied_getter, Qt.QtObject.as_QObject(~Node(), other), target_object)
-    count: Qt.Int64 <- Qt.ListProperty.count(~buttons(), Qt.QtObject.as_QObject(~Node(), other))
+    +other: Qt.ObjectType.Instance(Node()) <- Qt.ObjectType.new(~Node())
+    Qt.Property.handleGetter(~buttons(), ~Qt.QObject, ~copied_getter, Qt.ObjectType.as_QObject(~Node(), other), target_object)
+    count: Qt.Int64 <- Qt.ListProperty.count(~buttons(), Qt.ObjectType.as_QObject(~Node(), other))
     equal_count(count, 1)
     Qt.ListProperty.clear(~buttons(), target_object)
 
@@ -201,16 +201,16 @@ def component(engine: Qt.QQmlEngine, text: String) -> Qt.Action(Qt.QQmlComponent
 
 def qml() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    item_registration: Qt.QObject <- Qt.Qml.registerType(~Item(), "Bend.AuthoredLists", 1, 0, "Item")
-    node_registration: Qt.QObject <- Qt.Qml.registerType(~Node(), "Bend.AuthoredLists", 1, 0, "Node")
+    item_registration: Qt.Qml.Registration(Item()) <- Qt.Qml.registerType(~Item(), "Bend.AuthoredLists", 1, 0, "Item")
+    node_registration: Qt.Qml.Registration(Node()) <- Qt.Qml.registerType(~Node(), "Bend.AuthoredLists", 1, 0, "Node")
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +component: Qt.QQmlComponent <- component(engine, "import QtQml\nimport Bend.AuthoredLists 1.0\nNode { Item { title: 'first' } Item { title: 'second' } property string summary: items.length + ':' + items[0].title; Component.onCompleted: { items[0] = items[1]; items.pop(); } }")
     +root: Qt.QObject <- Qt.QQmlComponent.create__QQmlContext(component, Qt.QQmlContext{0})
     require(U32.is_ne(Qt.QObject.word(root), 0), "QML authored list construction failed")
     count: Qt.Int64 <- Qt.ListProperty.count(~items(), root)
     equal_count(count, 1)
-    item: Qt.QtObject.Instance(Item()) <- Qt.ListProperty.at(~items(), root, Qt.Int64{0, 0})
-    text: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~Item(), item))
+    item: Qt.ObjectType.Instance(Item()) <- Qt.ListProperty.at(~items(), root, Qt.Int64{0, 0})
+    text: String <- Qt.ObjectType.get(~Item(), ~title(), item)
     require(String.eq(text, "second"), "QML default list replace/remove failed")
     +reference: Qt.QQmlListReference <- Qt.QQmlListReference.new__QObject_String(root, "items")
     element: Qt.QMetaObject <- Qt.QQmlListReference.listElementType(reference)

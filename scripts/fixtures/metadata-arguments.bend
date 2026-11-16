@@ -32,8 +32,8 @@ def freshImage() -> Qt.Method:
 def computedDescriptor() -> Qt.Property:
   Qt.Property.readOnly("computedDescriptor", Qt.QMetaProperty.arg())
 
-def Holder() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QObject.define("MetadataValueHolder", [descriptor(), descriptors(), image(), peer(), computedDescriptor()]), [freshDescriptor(), freshImage()])
+def Holder() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.QObject.define("MetadataValueHolder", [descriptor(), descriptors(), image(), peer(), computedDescriptor()]), [freshDescriptor(), freshImage()])
 
 def from_meta(+meta: Qt.QMetaObject) -> Qt.Action(Qt.QMetaProperty):
   do Qt.Action<Qt.QMetaProperty>:
@@ -61,8 +61,8 @@ def one(values: List<&2, Qt.QVariant>) -> Qt.Action(Unit):
 
 def fields() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    instance: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Holder(), instance)
+    instance: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Holder(), instance)
     +map: Qt.QQmlPropertyMap <- Qt.QQmlPropertyMap.new()
     +value: Qt.QMetaProperty <- source(map)
     Qt.Property.set(~descriptor(), self, value)
@@ -96,8 +96,8 @@ def fields() -> Qt.Action(Unit):
 
 def self_origin() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +instance: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Holder(), instance)
+    +instance: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Holder(), instance)
     +value: Qt.QMetaProperty <- Qt.QMetaObject.with(Qt.QMetaProperty, Qt.QObject.metaObject(self), meta => from_meta(meta))
     Qt.Property.set(~descriptor(), self, value)
     Qt.QMetaProperty.destroy(value)
@@ -105,7 +105,7 @@ def self_origin() -> Qt.Action(Unit):
     name: Maybe<&2, String> <- Qt.QMetaProperty.name(restored)
     named(name)
     Qt.QMetaProperty.destroy(restored)
-    Qt.QtObject.destroy(~Holder(), instance)
+    Qt.ObjectType.destroy(~Holder(), instance)
 
 def fresh(map: Qt.QQmlPropertyMap) -> Qt.Action(Qt.QMetaProperty):
   source(map)
@@ -125,8 +125,8 @@ def red(+image: Qt.QImage) -> Qt.Action(Unit):
 
 def answers() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    instance: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Holder(), instance)
+    instance: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Holder(), instance)
     +map: Qt.QQmlPropertyMap <- Qt.QQmlPropertyMap.new()
     Qt.Method.handle(~freshDescriptor(), ~Qt.QQmlPropertyMap, ~fresh, self, map)
     Qt.Property.handleGetter(~computedDescriptor(), ~Qt.QQmlPropertyMap, ~fresh, self, map)

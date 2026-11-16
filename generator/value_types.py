@@ -32,7 +32,7 @@ def cpp(g):
     import re
     import runtime_dispatch
     names = ('ensure', 'argument_type', 'meta_type', 'store', 'read_value', 'write_value',
-             'assign_value', 'create', 'field_index', 'get', 'updated', 'register_qml')
+             'assign_value', 'create', 'field_index', 'get', 'updated', 'register_qml', 'sequence_type')
     # Explicit free functions are separate native units. Changes to a property
     # operation no longer force every native signal codec to rebuild its body.
     # Match balanced braces; signatures and names are fixed maintainer inputs.
@@ -57,6 +57,7 @@ def cpp(g):
 def declarations():
     return '''namespace RuntimeValueTypes {
 extern __attribute__((visibility("hidden"))) int argument_type(BqtRequest *, const QByteArray &, const BqtValue *);
+extern __attribute__((visibility("hidden"))) int sequence_type(BqtRequest *, const QByteArray &, const BqtValue *);
 static bool is_code(int);
 extern __attribute__((visibility("hidden"))) QMetaType meta_type(int);
 extern __attribute__((visibility("hidden"))) QVariant read_value(BqtRequest *, int, const BqtValue &);
@@ -68,5 +69,5 @@ extern __attribute__((visibility("hidden"))) bool assign_value(BqtRequest *, int
 
 def inventory(g):
     return dict(available=hasattr(g, 'value_type_operations'), operations=getattr(g, 'value_type_operations', {}),
-                storage='Owning reflected gadgets and distinct per-schema typed sequences',
+                storage='Owning reflected gadgets, and owning QList types for element types without a compiled QList',
                 boundary='Declared fields; default-constructible, copyable native field types; no gadget inheritance or arbitrary member functions')

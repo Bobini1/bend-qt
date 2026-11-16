@@ -124,7 +124,7 @@ def emit(g):
     g.emit_effect('Connection.disconnect', [('self', CONNECTION)], UNIT, 2, has_self=True)
     g.emit_scope('Connection', 'disconnect')
     import scope_actions
-    scope_actions.keep(g, 'Connection', 1)
+    scope_actions.escapes(g, 'Connection', 1)
     for name, kind in sorted(g.signal_kinds.items()):
         invoke(g, name, kind['arguments'], kind['payload'], kind['reply'])
 

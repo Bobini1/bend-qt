@@ -425,7 +425,7 @@ def emit(g):
             g.emit_effect(public, params, result, operation, has_self=public == 'QmlHandler.release')
         g.emit_scope('QmlHandler', 'release')
         import scope_actions
-        scope_actions.keep(g, 'QmlHandler', 2)
+        scope_actions.escapes(g, 'QmlHandler', 2)
     for c in g.callback_classes:
         name = c['name']
         native_class = 'BqtProxy_' + ident(name)

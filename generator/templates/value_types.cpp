@@ -1,13 +1,15 @@
-// Owning, reflected Qt values for schemas declared by Bend. This core has no
-// Bend handles or callbacks: copying a QVariant copies the complete value.
+// Owning, reflected Qt values for schemas declared by Bend, and owning lists
+// of element types that have no compiled QList. This core has no Bend handles
+// or callbacks: copying a QVariant copies the complete value.
 namespace BendValueTypes {
 struct Type;
+struct List;
 struct Value {
     const Type *type;
     QList<QVariant> fields;
 };
 struct Sequence {
-    const Type *type;
+    const List *list;
     QList<QVariant> values;
 };
 struct Field {
@@ -18,36 +20,96 @@ struct Field {
 };
 struct Interface : QtPrivate::QMetaTypeInterface { Type *owner; };
 struct Type {
-    QByteArray name, list_name;
+    QByteArray name;
     std::vector<Field> fields;
     Interface interface{};
-    Interface list_interface{};
-    QtMetaContainerPrivate::QMetaSequenceInterface sequence{};
+    List *list = nullptr;
     QMetaObject *meta = nullptr;
     QMetaType type() const { return QMetaType(&interface); }
-    QMetaType list_type() const { return QMetaType(&list_interface); }
+    QMetaType list_type() const;
     QVariant create() const { return QVariant(type()); }
 };
-static void initialize_sequence(Type *);
+struct ListInterface : QtPrivate::QMetaTypeInterface { List *owner; };
+// QList<element> for one element metatype. Qt and QML reach it through the
+// same iterable conversions that Qt registers for its compiled containers.
+struct List {
+    QByteArray name;
+    QMetaType element;
+    ListInterface interface{};
+    QtMetaContainerPrivate::QMetaSequenceInterface sequence{};
+    QMetaType type() const { return QMetaType(&interface); }
+    QMetaSequence meta() const { return QMetaSequence(&sequence); }
+};
+QMetaType Type::list_type() const { return list->type(); }
+static void initialize_list(List *);
 static std::map<QByteArray, std::unique_ptr<Type>> &registry() {
     // Qt metatype registrations and queued QVariant values outlive applications.
     // Their interfaces and metaobjects therefore have process lifetime.
     static auto *types = new std::map<QByteArray, std::unique_ptr<Type>>;
     return *types;
 }
+// Lists are created on the main thread but recognized wherever Qt copies or
+// inspects a value, so their index is guarded.
+struct Lists {
+    QMutex mutex;
+    std::map<const QtPrivate::QMetaTypeInterface *, std::unique_ptr<List>> by_element;
+    std::map<const QtPrivate::QMetaTypeInterface *, List *> by_interface;
+};
+static Lists &lists() {
+    static auto *state = new Lists;
+    return *state;
+}
 static const Type *owner(const QtPrivate::QMetaTypeInterface *interface) {
     return static_cast<const Interface *>(interface)->owner;
 }
+static const List *list_owner(const QtPrivate::QMetaTypeInterface *interface) {
+    return static_cast<const ListInterface *>(interface)->owner;
+}
+static const List *list_of(QMetaType meta) {
+    if (!meta.isValid()) return nullptr;
+    auto &state = lists();
+    QMutexLocker lock(&state.mutex);
+    auto found = state.by_interface.find(meta.iface());
+    return found == state.by_interface.end() ? nullptr : found->second;
+}
 static std::pair<const Type *, bool> classify(QMetaType meta) {
+    if (const auto *list = list_of(meta)) {
+        const auto element = classify(list->element);
+        if (element.first && !element.second) return {element.first, true};
+        return {};
+    }
     if (!meta.isValid() || !meta.name()) return {};
-    QByteArray name(meta.name());
-    const bool sequence = name.startsWith("QList<") && name.endsWith('>');
-    if (sequence) name = name.mid(6, name.size() - 7);
-    auto found = registry().find(name);
-    if (found == registry().end()) return {};
-    const auto *type = found->second.get();
-    if (meta.iface() != (sequence ? &type->list_interface : &type->interface)) return {};
-    return {type, sequence};
+    auto found = registry().find(QByteArray(meta.name()));
+    if (found == registry().end() || meta.iface() != &found->second->interface) return {};
+    return {found->second.get(), false};
+}
+static List *ensure_list(QMetaType element) {
+    if (!element.isValid() || element.id() == QMetaType::Void || !element.name()
+        || !element.isDefaultConstructible() || !element.isCopyConstructible())
+        throw std::invalid_argument("A list element needs a named, default-constructible, copyable Qt type");
+    auto &state = lists();
+    QMutexLocker lock(&state.mutex);
+    if (auto found = state.by_element.find(element.iface()); found != state.by_element.end()) return found->second.get();
+    const QByteArray name = "QList<" + QByteArray(element.name()) + '>';
+    if (QMetaType::fromName(name).isValid()) throw std::invalid_argument("A native sequence metatype already has this name");
+    auto result = std::make_unique<List>();
+    auto *list = result.get(); list->name = name; list->element = element;
+    initialize_list(list);
+    state.by_element.emplace(element.iface(), std::move(result));
+    state.by_interface.emplace(&list->interface, list);
+    list->type().registerType();
+    // Qt's own containers convert to QIterable<QMetaSequence>; QML and
+    // QVariant use that conversion, or a mutable view, for unregistered lists.
+    const auto iterable = QMetaType::fromType<QIterable<QMetaSequence>>();
+    QMetaType::registerConverterFunction([list](const void *from, void *to) {
+        *static_cast<QIterable<QMetaSequence> *>(to) = QIterable<QMetaSequence>(list->meta(), alignof(Sequence), from);
+        return true;
+    }, list->type(), iterable);
+    QMetaType::registerMutableViewFunction([list](void *from, void *to) {
+        *static_cast<QIterable<QMetaSequence> *>(to) = QIterable<QMetaSequence>(list->meta(), alignof(Sequence), from);
+        return true;
+    }, list->type(), iterable);
+    return list;
 }
 static QVariant default_field(const Field &field) {
     return field.type.id() == QMetaType::QVariant ? QVariant{} : QVariant(field.type);
@@ -95,7 +157,7 @@ static Type *define(const QByteArray &name, const std::vector<Field> &fields) {
         return found->second.get();
     }
     if (QMetaType::fromName(name).isValid()) throw std::invalid_argument("A native metatype already has this name");
-    if (QMetaType::fromName("QList<" + name + '>' ).isValid())
+    if (QMetaType::fromName("QList<" + name + '>').isValid())
         throw std::invalid_argument("A native sequence metatype already has this name");
     std::set<QByteArray> names;
     for (const auto &field : fields) {
@@ -155,9 +217,9 @@ static Type *define(const QByteArray &name, const std::vector<Field> &fields) {
     type->meta = builder.toMetaObject(); type->meta->d.static_metacall = metacall;
     // Register only after the complete metadata and storage are stable. Qt may
     // immediately use the metatype's default constructor and metaObjectFn.
-    initialize_sequence(type);
     types.emplace(name, std::move(result));
-    type->type().registerType(); type->list_type().registerType();
+    type->type().registerType();
+    type->list = ensure_list(type->type());
     return type;
 }
 static QVariant read(const QVariant &value, const QByteArray &field) {
@@ -179,29 +241,31 @@ static bool write(QVariant &value, const QByteArray &field, const QVariant &data
 struct SequenceIterator { const Sequence *container; qsizetype index; };
 static void sequence_read(const Sequence *sequence, qsizetype index, void *target) {
     if (index < 0 || index >= sequence->values.size()) return;
-    auto type = sequence->type->type();
+    auto type = sequence->list->element;
     type.destruct(target); type.construct(target, sequence->values.at(index).constData());
 }
 static void sequence_write(Sequence *sequence, qsizetype index, const void *source) {
     if (index < 0 || index >= sequence->values.size()) return;
-    sequence->values[index] = QVariant(sequence->type->type(), source);
+    sequence->values[index] = QVariant(sequence->list->element, source);
 }
-static void initialize_sequence(Type *type) {
-    type->list_name = "QList<" + type->name + '>';
-    auto &interface = type->list_interface;
-    interface.owner = type;
+static void initialize_list(List *list) {
+    auto &interface = list->interface;
+    interface.owner = list;
     interface.revision = QtPrivate::QMetaTypeInterface::CurrentRevision;
     interface.alignment = alignof(Sequence); interface.size = sizeof(Sequence);
     interface.flags = QMetaType::NeedsConstruction | QMetaType::NeedsDestruction
         | QMetaType::NeedsCopyConstruction | QMetaType::NeedsMoveConstruction;
-    interface.name = type->list_name.constData();
-    interface.defaultCtr = [](const auto *i, void *p) { new(p) Sequence{owner(i), {}}; };
+    interface.name = list->name.constData();
+    interface.defaultCtr = [](const auto *i, void *p) { new(p) Sequence{list_owner(i), {}}; };
     interface.copyCtr = [](const auto *, void *p, const void *source) { new(p) Sequence(*static_cast<const Sequence *>(source)); };
     interface.moveCtr = [](const auto *, void *p, void *source) { new(p) Sequence(std::move(*static_cast<Sequence *>(source))); };
     interface.dtor = [](const auto *, void *p) { static_cast<Sequence *>(p)->~Sequence(); };
     interface.equals = [](const auto *, const void *a, const void *b) {
         const auto &left = *static_cast<const Sequence *>(a), &right = *static_cast<const Sequence *>(b);
-        return left.type == right.type && left.values == right.values;
+        return left.list == right.list && left.values == right.values;
+    };
+    interface.debugStream = [](const auto *i, QDebug &debug, const void *p) {
+        debug.nospace() << list_owner(i)->name << static_cast<const Sequence *>(p)->values;
     };
     interface.dataStreamOut = [](const auto *, QDataStream &stream, const void *p) {
         stream << static_cast<const Sequence *>(p)->values;
@@ -209,13 +273,13 @@ static void initialize_sequence(Type *type) {
     interface.dataStreamIn = [](const auto *i, QDataStream &stream, void *p) {
         QList<QVariant> values; stream >> values;
         if (stream.status() != QDataStream::Ok) return;
-        for (const auto &value : values) if (value.metaType() != owner(i)->type()) {
+        for (const auto &value : values) if (value.metaType() != list_owner(i)->element) {
             stream.setStatus(QDataStream::ReadCorruptData); return;
         }
         static_cast<Sequence *>(p)->values = std::move(values);
     };
     using Container = QtMetaContainerPrivate::QMetaContainerInterface;
-    auto &sequence = type->sequence;
+    auto &sequence = list->sequence;
     sequence.iteratorCapabilities = QtMetaContainerPrivate::InputCapability | QtMetaContainerPrivate::ForwardCapability
         | QtMetaContainerPrivate::BiDirectionalCapability | QtMetaContainerPrivate::RandomAccessCapability;
     sequence.sizeFn = [](const void *p) { return static_cast<const Sequence *>(p)->values.size(); };
@@ -240,13 +304,13 @@ static void initialize_sequence(Type *type) {
     sequence.diffIteratorFn = sequence.diffConstIteratorFn = [](const void *a, const void *b) {
         return static_cast<const SequenceIterator *>(a)->index - static_cast<const SequenceIterator *>(b)->index;
     };
-    sequence.valueMetaType = &type->interface;
+    sequence.valueMetaType = list->element.iface();
     sequence.addRemoveCapabilities = QtMetaContainerPrivate::CanAddAtBegin | QtMetaContainerPrivate::CanAddAtEnd
         | QtMetaContainerPrivate::CanRemoveAtBegin | QtMetaContainerPrivate::CanRemoveAtEnd;
     sequence.valueAtIndexFn = [](const void *p, qsizetype index, void *target) { sequence_read(static_cast<const Sequence *>(p), index, target); };
     sequence.setValueAtIndexFn = [](void *p, qsizetype index, const void *source) { sequence_write(static_cast<Sequence *>(p), index, source); };
     sequence.addValueFn = [](void *p, const void *source, Container::Position position) {
-        auto *container = static_cast<Sequence *>(p); QVariant value(container->type->type(), source);
+        auto *container = static_cast<Sequence *>(p); QVariant value(container->list->element, source);
         if (position == Container::AtBegin) container->values.prepend(value); else container->values.append(value);
     };
     sequence.removeValueFn = [](void *p, Container::Position position) {
@@ -262,7 +326,7 @@ static void initialize_sequence(Type *type) {
     };
     sequence.insertValueAtIteratorFn = [](void *p, const void *at, const void *source) {
         auto *container = static_cast<Sequence *>(p);
-        container->values.insert(static_cast<const SequenceIterator *>(at)->index, QVariant(container->type->type(), source));
+        container->values.insert(static_cast<const SequenceIterator *>(at)->index, QVariant(container->list->element, source));
     };
     sequence.eraseValueAtIteratorFn = [](void *p, const void *at) {
         static_cast<Sequence *>(p)->values.removeAt(static_cast<const SequenceIterator *>(at)->index);

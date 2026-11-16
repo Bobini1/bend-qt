@@ -1,0 +1,22 @@
+{
+  "name": "qt612-conversions",
+  "minimum_qt": "6.12.0",
+  "qt_modules": [
+    "QtCore",
+    "QtGui",
+    "QtNetwork",
+    "QtOpenGL",
+    "QtWidgets",
+    "QtQml",
+    "QtQuick",
+    "Qt3DCore",
+    "Qt3DRender",
+    "QtConcurrent",
+    "QtGraphs",
+    "QtQuick3D",
+    "QtScxml",
+    "QtTest"
+  ],
+  "exclude_methods": {},
+  "limited_abi": true
+}

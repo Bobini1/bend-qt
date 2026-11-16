@@ -56,8 +56,8 @@ def State() -> Qt.Enum:
 def title() -> Qt.Property:
   Qt.Property.define("title", Qt.string())
 
-def Object() -> Qt.QtObject:
-  Qt.QtObject.withEnums(Qt.QObject.define("BoxedVariantObject", [title()]), [State()])
+def Object() -> Qt.ObjectType:
+  Qt.ObjectType.withEnums(Qt.QObject.define("BoxedVariantObject", [title()]), [State()])
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -79,11 +79,11 @@ def objects() -> Qt.Action(Unit):
     expected(Unit, held, 16)
     Qt.QVariant.clear(copy)
     Qt.QPushButton.destroy(source)
-    +declared: Qt.QtObject.Instance(Object()) <- Qt.QtObject.new(~Object())
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Object(), declared), "concrete")
-    variant: Qt.QVariant <- Qt.QVariant.fromValue(~Qt.QtObject.arg(~Object()), declared)
-    +restored: Qt.QtObject.Instance(Object()) <- Qt.QVariant.toValue(~Qt.QtObject.arg(~Object()), variant)
-    text: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~Object(), restored))
+    +declared: Qt.ObjectType.Instance(Object()) <- Qt.ObjectType.new(~Object())
+    Qt.ObjectType.set(~Object(), ~title(), declared, "concrete")
+    variant: Qt.QVariant <- Qt.QVariant.fromValue(~Qt.ObjectType.arg(~Object()), declared)
+    +restored: Qt.ObjectType.Instance(Object()) <- Qt.QVariant.toValue(~Qt.ObjectType.arg(~Object()), variant)
+    text: String <- Qt.ObjectType.get(~Object(), ~title(), restored)
     require(String.eq(text, "concrete"), "Runtime QObject QVariant lost its declared class")
     state: Qt.QVariant <- Qt.QVariant.fromValue(~Qt.Enum.arg(~State()), Qt.Enum.fromU32(~State(), 2))
     value: Qt.Enum.Value(State()) <- Qt.QVariant.toValue(~Qt.Enum.arg(~State()), state)

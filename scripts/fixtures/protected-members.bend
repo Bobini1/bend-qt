@@ -58,7 +58,7 @@ def model() -> Qt.Action(Unit):
 def state_property() -> Qt.Property:
   Qt.Property.define("viewState", Qt.QAbstractItemView.State.arg())
 
-def Holder() -> Qt.QtObject:
+def Holder() -> Qt.ObjectType:
   Qt.QObject.define("ProtectedEnumHolder", [state_property()])
 
 def enumeration() -> Qt.Action(Unit):
@@ -69,8 +69,8 @@ def enumeration() -> Qt.Action(Unit):
     value: Qt.QAbstractItemView.State <- Qt.QAbstractItemView.state(base)
     require(U32.is_eq(Qt.QAbstractItemView.State.word(value), Qt.QAbstractItemView.State.word(Qt.QAbstractItemView.State.DraggingState())), "Protected enum method lost its native value")
     Qt.QAbstractItemView.setState(base, Qt.QAbstractItemView.State.NoState())
-    +holder: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
-    +object: Qt.QObject = Qt.QtObject.as_QObject(~Holder(), holder)
+    +holder: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
+    +object: Qt.QObject = Qt.ObjectType.as_QObject(~Holder(), holder)
     Qt.Property.set(~state_property(), object, Qt.QAbstractItemView.State.EditingState())
     +boxed: Qt.QVariant <- Qt.QObject.property(object, "viewState")
     value: Qt.QAbstractItemView.State <- Qt.QVariant.toValue(~Qt.QAbstractItemView.State.arg(), boxed)

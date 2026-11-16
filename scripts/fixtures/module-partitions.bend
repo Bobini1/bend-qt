@@ -26,8 +26,8 @@ def legacy_series_changed() -> Qt.Signal:
 def receive_legacy() -> Qt.Method:
   Qt.Method.define("receiveLegacy", [Qt.DataVisualization.QScatter3DSeries.arg()], Qt.unit())
 
-def Relay() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QtObject.withSignals(Qt.QObject.define("MixedNativeRelay", []), [graph_series_changed(), legacy_series_changed()]), [receive_legacy()])
+def Relay() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.ObjectType.withSignals(Qt.QObject.define("MixedNativeRelay", []), [graph_series_changed(), legacy_series_changed()]), [receive_legacy()])
 
 def on_graph_series(probe: Qt.QObject, series: Qt.QScatter3DSeries) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -54,14 +54,14 @@ def native_families() -> Qt.Action(Unit):
     +graph_forwarded: Qt.QObject <- Qt.QObject.new()
     +legacy_forwarded: Qt.QObject <- Qt.QObject.new()
     +legacy_method: Qt.QObject <- Qt.QObject.new()
-    +relay: Qt.QtObject.Instance(Relay()) <- Qt.QtObject.new(~Relay())
-    Qt.Method.handle(~receive_legacy(), ~Qt.QObject, ~on_legacy_series, Qt.QtObject.as_QObject(~Relay(), relay), legacy_method)
-    graph_observer: Qt.Connection <- Qt.Signal.connect(~graph_series_changed(), ~Qt.QObject, ~on_graph_series, Qt.QtObject.as_QObject(~Relay(), relay), graph_forwarded)
-    legacy_observer: Qt.Connection <- Qt.Signal.connect(~legacy_series_changed(), ~Qt.QObject, ~on_legacy_series, Qt.QtObject.as_QObject(~Relay(), relay), legacy_forwarded)
-    graph_forward: Qt.Connection <- Qt.Signal.connectSignalWith(~graph_series_changed(), ~graph_series_changed(), Qt.QScatterDataProxy.as_QObject(graph_proxy), Qt.QtObject.as_QObject(~Relay(), relay), Qt.Qt.ConnectionType.QueuedConnection())
-    legacy_forward: Qt.Connection <- Qt.Signal.connectSignal(~legacy_series_changed(), ~legacy_series_changed(), Qt.DataVisualization.QScatterDataProxy.as_QObject(legacy_proxy), Qt.QtObject.as_QObject(~Relay(), relay))
-    method_forward: Qt.Connection <- Qt.Signal.connectMethodWith(~legacy_series_changed(), ~receive_legacy(), Qt.DataVisualization.QScatterDataProxy.as_QObject(legacy_proxy), Qt.QtObject.as_QObject(~Relay(), relay), Qt.Qt.ConnectionType.QueuedConnection())
-    wrong_forward: Result<&1, &1, U32 & String, Qt.Connection> <- Qt.Action.attempt(Qt.Connection, Qt.Signal.connectSignal(~graph_series_changed(), ~legacy_series_changed(), Qt.QScatterDataProxy.as_QObject(graph_proxy), Qt.QtObject.as_QObject(~Relay(), relay)))
+    +relay: Qt.ObjectType.Instance(Relay()) <- Qt.ObjectType.new(~Relay())
+    Qt.Method.handle(~receive_legacy(), ~Qt.QObject, ~on_legacy_series, Qt.ObjectType.as_QObject(~Relay(), relay), legacy_method)
+    graph_observer: Qt.Connection <- Qt.Signal.connect(~graph_series_changed(), ~Qt.QObject, ~on_graph_series, Qt.ObjectType.as_QObject(~Relay(), relay), graph_forwarded)
+    legacy_observer: Qt.Connection <- Qt.Signal.connect(~legacy_series_changed(), ~Qt.QObject, ~on_legacy_series, Qt.ObjectType.as_QObject(~Relay(), relay), legacy_forwarded)
+    graph_forward: Qt.Connection <- Qt.Signal.connectSignalWith(~graph_series_changed(), ~graph_series_changed(), Qt.QScatterDataProxy.as_QObject(graph_proxy), Qt.ObjectType.as_QObject(~Relay(), relay), Qt.Qt.ConnectionType.QueuedConnection())
+    legacy_forward: Qt.Connection <- Qt.Signal.connectSignal(~legacy_series_changed(), ~legacy_series_changed(), Qt.DataVisualization.QScatterDataProxy.as_QObject(legacy_proxy), Qt.ObjectType.as_QObject(~Relay(), relay))
+    method_forward: Qt.Connection <- Qt.Signal.connectMethodWith(~legacy_series_changed(), ~receive_legacy(), Qt.DataVisualization.QScatterDataProxy.as_QObject(legacy_proxy), Qt.ObjectType.as_QObject(~Relay(), relay), Qt.Qt.ConnectionType.QueuedConnection())
+    wrong_forward: Result<&1, &1, U32 & String, Qt.Connection> <- Qt.Action.attempt(Qt.Connection, Qt.Signal.connectSignal(~graph_series_changed(), ~legacy_series_changed(), Qt.QScatterDataProxy.as_QObject(graph_proxy), Qt.ObjectType.as_QObject(~Relay(), relay)))
     rejected(Qt.Connection, wrong_forward)
     graph_connection: Qt.Connection <- Qt.Signal.connect(~graph_series_changed(), ~Qt.QObject, ~on_graph_series, Qt.QScatterDataProxy.as_QObject(graph_proxy), graph_direct)
     legacy_connection: Qt.Connection <- Qt.Signal.connect(~legacy_series_changed(), ~Qt.QObject, ~on_legacy_series, Qt.DataVisualization.QScatterDataProxy.as_QObject(legacy_proxy), legacy_direct)
@@ -97,13 +97,13 @@ def graph_items() -> Qt.Property:
 def legacy_items() -> Qt.Property:
   Qt.Property.define("legacyItems", Qt.list(Qt.DataVisualization.QScatterDataItem.arg()))
 
-def Holder() -> Qt.QtObject:
+def Holder() -> Qt.ObjectType:
   Qt.QObject.define("MixedModuleHolder", [peer(), graph_items(), legacy_items()])
 
-def GraphSeries() -> Qt.QtObject:
+def GraphSeries() -> Qt.ObjectType:
   Qt.QLineSeries.define("BendGraphSeries", [])
 
-def ChartSeries() -> Qt.QtObject:
+def ChartSeries() -> Qt.ObjectType:
   Qt.Charts.QLineSeries.define("BendChartSeries", [])
 
 def qml_source() -> String:
@@ -114,18 +114,18 @@ def qml_imports_source() -> String:
 
 def qml_families() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    graph: Qt.QtObject.Instance(GraphSeries()) <- Qt.QtObject.new(~GraphSeries())
-    +chart: Qt.QtObject.Instance(ChartSeries()) <- Qt.QtObject.new(~ChartSeries())
-    Qt.QObject.setObjectName(Qt.QtObject.as_QObject(~ChartSeries(), chart), "chart")
-    +holder: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
-    Qt.Property.set(~peer(), Qt.QtObject.as_QObject(~Holder(), holder), Qt.QtObject.asNativeBase(~ChartSeries(), chart))
+    graph: Qt.ObjectType.Instance(GraphSeries()) <- Qt.ObjectType.new(~GraphSeries())
+    +chart: Qt.ObjectType.Instance(ChartSeries()) <- Qt.ObjectType.new(~ChartSeries())
+    Qt.QObject.setObjectName(Qt.ObjectType.as_QObject(~ChartSeries(), chart), "chart")
+    +holder: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
+    Qt.ObjectType.set(~Holder(), ~peer(), holder, Qt.ObjectType.asNativeBase(~ChartSeries(), chart))
     point: Qt.QScatterDataItem <- Qt.QScatterDataItem.new()
     legacy: Qt.DataVisualization.QScatterDataItem <- Qt.DataVisualization.QScatterDataItem.new()
-    Qt.Property.set(~graph_items(), Qt.QtObject.as_QObject(~Holder(), holder), [point])
-    Qt.Property.set(~legacy_items(), Qt.QtObject.as_QObject(~Holder(), holder), [legacy])
+    Qt.ObjectType.set(~Holder(), ~graph_items(), holder, [point])
+    Qt.ObjectType.set(~Holder(), ~legacy_items(), holder, [legacy])
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     context: Qt.QQmlContext <- Qt.QQmlEngine.rootContext(engine)
-    Qt.QQmlContext.setContextProperty__String_QObject(context, "holder", Qt.QtObject.as_QObject(~Holder(), holder))
+    Qt.QQmlContext.setContextProperty__String_QObject(context, "holder", Qt.ObjectType.as_QObject(~Holder(), holder))
     +component: Qt.QQmlComponent <- Qt.QQmlComponent.new__QQmlEngine_QObject(engine, Qt.QObject{0})
     source: Qt.QByteArray <- Qt.QByteArray.fromUtf8(qml_source())
     url: Qt.QUrl <- Qt.QUrl.new()

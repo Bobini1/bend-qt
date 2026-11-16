@@ -310,7 +310,10 @@ def package():
     signal_types = re.findall(r'^type (Signal_[A-Za-z0-9_]+)\b',
                               (ROOT / 'packages/qt612/qt.bend').read_text(), re.M)
     expect(not signal_types, f'Public signal descriptors remain: {signal_types[:5]}')
-    legacy = sorted({n for n in defined if re.search(r'_[0-9a-f]{8}(\.|$)|_[0-9]{5,}(\.|$)|_default\d+(\.|$)', n)})
+    # Internal transport entry points use operation IDs; public overload names
+    # must remain readable, including every callback and convenience adapter.
+    legacy = sorted({n for n in defined if not n.startswith('Internal.') and
+                     re.search(r'_[0-9a-f]{8}(\.|$)|_[0-9]{5,}(\.|$)|_default\d+(\.|$)', n)})
     expect(not legacy, f'Hash or _defaultN names remain: {legacy[:5]}')
     locked = {name for rows in lock.names.values() for name, _ in rows.values()}
     expect(set(public) <= locked, f'Unlocked names: {sorted(set(public) - locked)[:5]}')

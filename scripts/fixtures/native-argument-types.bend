@@ -87,7 +87,7 @@ def character() -> Qt.Property:
 def empty() -> Qt.Property:
   Qt.Property.define("empty", Qt.nullptr())
 
-def Settings() -> Qt.QtObject:
+def Settings() -> Qt.ObjectType:
   Qt.QObject.define("NativeArgumentSettings", [byte(), small(), wide(), precise(), day(), alignment(), items(), labels(), mapping(), character(), empty()])
 
 def inspect_items(values: List<&2, Qt.Int32>) -> Qt.Action(Unit):
@@ -198,8 +198,8 @@ def objects() -> Qt.Action(Unit):
     +probe: Qt.QObject <- Qt.QObject.new()
     object: Qt.QObject <- Qt.QObject.newWithSignals("NativeNumericSignals", [numbers()])
     emit_numbers(object, probe)
-    settings: Qt.QtObject.Instance(Settings()) <- Qt.QtObject.new(~Settings())
-    property_cases(Qt.QtObject.as_QObject(~Settings(), settings))
+    settings: Qt.ObjectType.Instance(Settings()) <- Qt.ObjectType.new(~Settings())
+    property_cases(Qt.ObjectType.as_QObject(~Settings(), settings))
     button: Qt.QPushButton <- Qt.QPushButton.new()
     native_emission(button, probe)
 

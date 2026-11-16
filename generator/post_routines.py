@@ -36,7 +36,7 @@ def emit(g):
         g.emit_effect(public, params, result, operation, has_self=has_self)
     g.emit_scope(name, 'release')
     import scope_actions
-    scope_actions.keep(g, name)
+    scope_actions.escapes(g, name)
     g.post_routine_operations = operations
     for row in g.excluded:
         if row['signature'].startswith(('qAddPostRoutine(', 'qRemovePostRoutine(')):

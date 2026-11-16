@@ -26,21 +26,21 @@ def failure() -> Qt.Method:
 def fresh() -> Qt.Method:
   Qt.Method.define("fresh", [], Qt.qobject())
 
-def Model() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QObject.define("ErrorMessageModel", []), [failure(), fresh()])
+def Model() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.QObject.define("ErrorMessageModel", []), [failure(), fresh()])
 
 def fail_body(state: Unit) -> Qt.Action(String):
   do Qt.Action<String>:
     object: Qt.QObject <- Qt.QObject.new()
     connection: Qt.Connection <- Qt.QObject.connect_destroyed(~Unit, ~cleanup, object, Unit{})
-    kept: Qt.Connection <- Qt.Connection.keep(connection)
+    kept: Qt.Connection <- Qt.Connection.detachFromScope(connection)
     Qt.Action.fail(String, 73, body_text())
 
 def new_then_cleanup_fails(state: Unit) -> Qt.Action(Qt.QObject):
   do Qt.Action<Qt.QObject>:
     object: Qt.QObject <- Qt.QObject.new()
     connection: Qt.Connection <- Qt.QObject.connect_destroyed(~Unit, ~cleanup, object, Unit{})
-    kept: Qt.Connection <- Qt.Connection.keep(connection)
+    kept: Qt.Connection <- Qt.Connection.detachFromScope(connection)
     Qt.QObject.new()
 
 def check(-A: Type, result: Result<&1, &1, U32 & String, A>, code: U32, message: String) -> Qt.Action(Unit):
@@ -64,8 +64,8 @@ def repeat(count: Nat, +self: Qt.QObject) -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    instance: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Model(), instance)
+    instance: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), instance)
     Qt.Method.handle(~failure(), ~Unit, ~fail_body, self, Unit{})
     Qt.Method.handle(~fresh(), ~Unit, ~new_then_cleanup_fails, self, Unit{})
     repeat(16n, self)

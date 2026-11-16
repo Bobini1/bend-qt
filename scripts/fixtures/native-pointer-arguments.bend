@@ -26,8 +26,8 @@ def nativePointers() -> Qt.Signal:
 def eventReady() -> Qt.Signal:
   Qt.Signal.define("eventReady", [Qt.QEvent.arg()])
 
-def Holder() -> Qt.QtObject:
-  Qt.QtObject.withSignals(Qt.QObject.define("NativePointerHolder", [device(), painter(), event()]), [nativePointers(), eventReady()])
+def Holder() -> Qt.ObjectType:
+  Qt.ObjectType.withSignals(Qt.QObject.define("NativePointerHolder", [device(), painter(), event()]), [nativePointers(), eventReady()])
 
 type Observer is Data:
   Observer{probe: Qt.QObject, painter: U32, device: U32}
@@ -162,8 +162,8 @@ def boxed() -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    holder: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Holder(), holder)
+    holder: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Holder(), holder)
     +probe: Qt.QObject <- Qt.QObject.new()
     +paint: Qt.QPainter <- Qt.QPainter.new()
     +image: Qt.QImage <- Qt.QImage.new()

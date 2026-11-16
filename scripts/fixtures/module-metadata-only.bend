@@ -7,12 +7,12 @@ def points() -> Qt.Property:
 def changed() -> Qt.Signal:
   Qt.Signal.define("changed", [Qt.DataVisualization.QScatterDataItem.arg()])
 
-def Holder() -> Qt.QtObject:
-  Qt.QtObject.withSignals(Qt.QObject.define("MetadataOnlyHolder", [points()]), [changed()])
+def Holder() -> Qt.ObjectType:
+  Qt.ObjectType.withSignals(Qt.QObject.define("MetadataOnlyHolder", [points()]), [changed()])
 
 def create() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    holder: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
+    holder: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
     return Unit{}
 
 def main() -> IO(Unit):

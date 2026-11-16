@@ -257,10 +257,10 @@ def _emit_script_singletons(g):
     g.bend += [
         'def Qml.scriptFactoryMethod() -> Method:',
         '  Method.define("createScriptSingleton", [QQmlEngine.arg()], QJSValue.arg())', '',
-        'def Qml.registerScriptSingleton(~S: Data, ~f: S -> Method.Handler(~Qml.scriptFactoryMethod()), uri: String, major: U32, minor: U32, name: String, state: S) -> Action(QObject):',
-        '  do Action.Raw<Result<&1, &1, U32 & String, QObject>>:',
+        'def Qml.registerScriptSingleton(~S: Data, ~f: S -> Method.Handler(~Qml.scriptFactoryMethod()), uri: String, major: U32, minor: U32, name: String, state: S) -> Action(Qml.RegistrationHandle):',
+        '  do Action.Raw<Result<&1, &1, U32 & String, Qml.RegistrationHandle>>:',
         f'    result: Result<&1, &1, U32 & String, U32> <- {raw["name"]}(S, {operation}, 0, uri, major, minor, name, pair => run(Unit, Method.invoke(~Qml.scriptFactoryMethod(), ~S, ~f, pair)), state)',
-        '    return QObject.wrap(result)', '']
+        '    return Qml.RegistrationHandle.wrap(result)', '']
 
 
 def _emit_runtime_translation(g):
@@ -276,13 +276,13 @@ def _emit_runtime_translation(g):
     r->result = string_value(schema->meta->tr(source.constData(), disambiguation.isEmpty() ? nullptr : disambiguation.constData(), int32_t(r->arguments[3].word)));
     return true;
 }}''')
-    g.emit_effect('Internal.QtObject.tr_raw', [('schema', wire), ('source', text), ('disambiguation', text), ('n', integer)], text, operation)
-    g.bend += ['def QtObject.tr(~schema: QtObject, source: String) -> Action(String):',
-               '  do Action<String>:', '    declaration: Wire <- QtObject.schema(schema)',
-               '    Internal.QtObject.tr_raw(declaration, source, "", Int32{4294967295})', '',
-               'def QtObject.trWith(~schema: QtObject, source: String, disambiguation: String, n: Int32) -> Action(String):',
-               '  do Action<String>:', '    declaration: Wire <- QtObject.schema(schema)',
-               '    Internal.QtObject.tr_raw(declaration, source, disambiguation, n)', '']
+    g.emit_effect('Internal.ObjectType.tr_raw', [('schema', wire), ('source', text), ('disambiguation', text), ('n', integer)], text, operation)
+    g.bend += ['def ObjectType.tr(~schema: ObjectType, source: String) -> Action(String):',
+               '  do Action<String>:', '    declaration: Wire <- ObjectType.schema(schema)',
+               '    Internal.ObjectType.tr_raw(declaration, source, "", Int32{4294967295})', '',
+               'def ObjectType.trWith(~schema: ObjectType, source: String, disambiguation: String, n: Int32) -> Action(String):',
+               '  do Action<String>:', '    declaration: Wire <- ObjectType.schema(schema)',
+               '    Internal.ObjectType.tr_raw(declaration, source, disambiguation, n)', '']
 
 
 def _emit_quick_tests(g):

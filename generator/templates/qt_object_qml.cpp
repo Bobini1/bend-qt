@@ -274,7 +274,7 @@ static bool decode_placement(BqtRequest *r, const BqtValue &wire, void *context)
     auto *object = get<QObject>(r, wire.word, @QOBJECT_ID@);
     if (r->error) return false;
     if (!pending.object || object != pending.object || wire.word != pending.handle)
-        return reject(r, EINVAL, "A QML constructor must return the instance built by newAs or QtObject.new for its pending schema");
+        return reject(r, EINVAL, "A QML constructor must return the instance built by newAs or ObjectType.new for its pending schema");
     return true;
 }
 static void create_into(void *memory, void *userdata) {

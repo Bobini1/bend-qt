@@ -311,8 +311,8 @@ Runtime QObject classes use the native base's declaration function, for example
 `Qt.QQuickItem.define("CardItem", properties)`. The generator supplies the
 native class metadata and typed handle conversions internally. A Bend-defined
 class can derive from another schema with
-`Qt.QtObject.derive(~Card(), "DetailedCard", properties)`. The declarations
-return schemas; `QtObject.new(~schema)` creates instances. See the
+`Qt.ObjectType.derive(~Card(), "DetailedCard", properties)`. The declarations
+return schemas; `ObjectType.new(~schema)` creates instances. See the
 [QML creation example](../examples/qt612/qml-creatable.bend).
 
 Property declarations cover every Qt property attribute, typed NOTIFY signals,
@@ -385,7 +385,10 @@ cleanup. Scoped release preserves Qt-owned objects and defers deletion of owned
 objects with tracked dependants. Explicit destroy and disconnect remain strict.
 `Qt.run` opens a root resource scope; each native request carries its scope ID.
 New owned handles and connections join it automatically. `Qt.scoped` opens a
-nested scope and `.keep` promotes a handle to the parent. Cleanup attempts all
+nested scope. `.moveToParentScope` transfers cleanup to its parent and fails at
+the root. `.detachFromScope` removes automatic cleanup, leaving the caller
+responsible for release. Both require the current scope to own cleanup; they
+cannot claim cleanup that belongs to an ancestor or is outside the pool. Cleanup attempts all
 resources in reverse acquisition order and preserves the original body error.
 The scope ID is internal; ordinary Action blocks use the same generated APIs.
 

@@ -67,7 +67,7 @@ def makeSettings(state: Unit, engine: Qt.QQmlEngine) -> Qt.Action(Qt.QJSValue):
     settings: Qt.QVariant <- Qt.QVariant.fromValue(~Qt.variantMap(), [Qt.PairValue{"darkMode", dark}])
     Qt.QJSEngine.toScriptValue(Qt.QQmlEngine.as_QJSEngine(engine), settings)
 
-def register() -> Qt.Action(Qt.QObject):
+def register() -> Qt.Action(Qt.Qml.RegistrationHandle):
   Qt.Qml.registerScriptSingleton(~Unit, ~makeSettings, "Example.Settings", 1, 0, "Settings", Unit{})
 ```
 
@@ -76,7 +76,7 @@ the factory once per engine. Use the supplied engine to create managed values.
 Returning a value from another engine fails with EXDEV. Factory failures retain
 their original Action error.
 
-The returned QObject is the registration handle. Keep it alive until the
+The returned `Qml.RegistrationHandle` controls the registration. Keep it alive until the
 registration is no longer needed. An engine that uses the singleton retains the
 registration; destroying it while that engine is alive returns EBUSY. After
 the engines and returned QJSValue handles are released, destroying the
@@ -86,7 +86,7 @@ registration unregisters the type and releases its factory state.
 same value from Bend. Its handle retains the engine. External data passed
 through `QJSEngine.toScriptValue` keeps its normal origin leases until engine
 destruction. A script singleton does not declare QObject properties or notify
-signals; use `registerSingletonFactory` with a QtObject schema for those.
+signals; use `registerSingletonFactory` with an `ObjectType` schema for those.
 
 ## QObject interface helpers
 
@@ -98,7 +98,7 @@ handlers. Pass `QPyTextObject.as_QObject(value)` to the document layout's
 `registerHandler`. Qt discovers the interface through real `Q_INTERFACES`
 metadata.
 
-The same generated constructors, virtual handlers and `QtObject.define`
+The same generated constructors, virtual handlers and `ObjectType.define`
 schemas are available for `QPyQmlParserStatus`, `QPyQmlPropertyValueSource`
 and the four `QPyDesigner*Extension` QObject/interface bases. Install parser
 handlers in a QML constructor handler so `classBegin` can run before the

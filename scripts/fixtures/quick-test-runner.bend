@@ -15,8 +15,8 @@ def engine() -> Qt.Method:
 def cleanup() -> Qt.Method:
   Qt.Method.define("cleanupTestCase", [], Qt.unit())
 
-def Setup() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QObject.define("BendQuickTestSetup", []), [application(), engine(), cleanup()])
+def Setup() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.QObject.define("BendQuickTestSetup", []), [application(), engine(), cleanup()])
 
 def mark(+object: Qt.QObject, suffix: String) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -52,8 +52,8 @@ def values() -> Qt.Action(Unit):
     write(path ++ "/tst_bend.qml")
     result: Qt.Int32 <- Qt.QuickTest.run("BendPlainQuickTest", [], path)
     require(U32.is_eq(Qt.Int32.word(result), 0), "Native plain Qt Quick Test runner failed")
-    +setup: Qt.QtObject.Instance(Setup()) <- Qt.QtObject.new(~Setup())
-    +object: Qt.QObject = Qt.QtObject.as_QObject(~Setup(), setup)
+    +setup: Qt.ObjectType.Instance(Setup()) <- Qt.ObjectType.new(~Setup())
+    +object: Qt.QObject = Qt.ObjectType.as_QObject(~Setup(), setup)
     Qt.Method.handle(~application(), ~Qt.QObject, ~available, object, object)
     Qt.Method.handle(~engine(), ~Qt.QObject, ~prepared, object, object)
     Qt.Method.handle(~cleanup(), ~Qt.QObject, ~finished, object, object)

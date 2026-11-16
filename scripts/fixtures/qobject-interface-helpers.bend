@@ -14,7 +14,7 @@ def intrinsic(state: Unit, document: Qt.QTextDocument, position: Qt.Int32, forma
 def draw(state: Unit, painter: Qt.QPainter, rectangle: Qt.QRectF, document: Qt.QTextDocument, position: Qt.Int32, format: Qt.QTextFormat) -> Qt.Action(Unit):
   require(U32.is_ne(Qt.QPainter.word(painter), 0) && U32.is_ne(Qt.QTextDocument.word(document), 0), "Text callback lost native arguments")
 
-def Parser() -> Qt.QtObject:
+def Parser() -> Qt.ObjectType:
   Qt.QPyQmlParserStatus.define("BendParserStatusHelper", [])
 
 def begun(self: Qt.QObject) -> Qt.Action(Unit):
@@ -27,10 +27,10 @@ def complete(self: Qt.QObject) -> Qt.Action(Unit):
     require(String.eq(name, "begun"), "Qt did not call classBegin before componentComplete")
     Qt.QObject.setObjectName(self, "complete")
 
-def construct(state: Unit) -> Qt.Action(Qt.QtObject.Instance(Parser())):
-  do Qt.Action<Qt.QtObject.Instance(Parser())>:
-    +value: Qt.QtObject.Instance(Parser()) <- Qt.QPyQmlParserStatus.newAs(~Parser())
-    +native: Qt.QPyQmlParserStatus = Qt.QtObject.asNativeBase(~Parser(), value)
+def construct(state: Unit) -> Qt.Action(Qt.ObjectType.Instance(Parser())):
+  do Qt.Action<Qt.ObjectType.Instance(Parser())>:
+    +value: Qt.ObjectType.Instance(Parser()) <- Qt.QPyQmlParserStatus.newAs(~Parser())
+    +native: Qt.QPyQmlParserStatus = Qt.ObjectType.asNativeBase(~Parser(), value)
     +interface: Qt.QQmlParserStatus = Qt.QPyQmlParserStatus.as_QQmlParserStatus(native)
     +self: Qt.QObject = Qt.QPyQmlParserStatus.as_QObject(native)
     Qt.QQmlParserStatus.Virtual.classBegin.handle(~Qt.QObject, ~begun, interface, self)
@@ -53,7 +53,7 @@ def objects() -> Qt.Action(Unit):
     +menu: Qt.QPyDesignerTaskMenuExtension <- Qt.QPyDesignerTaskMenuExtension.newOverride()
     good: U32 <- Qt.CallbackProbe.qobjectHelperInterfaces(Qt.QPyTextObject.as_QObject(text), Qt.QPyQmlParserStatus.as_QObject(parser), Qt.QPyQmlPropertyValueSource.as_QObject(source), Qt.QPyDesignerContainerExtension.as_QObject(container), Qt.QPyDesignerMemberSheetExtension.as_QObject(member), Qt.QPyDesignerPropertySheetExtension.as_QObject(property), Qt.QPyDesignerTaskMenuExtension.as_QObject(menu))
     require(U32.is_eq(good, 1), "A QObject/interface helper lost Q_INTERFACES or its pointer adjustment")
-    +registration: Qt.QObject <- Qt.Qml.registerType(~Parser(), "Bend.NativeHelpers", 1, 0, "Parser")
+    +registration: Qt.Qml.Registration(Parser()) <- Qt.Qml.registerType(~Parser(), "Bend.NativeHelpers", 1, 0, "Parser")
     Qt.Qml.handleConstructor(~Parser(), ~Unit, ~construct, registration, Unit{})
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +component: Qt.QQmlComponent <- Qt.QQmlComponent.new__QQmlEngine_QObject(engine, Qt.QObject{0})

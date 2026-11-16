@@ -18,6 +18,8 @@ from upstream import prepare
 import callbacks
 import native_objects
 import representations
+import qobject_interfaces
+import qio_pipe
 import signature_restoration
 
 
@@ -78,6 +80,8 @@ def main():
                 *[args.qt_root / 'include' / m for m in modules]], env=env)
             (work / 'extraction.log').write_text(result.stdout + result.stderr)
         api = json.loads((work / 'api.json').read_text())
+        qobject_interfaces.restore(api, work)
+        qio_pipe.restore(api, work)
         native_objects.refine_traits(api, args.qt_root, modules, work, 'clang++-19')
         restore = signature_restoration.restore_native
         try:
@@ -97,6 +101,7 @@ def main():
                      (m['function'].get('bend_restored_native') and m['class'] == m['function']['declaring_class'])]
         callbacks.prepare(g)
         g.callback_classes, g.callback_methods, g.callback_qml = [], {}, False
+        g.callback_functions = []
         operation = g.next_id; g.next_id += 1
         g.emit_effect('Fixture.text', [], dict(kind='object', name='QAccessibleTextInterface',
                       bend='QAccessibleTextInterface', raw='U32'), operation)
@@ -174,7 +179,8 @@ def main():
         dispatch = dispatch.replace(site, 'taking_row = &source;\n    if (restoration_row_fail) { restoration_row_fail = false; throw std::bad_alloc(); }\n    return own(r, new QFormLayout::TakeRowResult(value),')
         abi = (ROOT / 'generator/templates/abi.h').read_text().replace('@ARGUMENT_CAPACITY@', str(g.argument_capacity))
         aliases = ''.join(f'using {name} = {native};\n' for name, native in api['typedefs'].items() if name in g.ids) + representations.aliases(g)
-        source_cpp = headers.read_text() + aliases + FIXTURE + (ROOT / 'generator/templates/runtime.cpp').read_text()
+        prefix, suffix = callbacks.qml_sources(g, args.qt_root, work)
+        source_cpp = headers.read_text() + aliases + prefix + FIXTURE + (ROOT / 'generator/templates/runtime.cpp').read_text() + suffix
         for key, value in [('ABI', abi), ('LIFETIME', cpp_tables(evaluate_tables(work))),
                            ('NATIVE_OBJECTS', native_objects.traits(g)), ('DISPATCH', dispatch)]:
             source_cpp = source_cpp.replace('// @' + key + '@', value)

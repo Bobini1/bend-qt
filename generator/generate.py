@@ -1169,7 +1169,7 @@ class Generator:
                               "    return r->error ? true : release_object(r);\n}")
             self.emit_effect(ident(name) + '.release', [('self', t)], void, release_op, has_self=True)
             self.emit_scope(ident(name), "release")
-            scope_actions.keep(self, ident(name))
+            scope_actions.escapes(self, ident(name))
         prepare_adapters(self)
         public_fields.prepare(self)
         if 'QSGGeometry::AttributeSet' in self.ids:
@@ -1215,6 +1215,8 @@ class Generator:
         incubation.emit(self)
         native_methods = {}
         for m in self.methods:
+            if touch_sequences.public_adapter(self, m):
+                continue
             f = m["function"]
             key = (m['class'] if f['constructor'] else self.receiver_class(m),
                    native_operators.identity(f), json.dumps(m['args'], sort_keys=True), json.dumps(m['return'], sort_keys=True))

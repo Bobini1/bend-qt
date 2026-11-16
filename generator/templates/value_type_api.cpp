@@ -10,8 +10,25 @@ static auto &definitions() {
     static auto *state = new std::vector<std::unique_ptr<Definition>>;
     return *state;
 }
-static bool is_code(int code) { return code >= code_base && code < code_base + int(definitions().size() * 2); }
-static Definition *definition(int code) { return is_code(code) ? definitions()[size_t(code - code_base) / 2].get() : nullptr; }
+// QList<T> for element types without a compiled QList codec: Bend-declared
+// QObject classes, nested lists, and lists Qt registered without a codec.
+static constexpr int list_base = 0x20000000;
+struct ListDefinition {
+    QMetaType type;
+    QMetaSequence meta;
+    int element;
+};
+static auto &list_definitions() {
+    static auto *state = new std::vector<std::unique_ptr<ListDefinition>>;
+    return *state;
+}
+static bool value_code(int code) { return code >= code_base && code < code_base + int(definitions().size() * 2); }
+static const ListDefinition *list_definition(int code) {
+    return code >= list_base && code < list_base + int(list_definitions().size())
+        ? list_definitions()[size_t(code - list_base)].get() : nullptr;
+}
+static bool is_code(int code) { return value_code(code) || list_definition(code); }
+static Definition *definition(int code) { return value_code(code) ? definitions()[size_t(code - code_base) / 2].get() : nullptr; }
 static bool sequence_code(int code) { return (code - code_base) & 1; }
 static bool is_schema(const BqtValue *value) {
     return value && value->tag == 2 && value->count == 3 && !value->items[0].tag
@@ -80,11 +97,55 @@ static int argument_type(BqtRequest *r, const QByteArray &name, const BqtValue *
         const int element = BendSignalApi::argument_type(r, argument);
         if (r->error) return INT_MIN;
         auto *value = definition(element);
-        if (value && !sequence_code(element) && name == value->type->list_name) return element + 1;
+        if (value && !sequence_code(element) && name == value->type->list->name) return element + 1;
     }
     return INT_MIN;
 }
+static int sequence_type(BqtRequest *r, const QByteArray &name, const BqtValue *dependency) {
+    if (!name.startsWith("QList<") || !dependency || dependency->tag != 2 || dependency->count != 2
+        || dependency->items[0].tag != 1
+        || QByteArray(dependency->items[0].text, qsizetype(dependency->items[0].size)) != "Bend.Sequence")
+        return INT_MIN;
+    const int element = BendSignalApi::argument_type(r, dependency->items[1]);
+    if (r->error) return INT_MIN;
+    if (element == -1 || element == INT_MAX) {
+        fail(r, ENOTSUP, "A native list needs a native element type; use arg(~List<...>) for Bend data");
+        return INT_MIN;
+    }
+    for (size_t i = 0; i < list_definitions().size(); ++i)
+        if (list_definitions()[i]->element == element) return list_base + int(i);
+    const auto element_type = BendSignalApi::meta_type(element);
+    const QByteArray expected = "QList<" + QByteArray(element_type.name()) + '>';
+    if (QMetaObject::normalizedType(name.constData()) != QMetaObject::normalizedType(expected.constData())) {
+        fail(r, EINVAL, "List descriptor names another element type"); return INT_MIN;
+    }
+    auto value = std::make_unique<ListDefinition>();
+    value->element = element;
+    if (const auto registered = QMetaType::fromName(expected); registered.isValid() && !BendValueTypes::list_of(registered)) {
+        // Qt registered this list, but no compiled codec reads it. Its own
+        // sequence interface still adds and reads elements.
+        QVariant probe(registered);
+        QMetaSequence::Iterable iterable;
+        if (!QMetaType::view(registered, probe.data(), QMetaType::fromType<QMetaSequence::Iterable>(), &iterable)) {
+            fail(r, ENOTSUP, "This native list type has no sequence interface"); return INT_MIN;
+        }
+        value->type = registered; value->meta = iterable.metaContainer();
+        if (value->meta.valueMetaType() != element_type || !value->meta.hasSize()
+            || !value->meta.canGetValueAtIndex() || !value->meta.canAddValueAtEnd()) {
+            fail(r, ENOTSUP, "This native list type cannot be read and built element by element"); return INT_MIN;
+        }
+    } else {
+        try {
+            auto *list = BendValueTypes::ensure_list(element_type);
+            value->type = list->type(); value->meta = list->meta();
+        } catch (const std::invalid_argument &error) { fail(r, ENOTSUP, error.what()); return INT_MIN; }
+    }
+    if (list_definitions().size() >= 0x08000000u) { fail(r, EOVERFLOW, "Too many Qt list types"); return INT_MIN; }
+    list_definitions().push_back(std::move(value));
+    return list_base + int(list_definitions().size() - 1);
+}
 static QMetaType meta_type(int code) {
+    if (const auto *list = list_definition(code)) return list->type;
     auto *value = definition(code);
     return value ? (sequence_code(code) ? value->type->list_type() : value->type->type()) : QMetaType{};
 }
@@ -100,7 +161,35 @@ static BqtValue store(BqtRequest *r, const QVariant &value) {
     if (r->error || !GenericVariants::attach_origins(r, result.word, value, scope.pins)) return {};
     return guard.release();
 }
+static QVariant read_list(BqtRequest *r, const ListDefinition &list, const BqtValue &wire) {
+    if (wire.tag != 2) { fail(r, EINVAL, "Expected a Qt list"); return {}; }
+    QVariant result(list.type);
+    const auto element = list.meta.valueMetaType();
+    for (size_t i = 0; i < wire.count; ++i) {
+        auto item = BendSignalApi::read_value(r, list.element, wire.items[i]);
+        if (r->error) return {};
+        if (element.id() == QMetaType::QVariant) { list.meta.addValueAtEnd(result.data(), &item); continue; }
+        if (item.metaType() != element && !item.convert(element)) { fail(r, EINVAL, "Qt list element has the wrong type"); return {}; }
+        list.meta.addValueAtEnd(result.data(), item.constData());
+    }
+    return result;
+}
+static BqtValue write_list(BqtRequest *r, const ListDefinition &list, const void *source) {
+    const auto count = list.meta.size(source);
+    BqtValue result{}; result.tag = 2; result.count = size_t(count);
+    result.items = static_cast<BqtValue *>(std::calloc(result.count, sizeof(BqtValue)));
+    if (result.count && !result.items) throw std::bad_alloc();
+    ConversionValueGuard guard(result);
+    QVariant item(list.meta.valueMetaType());
+    for (qsizetype i = 0; i < count; ++i) {
+        list.meta.valueAtIndex(source, i, item.data());
+        result.items[i] = BendSignalApi::write_value(r, list.element, item.constData());
+        if (r->error) return {};
+    }
+    return guard.release();
+}
 static QVariant read_value(BqtRequest *r, int code, const BqtValue &wire) {
+    if (const auto *list = list_definition(code)) return read_list(r, *list, wire);
     auto *value = definition(code);
     if (!value) { fail(r, EINVAL, "Unknown Qt value argument"); return {}; }
     if (sequence_code(code)) {
@@ -120,6 +209,7 @@ static QVariant read_value(BqtRequest *r, int code, const BqtValue &wire) {
     return *carrier;
 }
 static BqtValue write_value(BqtRequest *r, int code, const void *source) {
+    if (const auto *list = list_definition(code)) return write_list(r, *list, source);
     auto *value = definition(code);
     if (!value) { fail(r, EINVAL, "Unknown Qt value result"); return {}; }
     if (!sequence_code(code)) return store(r, QVariant(value->type->type(), source));
@@ -202,7 +292,7 @@ static bool register_qml(BqtRequest *r) {
     if (id < 0) return fail(r, EINVAL, "Qt rejected the value registration");
     QQmlPrivate::RegisterSequentialContainer sequence{};
     sequence.uri = registration.uri; sequence.version = registration.version;
-    sequence.typeId = value->type->list_type(); sequence.metaSequence = QMetaSequence(&value->type->sequence);
+    sequence.typeId = value->type->list_type(); sequence.metaSequence = value->type->list->meta();
     QQmlPrivate::qmlregister(QQmlPrivate::SequentialContainerRegistration, &sequence);
     r->result.word = uint32_t(id); return true;
 #else

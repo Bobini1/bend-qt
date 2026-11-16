@@ -26,8 +26,8 @@ def saved() -> Qt.Property:
 def rawData() -> Qt.Signal:
   Qt.Signal.define("rawData", [Qt.string(), Qt.QByteArray.arg(), Qt.variantMap(), Qt.variant()])
 
-def Counter() -> Qt.QtObject:
-  Qt.QtObject.withSignals(Qt.QObject.define("SignalConnectionCounter", [events(), saved()]), [fired(), forwarded(), rawData()])
+def Counter() -> Qt.ObjectType:
+  Qt.ObjectType.withSignals(Qt.QObject.define("SignalConnectionCounter", [events(), saved()]), [fired(), forwarded(), rawData()])
 
 def bump(self: Qt.QObject, checked: Bool) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -177,8 +177,8 @@ def raw_snapshots(+self: Qt.QObject) -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    counter: Qt.QtObject.Instance(Counter()) <- Qt.QtObject.new(~Counter())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Counter(), counter)
+    counter: Qt.ObjectType.Instance(Counter()) <- Qt.ObjectType.new(~Counter())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Counter(), counter)
     Qt.scoped(Unit, queued(self))
     Qt.scoped(Unit, single_shot(self))
     Qt.scoped(Unit, blocking(self))

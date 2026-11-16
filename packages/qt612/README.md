@@ -68,9 +68,15 @@ boundary.
 Owned handles and connections created in that block are registered
 automatically. `Qt.run` releases them in reverse acquisition order on success
 or returned failure. There is no pool token to pass to constructors.
-`Qt.scoped(A, action)` creates a shorter nested scope. `Type.keep(value)`
-promotes an owned handle to its parent scope; promotion from the root leaves
-explicit lifetime management with the caller. Borrowed getters remain borrowed.
+`Qt.scoped(A, action)` creates a shorter nested scope. `Type.moveToParentScope(value)`
+transfers cleanup to its parent scope and fails with EINVAL at the root.
+`Type.detachFromScope(value)` removes automatic scope cleanup and leaves the
+caller responsible for releasing it. Both require the current pool to own
+cleanup. A handle with no cleanup in that pool, including one owned by an
+ancestor pool, returns EPERM. Neither changes
+Qt parenting or retention. Borrowed getters remain borrowed.
+These operations affect the automatic `Qt.run`/`Qt.scoped` pools; an explicit
+`Type.with` still releases its resource when the body returns.
 Each forked computation should use its own `Qt.run`, and must finish before
 any resources it borrows from another computation are released.
 
@@ -418,237 +424,38 @@ Typed child searches use `Class.findIn(root, name)`, `findAllIn` and
 last argument, including direct children only. Results preserve Qt ownership.
 See [the convenience adapters](../../docs/qt-convenience-apis.md).
 
-`QObject.define(name, properties)` declares a runtime class derived from QObject.
-Use the native base's `.define` function to select another base, for example
-`QQuickItem.define(name, properties)`. These functions return a `QtObject` schema;
-they do not create an instance. `Property.define`, `readOnly` and `constant` take
-a name and a typed
-argument descriptor, such as `string()`, `int32()`, `variantMap()` or
-`QPushButton.arg()`. `QtObject.withSignals` and `withMethods` add declarations.
-`QtObject.new(~schema)` uses the default native constructor. A generated
-`Base.newAs(~schema, ...)` selects another constructor and returns the typed
-instance. `newWith` can also attach a schema to an ordinary
-`Base.newOverride(...)` action. Only generated subclassable QObject bases expose
-`.define()`; final C++ classes are excluded. QQmlPropertyMap uses `new` or `newAs`
-so its open metadata is constructed on the declared schema. Other native objects
-that already manage incompatible dynamic metadata return ENOTSUP.
-`QtObject.derive(~parentSchema, name, properties)` declares a subclass of an
-existing Bend schema. It inherits its properties, signals, methods and native
-base. For example:
+### Bend types in QML
 
-```python
-def Card() -> Qt.QtObject:
-  Qt.QQuickItem.define("Card", [title()])
+`QObject.define(name, properties)` declares a class and returns an `ObjectType`
+schema. Use another native base's `.define` function to select that base.
+`ObjectType.Instance(schema)` is the type of its instances.
 
-def DetailedCard() -> Qt.QtObject:
-  Qt.QtObject.derive(~Card(), "DetailedCard", [detail()])
-```
+`Property.define`, `Signal.define` and `Method.define` describe the members.
+Their argument and result types use `TypeDescriptor` values, such as `string()`,
+`int32()`, `variantMap()` and `QPushButton.arg()`.
 
-`QtObject.Instance(schema)` preserves the class name in the Bend type.
-`QtObject.asNativeBase` exposes inherited native operations and virtual handlers;
-`as_QObject` passes it to Qt/QML. `QtObject.arg(~schema)` carries that concrete
-class in properties, signals and method arguments/results. `reference(name)`
-supports self-references and mutually referring classes. Null references work
-before that class is defined; a nonnull reference requires its definition.
-Casts validate the native class, and a class name cannot be reused for a different
-schema. Bound native class, enum and argument type names are reserved, including
-before their metatypes are registered. A derived schema must have its own name.
-Class and member names support Unicode identifiers.
+`ObjectType.new(~schema)` uses the default constructor. A generated
+`Base.newAs(~schema, ...)` selects another constructor. `ObjectType.attachUsing`
+supports advanced attachment to an acquired native object.
+`ObjectType.get`, `set`, `call`, `handle`, `emit` and `connect` accept the typed
+instance directly. `Property.set` calls a property's setter;
+`Property.writeStorage` updates its storage and emits change notifications.
 
-`asNativeBase` returns the native base selected by the schema, including through
-Bend schema inheritance. From that value, generated `Type.as_Ancestor` functions
-select any exposed native ancestor without a runtime cast. `Type.cast(object)`
-checks a native target, and `QtObject.cast(~schema, object)` checks a Bend schema
-target. These views share the same native object and ownership.
+A `list(~element)` property is a native `QList`. QML reads it as an array and
+uses it directly as a `Repeater` or `ListView` model; setting it from Bend
+refreshes those views. Elements can be numbers, strings, Bend-declared classes
+(`list(~ObjectType.arg(~Card()))`) and values, or further lists.
 
-Properties have native storage, default values and automatic change signals.
-For a public copyable non-QObject object type, `Class.valueArg()` selects an
-owning native value instead of the pointer supplied by `Class.arg()`. This
-distinguishes `QCommandLineOption` from `QCommandLineOption*` without introducing
-another Bend value type. Classes already exposed as values use their ordinary
-owning `arg()` descriptor.
-Stored types and nonvoid method results must support owning copies. Values
-without a default constructor start uninitialized; initialize their storage or
-install a getter before reading them. An uninitialized read returns ENODATA.
-A QVariant property starts with an invalid QVariant.
-A property carrying arbitrary Bend Data must be initialized before its first
-read; there is no default value for an arbitrary Data type. A QML class's
-initializer is the place to set it. Direct Bend calls can return copyable values
-without a default constructor. Native method output assignment additionally
-requires an assignable result type. QML's JavaScript exposure follows Qt's value
-type registration; a QVariant property can carry values without a QML value type.
-`Property.get`, `set` and `store` use their typed descriptor. `store` updates
-the backing value, including read-only properties; constants can be initialized
-before their first read. `handleGetter` and `handleSetter` install typed Bend
-accessors. Use `readStorage`/`store` inside those handlers to avoid recursion.
-`store` emits the property's generated `nameChanged()` signal when the value
-changes. A setter using external backing storage calls `Property.notify` after
-changing that value. Constants have no setter or change signal; initialize
-them with `store` before their first ordinary read.
+`Qml.registerType` and the singleton registration functions return a
+`Qml.Registration(schema)` controller, which is distinct from an instance.
+Schema-free registrations use `Qml.RegistrationHandle`.
+`ValueType.define` declares a QML value type whose instances copy independently.
 
-`Property.withReset(property)` declares a Qt RESET function.
-`Property.handleResetter(~property, ~S, ~handler, object, state)` installs its
-`S -> Action(Unit)` handler on an instance. `Property.reset(~property, object)`,
-`QMetaProperty.reset` and QML assignment of `undefined` invoke it. The handler
-chooses the context-specific default and updates the property using `set` or
-`store`. Reset can also be enabled on read-only properties. Calling reset without
-a declared RESET returns ENOTSUP; a missing reset handler returns ENOSYS.
+The [Bend types in QML guide](https://github.com/Bobini1/bend-qt/blob/main/docs/bend-qml-types.md)
+covers properties, methods, signals, values, enums, inheritance, registrations,
+singletons and factories, with examples and lifetime rules.
 
-`Property.withStored(property, False{})` sets Qt's STORED metadata to false;
-the default is true. This controls whether state-saving tools should save the
-property independently. Its getter, setter, backing storage and change signal
-continue to work. It does not change the behavior of `Property.store`. The
-[property example](../../examples/qt612/properties.bend) covers notifications,
-constants, resetting, metadata inspection and QML.
-
-The property API also exposes `withDesignable`, `withScriptable`, `withUser`,
-`withFinal`, `withVirtual`, `withOverride`, `withRequired` and `withBindable`.
-Each modifier takes a property and a Bool. `withRevision(property, minor)` and
-`withVersionRevision(property, major, minor)` supply QML metadata revisions.
-`withNotify(property, signal)` selects a signal with zero arguments or one
-argument of the property's type. `withoutNotify(property)` omits the signal.
-`QtObject.withClassInfo` adds class metadata, and `withDefaultProperty` declares
-QML's default property. The workspace's [property coverage table](../../docs/property-system.md)
-maps every Qt property attribute to its API and native fixture.
-
-QObject property references are borrowed and guarded; parent or scope ownership
-must keep them alive. Destroyed pointer targets read as null. Containers with
-destroyed references fail with ESTALE. Qt value arguments remain owning copies.
-
-`Enum.define("ExampleCard::Status", [Enum.key("Idle", 0), Enum.key("Ready", 1)])`
-declares a native enumeration. Add it to its owning class using
-`QtObject.withEnums(schema, [Status()])`, and use `Enum.arg(~Status())` in
-properties, signals and methods. The qualified name supplies its scope before
-the class exists, allowing properties to refer to their own class's enums.
-Enums can also be used in signals and QVariant before that class exists.
-`QMetaType.metaObject` and `QMetaEnum` expose an immutable namespace-style owner
-at that point. Later declarations in the same scope and attaching the QObject
-class update future lookups while existing metadata handles stay valid.
-`Enum.value(~Status(), "Ready")` returns a typed `Action(Enum.Value(Status()))`.
-Distinct qualified enum names remain distinct Bend and Qt metatypes.
-`withFlags`, `withScoped`, `withUnsigned` and `with64Bit` select the native
-representation; `withAlias` supplies a Q_FLAG enum-name alias. The default is a
-scoped, signed 32-bit enum. Use `signedKey`, `wideKey` or `signedWideKey` for
-negative and 64-bit entries. `Enum.bits` and `signed` recover the full numeric
-representation; `or`, `and` and `xor` combine values of the same declared type.
-QMetaEnum exposes these definitions, and a registered class exposes values in
-QML as `Card.Status.Ready` and `Card.Ready`. QML's native JavaScript numeric
-precision still applies to 64-bit enum values.
-
-`QVariant.fromValue(~argumentDescriptor, value)` boxes any supported native
-descriptor, including scalar and enum values, typed containers, concrete QObject
-pointers, Bend-authored enum values and `arg(~Payload)` data. The matching
-`QVariant.toValue(~argumentDescriptor, variant)` checks the stored metatype;
-opaque data also checks its Bend type witness. It returns a failure rather than
-silently constructing a default value for the wrong type. `variant()` as the
-descriptor returns a copy of the whole QVariant.
-`canConvert(~descriptor, variant)` and `convert(~descriptor, variant)` expose
-Qt's explicit native conversion checks and in-place conversion. The conversion
-returns Bool and follows Qt's behavior when conversion fails. `new`, `clear`,
-`isValid`, `isNull` and `metaType` supply the ordinary QVariant operations.
-Copied values retain their native metadata and external-data origins through
-immutable private leases. Boxed QObject references are retained while the
-variant needs them; native deletion and changing dynamic metadata still produce
-the normal stale-origin errors. Existing per-class `from_QClass`/`to_QClass`
-helpers remain available. The [generic QVariant fixture](../../scripts/fixtures/generic-variants.bend)
-checks native types, conversions, containers, opaque data and metadata snapshots.
-
-Stored property values, signal arguments and method/getter results carry these
-origin leases across native copies and callback scope cleanup. This includes
-raw metadata descriptors and values backed by external storage. A stored
-QObject pointer remains borrowed. Dynamic metadata delivered from a native
-worker must have a live observed origin; compiled Qt metadata and immutable
-Bend schemas can be delivered directly.
-
-`Method.define(name, argumentDescriptors, resultDescriptor)` declares a named
-invokable. `Method.handle(~method, ~S, ~handler, object, state)` installs the
-curried typed handler; `Method.call(~method, object, args...)` calls it in Bend.
-QML uses `object.method(args...)` directly. Use `unit()` for a void result.
-Methods and accessors must answer synchronously, as native Qt methods do.
-`Method.withArgumentNames(method, names)` supplies the parameter names returned
-by `QMetaMethod.parameterNames`; `withTag(method, tag)` supplies its Qt method
-tag. `withRevision(method, minor)` and `withVersionRevision(method, major, minor)`
-control member visibility when the class is registered with a corresponding QML
-metadata revision. `withAccess(method, QMetaMethod.Access.Private())` selects
-access metadata; the default is public. `withInvokable(method, True{})` declares
-an ordinary invokable method instead of the default slot. Named methods may
-override compatible inherited methods while keeping their return type.
-The [method metadata fixture](../../scripts/fixtures/method-metadata.bend)
-checks introspection, Bend dispatch, QML revision filtering and overrides.
-New QObjects returned by a member handler, including objects inside QVariant
-containers, move from the handler's scope into the calling operation's scope.
-Existing borrowed references retain their original ownership.
-
-`Qml.registerSingletonInstance(~schema, uri, major, minor, name, instance)`
-exports an existing instance for one engine. `registerSingleton` creates one
-default instance per engine; `registerSingletonFactory` accepts a typed Bend
-factory for initialization. Factories return unparented objects or engine
-children; the engine owns them. Registration handles are QObjects and use
-ordinary scopes. Engines retain registrations they use until destruction.
-Objects can also be supplied through `QQmlContext.setContextProperty`.
-Runtime class declarations alone do not register a creatable QML element.
-`Qml.registerSource` remains available for QML composite elements.
-
-`Qml.registerType(~schema, uri, major, minor, name)` makes the class creatable
-with normal QML syntax, such as `Card { title: "Hello" }`. A generated native
-base with supported construction metadata is required. A default constructor
-needs no additional handler. For another constructor, install
-`Qml.handleConstructor` and return an instance constructed with `Base.newAs`.
-It constructs the native object directly in Qt's allocation. Install a typed
-initializer with
-`Qml.handleCreate(~schema, ~S, ~initializer, registration, state)`, where the
-initializer is `S -> QtObject.Instance(schema) -> Action(Unit)`. It runs once
-per new instance, after native construction and before QML bindings are
-evaluated. It can initialize properties and install method or virtual handlers.
-QQuickItem bases also retain their normal QML construction lifecycle.
-
-`registerTypeRevision` and `registerTypeVersionRevision` select the member
-revision visible to a registration. Singleton instance, default and factory
-registrations have matching revision functions. Qt 6.12 records singleton
-revisions but does not apply member revision filtering to JavaScript singleton
-property lookup. The native control in
-[singleton-revision-native.cpp](../../examples/qt612/singleton-revision-native.cpp)
-checks this Qt behavior.
-
-`Qml.registerUncreatable(~schema, uri, major, minor, name, reason)` registers a
-named type for property declarations and objects supplied from Bend, while
-attempting to instantiate it in QML reports `reason`. Its native base need not
-have a default constructor. `Qml.registerAnonymous(~schema, uri, major)` makes a
-type recognizable when it occurs in a native property without introducing a QML
-element name. It cannot be instantiated or named in QML property declarations.
-`Qml.registerUnavailable(uri, major, minor, name, reason)` reserves an element
-name whose construction reports the supplied reason, without requiring a class
-schema. These functions return scoped registration handles like `registerType`.
-The [registration modes fixture](../../scripts/fixtures/qml-registration-modes.bend)
-checks native property access, construction rejection messages and cleanup.
-
-`QtObject.withAttached(schema, attachedSchema)` declares an attached type.
-`withExtension(schema, extensionSchema)` adds an extension. Their QML syntax
-is `Card.label` and `card.detail`, respectively. The default factory creates
-the declared QObject class. `Qml.handleAttached` and `handleExtension` install
-factories of type `S -> QObject -> Action(QtObject.Instance(relatedSchema))`.
-The QObject argument is the target being attached to or extended. The factory's
-result becomes its child before the callback scope closes. `Qml.attached` and
-`Qml.extension` return the same typed objects from Bend. Different registrations
-have separate attached caches. QML-created instances retain their registration
-until they are destroyed.
-Related types without a default constructor use these typed factories.
-QQmlPropertyMap works as an ordinary, creatable or attached class; Qt/PySide
-cannot expose its open metadata as QML extension metadata, so that combination
-returns ENOTSUP. Singletons can have extensions, but Qt's singleton registration
-ABI has no attached-type factory. These upstream boundaries have reproducible
-controls in [property-map-extension-pyside.py](../../examples/qt612/property-map-extension-pyside.py)
-and the singleton fixture.
-
-See the [creatable QML example](../../examples/qt612/qml-creatable.bend) for the
-declaration, initializer, factories and QML side together.
-
-The [QML types example](../../examples/qt612/qml-types.bend) uses named typed
-members. Numeric `BendBridge.invoke` dispatch is an internal compatibility
-mechanism under `Internal.Qml`, and is unnecessary for authoring these objects.
-Runtime metadata and pointer metatypes use the Qt 6 moc/public-header ABI.
-Immutable schemas live for the process lifetime because Qt/QML caches can
-retain their addresses. Class/member counts follow Qt's native index range.
+### Logging and cleanup handlers
 
 `MessageHandler.install(~S, ~f, state)` with `f: S -> LogMessage ->
 Action(Unit)` receives Qt's log messages; `MessageHandler.restore()`,

@@ -11,11 +11,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'generator'))
 from backend import command, compile_backend
 from generate import Generator
+from adapters import native_header_support
 from lifetime import evaluate_tables, cpp_tables
 from upstream import prepare
 import callbacks
 import native_objects
 import representations
+import qobject_interfaces
+import qio_pipe
 
 
 GADGET = '''#pragma once
@@ -68,6 +71,8 @@ def main():
                       qt / 'include', qt / 'mkspecs/linux-g++', *[qt / 'include' / m for m in modules]], env=env)
     (work / 'extraction.log').write_text(result.stdout + result.stderr)
     api = json.loads((work / 'api.json').read_text())
+    qobject_interfaces.restore(api, work)
+    qio_pipe.restore(api, work)
     native_objects.refine_traits(api, qt, modules, work, 'clang++-19')
     g = Generator(api, profile); g.collect()
     # Narrow native fixture, not a production class discovery policy.
@@ -126,7 +131,10 @@ def main():
     gadget = work / 'gadget.h'; gadget.write_text(GADGET)
     moc = command([qt / 'libexec/moc', gadget, '-I' + str(qt / 'include')]).stdout
     (work / 'gadget.moc.cpp').write_text(moc)
-    source = headers.read_text() + aliases + '#include "gadget.h"\n' + (ROOT / 'generator/templates/runtime.cpp').read_text()
+    prefix, suffix = callbacks.qml_sources(g, qt, work)
+    # As in production, header-defined helpers some modules leave unexported.
+    source = (headers.read_text() + native_header_support(profile['qt_modules']) + aliases + prefix
+              + '#include "gadget.h"\n' + (ROOT / 'generator/templates/runtime.cpp').read_text() + suffix)
     source = source.replace('// @ABI@', abi).replace('// @LIFETIME@', cpp_tables(evaluate_tables(work)))
     source = source.replace('// @NATIVE_OBJECTS@', native_objects.traits(g)).replace('// @DISPATCH@', dispatch)
     # The payload loader must run this static registration before Bend starts.

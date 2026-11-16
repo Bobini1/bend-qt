@@ -8469,8 +8469,8 @@
       "equivalents": [
         "Class.tr__String",
         "Class.tr__String_String_Int32",
-        "QtObject.tr",
-        "QtObject.trWith"
+        "ObjectType.tr",
+        "ObjectType.trWith"
       ],
       "explanation": "The class static metaobject or runtime schema metaobject supplies the actual translation context.",
       "evidence": [
@@ -11115,7 +11115,7 @@
       "status": "adapter",
       "equivalents": [
         "QHostInfo.lookupHostWithHandler",
-        "QtObject.withMethods",
+        "ObjectType.withMethods",
         "Method.handle"
       ],
       "explanation": "Typed lookup handler receives an owning QHostInfo value; the native lookup id supports cancellation. Native receiver/member composition is also available.",
@@ -11886,7 +11886,7 @@
       ],
       "status": "composition",
       "equivalents": [
-        "SignalArgument.name",
+        "TypeDescriptor.name",
         "QMetaType.fromName",
         "QMetaType.new__Int32"
       ],
@@ -11904,7 +11904,7 @@
       ],
       "status": "composition",
       "equivalents": [
-        "SignalArgument.name",
+        "TypeDescriptor.name",
         "QMetaType.fromName",
         "QMetaType.new__Int32"
       ],
@@ -13709,7 +13709,7 @@
       "equivalents": [
         "Enum.define",
         "Enum.flags",
-        "QtObject.withEnums"
+        "ObjectType.withEnums"
       ],
       "explanation": "Runtime native QEnum/QFlag metadata uses typed Bend descriptors rather than Python decorators.",
       "evidence": [
@@ -13726,7 +13726,7 @@
       "equivalents": [
         "Enum.define",
         "Enum.flags",
-        "QtObject.withEnums"
+        "ObjectType.withEnums"
       ],
       "explanation": "Runtime native QEnum/QFlag metadata uses typed Bend descriptors rather than Python decorators.",
       "evidence": [

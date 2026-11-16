@@ -35,13 +35,13 @@ def missingReset() -> Qt.Property:
 def persisted() -> Qt.Property:
   Qt.Property.withStored(Qt.Property.withStored(Qt.Property.define("persisted", Qt.string()), False{}), True{})
 
-def Settings() -> Qt.QtObject:
+def Settings() -> Qt.ObjectType:
   Qt.QObject.define("ExamplePropertySettings", [title(), version(), theme(), preview(), automatic(), failedReset(), missingReset(), persisted()])
 
 def events() -> Qt.Property:
   Qt.Property.define("events", Qt.u32())
 
-def Counter() -> Qt.QtObject:
+def Counter() -> Qt.ObjectType:
   Qt.QObject.define("ExamplePropertyCounter", [events()])
 
 def titleChanged() -> Qt.Signal:
@@ -76,7 +76,7 @@ def reset_theme(self: Qt.QObject) -> Qt.Action(Unit):
   Qt.Property.set(~theme(), self, "system")
 
 def reset_automatic(self: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Property.store(~automatic(), self, "automatic")
+  Qt.Property.writeStorage(~automatic(), self, "automatic")
 
 def reject_reset(state: Unit) -> Qt.Action(Unit):
   Qt.Action.fail(Unit, 73, "Expected reset-handler failure")
@@ -142,16 +142,16 @@ def qml(+self: Qt.QObject) -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +settings: Qt.QtObject.Instance(Settings()) <- Qt.QtObject.new(~Settings())
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Settings(), settings)
+    +settings: Qt.ObjectType.Instance(Settings()) <- Qt.ObjectType.new(~Settings())
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Settings(), settings)
     Qt.Property.handleGetter(~title(), ~Qt.QObject, ~get_title, self, self)
     Qt.Property.handleSetter(~title(), ~Qt.QObject, ~set_title, self, self)
     Qt.Property.handleResetter(~theme(), ~Qt.QObject, ~reset_theme, self, self)
     Qt.Property.handleResetter(~automatic(), ~Qt.QObject, ~reset_automatic, self, self)
     Qt.Property.handleResetter(~failedReset(), ~Unit, ~reject_reset, self, Unit{})
-    Qt.Property.store(~version(), self, "1.0")
-    +counter: Qt.QtObject.Instance(Counter()) <- Qt.QtObject.new(~Counter())
-    +observer: Qt.QObject = Qt.QtObject.as_QObject(~Counter(), counter)
+    Qt.Property.writeStorage(~version(), self, "1.0")
+    +counter: Qt.ObjectType.Instance(Counter()) <- Qt.ObjectType.new(~Counter())
+    +observer: Qt.QObject = Qt.ObjectType.as_QObject(~Counter(), counter)
     connection: Qt.Connection <- Qt.Signal.connect(~titleChanged(), ~Qt.QObject, ~notified, self, observer)
     Qt.Property.set(~title(), self, "Bend")
     Qt.Property.set(~title(), self, "Bend")
@@ -160,7 +160,7 @@ def objects() -> Qt.Action(Unit):
     require(String.eq(current_title, "Bend") && U32.is_eq(count, 1), "Custom setter notification changed")
     fixed: String <- Qt.Property.get(~version(), self)
     require(String.eq(fixed, "1.0"), "Constant initialization failed")
-    refused: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.Property.store(~version(), self, "2.0"))
+    refused: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.Property.writeStorage(~version(), self, "2.0"))
     expected(Unit, refused, 1)
     refused: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.Property.set(~version(), self, "2.0"))
     expected(Unit, refused, 1)

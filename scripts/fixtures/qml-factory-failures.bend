@@ -9,44 +9,44 @@ def require(ok: Bool, message: String) -> Qt.Action(Unit):
 def value() -> Qt.Property:
   Qt.Property.define("value", Qt.string())
 
-def Related() -> Qt.QtObject:
+def Related() -> Qt.ObjectType:
   Qt.QObject.define("FailingQmlRelated", [value()])
 
-def AttachedObject() -> Qt.QtObject:
-  Qt.QtObject.withAttached(Qt.QObject.define("FailingQmlAttachedObject", []), Related())
+def AttachedObject() -> Qt.ObjectType:
+  Qt.ObjectType.withAttached(Qt.QObject.define("FailingQmlAttachedObject", []), Related())
 
-def ExtendedObject() -> Qt.QtObject:
-  Qt.QtObject.withExtension(Qt.QObject.define("FailingQmlExtendedObject", []), Related())
+def ExtendedObject() -> Qt.ObjectType:
+  Qt.ObjectType.withExtension(Qt.QObject.define("FailingQmlExtendedObject", []), Related())
 
-def NonDefault() -> Qt.QtObject:
+def NonDefault() -> Qt.ObjectType:
   Qt.QSocketNotifier.define("InvalidQmlSocketNotifier", [])
 
-def NonDefaultRelated() -> Qt.QtObject:
+def NonDefaultRelated() -> Qt.ObjectType:
   Qt.QSocketNotifier.define("FactoryConstructedQmlNotifier", [value()])
 
-def FactoryAttached() -> Qt.QtObject:
-  Qt.QtObject.withAttached(Qt.QObject.define("FactoryConstructedAttached", []), NonDefaultRelated())
+def FactoryAttached() -> Qt.ObjectType:
+  Qt.ObjectType.withAttached(Qt.QObject.define("FactoryConstructedAttached", []), NonDefaultRelated())
 
-def FactoryExtended() -> Qt.QtObject:
-  Qt.QtObject.withExtension(Qt.QObject.define("FactoryConstructedExtended", []), NonDefaultRelated())
+def FactoryExtended() -> Qt.ObjectType:
+  Qt.ObjectType.withExtension(Qt.QObject.define("FactoryConstructedExtended", []), NonDefaultRelated())
 
-def make_related(label: String, target: Qt.QObject) -> Qt.Action(Qt.QtObject.Instance(NonDefaultRelated())):
-  do Qt.Action<Qt.QtObject.Instance(NonDefaultRelated())>:
-    +instance: Qt.QtObject.Instance(NonDefaultRelated()) <- Qt.QtObject.newWith(~NonDefaultRelated(),
+def make_related(label: String, target: Qt.QObject) -> Qt.Action(Qt.ObjectType.Instance(NonDefaultRelated())):
+  do Qt.Action<Qt.ObjectType.Instance(NonDefaultRelated())>:
+    +instance: Qt.ObjectType.Instance(NonDefaultRelated()) <- Qt.ObjectType.attachUsing(~NonDefaultRelated(),
       Qt.QSocketNotifier.newOverride__QSocketNotifier_Type_QObject(Qt.QSocketNotifier.Type.Read(), Qt.QObject{0}))
-    Qt.Property.set(~value(), Qt.QtObject.as_QObject(~NonDefaultRelated(), instance), label)
+    Qt.ObjectType.set(~NonDefaultRelated(), ~value(), instance, label)
     return instance
 
-def fail_related(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.QtObject.Instance(NonDefaultRelated())):
-  Qt.Action.fail(Qt.QtObject.Instance(NonDefaultRelated()), 69, "Expected nondefault related factory failure")
+def fail_related(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.ObjectType.Instance(NonDefaultRelated())):
+  Qt.Action.fail(Qt.ObjectType.Instance(NonDefaultRelated()), 69, "Expected nondefault related factory failure")
 
-def fail_attached(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.QtObject.Instance(Related())):
-  Qt.Action.fail(Qt.QtObject.Instance(Related()), 67, "Expected attached factory failure")
+def fail_attached(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.ObjectType.Instance(Related())):
+  Qt.Action.fail(Qt.ObjectType.Instance(Related()), 67, "Expected attached factory failure")
 
-def fail_extension(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.QtObject.Instance(Related())):
-  Qt.Action.fail(Qt.QtObject.Instance(Related()), 68, "Expected extension factory failure")
+def fail_extension(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.ObjectType.Instance(Related())):
+  Qt.Action.fail(Qt.ObjectType.Instance(Related()), 68, "Expected extension factory failure")
 
-def expect_error(result: Result<&1, &1, U32 & String, Qt.QObject>, expected: U32) -> Qt.Action(Unit):
+def expect_error(-A: Type, result: Result<&1, &1, U32 & String, A>, expected: U32) -> Qt.Action(Unit):
   match result:
     case Fail{(+code, message)}: require(U32.is_eq(code, expected), "QML lost the original failure: " ++ U32.show(code) ++ " " ++ message)
     case Done{object}: Qt.Action.fail(Unit, 1, "QML ignored the expected failure")
@@ -61,7 +61,7 @@ def create(source: String, expected: U32) -> Qt.Action(Unit):
     ready: Bool <- Qt.QQmlComponent.isReady(component)
     require(ready, "QML failure fixture did not compile")
     result: Result<&1, &1, U32 & String, Qt.QObject> <- Qt.Action.attempt(Qt.QObject, Qt.QQmlComponent.create__QQmlContext(component, Qt.QQmlContext{0}))
-    expect_error(result, expected)
+    expect_error(Qt.QObject, result, expected)
 
 def create_valid(source: String, expected: String) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -79,28 +79,28 @@ def create_valid(source: String, expected: String) -> Qt.Action(Unit):
 
 def cases() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +attached: Qt.QObject <- Qt.Qml.registerType(~AttachedObject(), "Bend.FailingAttached", 1, 0, "Card")
+    +attached: Qt.Qml.Registration(AttachedObject()) <- Qt.Qml.registerType(~AttachedObject(), "Bend.FailingAttached", 1, 0, "Card")
     Qt.Qml.handleAttached(~AttachedObject(), ~Unit, ~fail_attached, attached, Unit{})
     create("import Bend.FailingAttached 1.0\nCard { Card.value: 'force-attached' }", 67)
-    +extended: Qt.QObject <- Qt.Qml.registerType(~ExtendedObject(), "Bend.FailingExtension", 1, 0, "Card")
+    +extended: Qt.Qml.Registration(ExtendedObject()) <- Qt.Qml.registerType(~ExtendedObject(), "Bend.FailingExtension", 1, 0, "Card")
     Qt.Qml.handleExtension(~ExtendedObject(), ~Unit, ~fail_extension, extended, Unit{})
     create("import Bend.FailingExtension 1.0\nCard { value: 'force-extension' }", 68)
-    non_default: Qt.QObject <- Qt.Qml.registerType(~NonDefault(), "Bend.InvalidDefault", 1, 0, "Card")
+    non_default: Qt.Qml.Registration(NonDefault()) <- Qt.Qml.registerType(~NonDefault(), "Bend.InvalidDefault", 1, 0, "Card")
     create("import Bend.InvalidDefault 1.0\nCard {}", 38)
-    +factory_attached: Qt.QObject <- Qt.Qml.registerType(~FactoryAttached(), "Bend.FactoryAttached", 1, 0, "Card")
+    +factory_attached: Qt.Qml.Registration(FactoryAttached()) <- Qt.Qml.registerType(~FactoryAttached(), "Bend.FactoryAttached", 1, 0, "Card")
     Qt.Qml.handleAttached(~FactoryAttached(), ~String, ~make_related, factory_attached, "attached-factory")
     create_valid("import Bend.FactoryAttached 1.0\nCard { property string result: Card.value }", "attached-factory")
-    +factory_extended: Qt.QObject <- Qt.Qml.registerType(~FactoryExtended(), "Bend.FactoryExtended", 1, 0, "Card")
+    +factory_extended: Qt.Qml.Registration(FactoryExtended()) <- Qt.Qml.registerType(~FactoryExtended(), "Bend.FactoryExtended", 1, 0, "Card")
     Qt.Qml.handleExtension(~FactoryExtended(), ~String, ~make_related, factory_extended, "extension-factory")
     create_valid("import Bend.FactoryExtended 1.0\nCard { property string result: value }", "extension-factory")
-    +factory_singleton: Qt.QObject <- Qt.Qml.registerSingleton(~FactoryExtended(), "Bend.FactorySingleton", 1, 0, "Settings")
+    +factory_singleton: Qt.Qml.Registration(FactoryExtended()) <- Qt.Qml.registerSingleton(~FactoryExtended(), "Bend.FactorySingleton", 1, 0, "Settings")
     Qt.Qml.handleExtension(~FactoryExtended(), ~String, ~make_related, factory_singleton, "singleton-factory")
     create_valid("import QtQml\nimport Bend.FactorySingleton 1.0\nQtObject { property string result: Settings.value }", "singleton-factory")
-    +missing_attached: Qt.QObject <- Qt.Qml.registerType(~FactoryAttached(), "Bend.MissingAttached", 1, 0, "Card")
+    +missing_attached: Qt.Qml.Registration(FactoryAttached()) <- Qt.Qml.registerType(~FactoryAttached(), "Bend.MissingAttached", 1, 0, "Card")
     create("import Bend.MissingAttached 1.0\nCard { Card.value: 'missing-factory' }", 38)
-    +missing_extended: Qt.QObject <- Qt.Qml.registerType(~FactoryExtended(), "Bend.MissingExtension", 1, 0, "Card")
+    +missing_extended: Qt.Qml.Registration(FactoryExtended()) <- Qt.Qml.registerType(~FactoryExtended(), "Bend.MissingExtension", 1, 0, "Card")
     create("import Bend.MissingExtension 1.0\nCard { value: 'missing-factory' }", 38)
-    +failed_extended: Qt.QObject <- Qt.Qml.registerType(~FactoryExtended(), "Bend.FailedFactory", 1, 0, "Card")
+    +failed_extended: Qt.Qml.Registration(FactoryExtended()) <- Qt.Qml.registerType(~FactoryExtended(), "Bend.FailedFactory", 1, 0, "Card")
     Qt.Qml.handleExtension(~FactoryExtended(), ~Unit, ~fail_related, failed_extended, Unit{})
     create("import Bend.FailedFactory 1.0\nCard { value: 'failed-factory' }", 69)
 

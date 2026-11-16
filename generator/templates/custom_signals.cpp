@@ -148,6 +148,8 @@ static int argument_type(BqtRequest *r, const BqtValue &argument) {
     if (registered.isValid())
         for (size_t i = 0; i < sizeof(names) / sizeof(*names); ++i)
             if (registered == meta_type(names[i].code)) return names[i].code;
+    const int list = RuntimeValueTypes::sequence_type(r, type, dependency);
+    if (r->error || list != INT_MIN) return list;
     if (type.contains('<')) {
         fail(r, ENOTSUP, "Native container argument instantiation is absent from the selected binding inventory");
         return INT_MIN;
@@ -287,14 +289,12 @@ struct Snapshot {
         } else if (value.metaType().id() == QMetaType::QVariantList) {
             const auto list = value.toList();
             for (const auto &item : list) guard(item, depth + 1, native_frame);
-        } else if (auto shape = BendValueTypes::classify(value.metaType()); shape.first) {
-            if (shape.second) {
-                const auto &list = *static_cast<const BendValueTypes::Sequence *>(value.constData());
-                for (const auto &item : list.values) guard(item, depth + 1, native_frame);
-            } else {
-                const auto &record = *static_cast<const BendValueTypes::Value *>(value.constData());
-                for (const auto &item : record.fields) guard(item, depth + 1, native_frame);
-            }
+        } else if (BendValueTypes::list_of(value.metaType())) {
+            const auto &list = *static_cast<const BendValueTypes::Sequence *>(value.constData());
+            for (const auto &item : list.values) guard(item, depth + 1, native_frame);
+        } else if (auto shape = BendValueTypes::classify(value.metaType()); shape.first && !shape.second) {
+            const auto &record = *static_cast<const BendValueTypes::Value *>(value.constData());
+            for (const auto &item : record.fields) guard(item, depth + 1, native_frame);
         }
 #if defined(BQT_NATIVE_PARTITIONS)
         else for (const auto &codec : partition_snapshot_codecs()) {

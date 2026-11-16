@@ -138,8 +138,9 @@ def malformed(+object: Qt.QObject) -> Qt.Action(Unit):
     missing: Result<&1, &1, U32 & String, Qt.Connection> <- Qt.Action.attempt(Qt.Connection,
       Qt.Signal.connect(~valuesChanged(), ~Unit, ~primitive_values, object, Unit{}))
     expect_error(Qt.Connection, missing, 2)
+    schema: Qt.Wire <- Qt.Signal.schema(progressChanged())
     bad_arity: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit,
-      Qt.Signal.emit_raw(object, Qt.Signal.schema(progressChanged()), Qt.WireSequence{Nil{}}))
+      Qt.Signal.emit_raw(object, schema, Qt.WireSequence{Nil{}}))
     expect_error(Unit, bad_arity, 22)
     Qt.Signal.emit(~inherited(), object, "inherited emission")
 
@@ -153,19 +154,19 @@ def object_cases(+object: Qt.QObject, +probe: Qt.QObject) -> Qt.Action(Unit):
     interop: U32 <- Qt.CallbackProbe.customSignalInterop(object)
     require(U32.is_eq(interop, 1), "Custom signals did not interoperate with Qt and QML")
 
-def Shared() -> Qt.QtObject:
-  Qt.QtObject.withSignals(Qt.QObject.define("SharedSignalSchema", []), [finished()])
+def Shared() -> Qt.ObjectType:
+  Qt.ObjectType.withSignals(Qt.QObject.define("SharedSignalSchema", []), [finished()])
 
-def Conflicting() -> Qt.QtObject:
+def Conflicting() -> Qt.ObjectType:
   Qt.QObject.define("SharedSignalSchema", [Qt.Property.define("extra", Qt.string())])
 
 def shared_namespace() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     first: Qt.QObject <- Qt.QObject.newWithSignals("SharedSignalSchema", [finished()])
-    second: Qt.QtObject.Instance(Shared()) <- Qt.QtObject.new(~Shared())
-    Qt.Signal.emit(~finished(), Qt.QtObject.as_QObject(~Shared(), second))
-    conflict: Result<&1, &1, U32 & String, Qt.QtObject.Instance(Conflicting())> <- Qt.Action.attempt(Qt.QtObject.Instance(Conflicting()), Qt.QtObject.new(~Conflicting()))
-    expect_error(Qt.QtObject.Instance(Conflicting()), conflict, 17)
+    second: Qt.ObjectType.Instance(Shared()) <- Qt.ObjectType.new(~Shared())
+    Qt.ObjectType.emit(~Shared(), ~finished(), second)
+    conflict: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(Conflicting())> <- Qt.Action.attempt(Qt.ObjectType.Instance(Conflicting()), Qt.ObjectType.new(~Conflicting()))
+    expect_error(Qt.ObjectType.Instance(Conflicting()), conflict, 17)
     native_name: Result<&1, &1, U32 & String, Qt.QObject> <- Qt.Action.attempt(Qt.QObject, Qt.QObject.newWithSignals("QTimer", []))
     expect_error(Qt.QObject, native_name, 17)
 

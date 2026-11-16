@@ -10,30 +10,30 @@ def label() -> Qt.Property:
 def detail() -> Qt.Property:
   Qt.Property.define("detail", Qt.string())
 
-def Attached() -> Qt.QtObject:
+def Attached() -> Qt.ObjectType:
   Qt.QObject.define("ExampleCardAttached", [label()])
 
-def Extension() -> Qt.QtObject:
+def Extension() -> Qt.ObjectType:
   Qt.QObject.define("ExampleCardExtension", [detail()])
 
-def Card() -> Qt.QtObject:
-  Qt.QtObject.withExtension(Qt.QtObject.withAttached(
+def Card() -> Qt.ObjectType:
+  Qt.ObjectType.withExtension(Qt.ObjectType.withAttached(
     Qt.QObject.define("ExampleCreatableCard", [title()]),
     Attached()), Extension())
 
-def initialize(state: Unit, card: Qt.QtObject.Instance(Card())) -> Qt.Action(Unit):
-  Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Card(), card), "Initialized in Bend")
+def initialize(state: Unit, card: Qt.ObjectType.Instance(Card())) -> Qt.Action(Unit):
+  Qt.ObjectType.set(~Card(), ~title(), card, "Initialized in Bend")
 
-def make_attached(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.QtObject.Instance(Attached())):
-  do Qt.Action<Qt.QtObject.Instance(Attached())>:
-    +value: Qt.QtObject.Instance(Attached()) <- Qt.QtObject.new(~Attached())
-    Qt.Property.set(~label(), Qt.QtObject.as_QObject(~Attached(), value), "Attached in Bend")
+def make_attached(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.ObjectType.Instance(Attached())):
+  do Qt.Action<Qt.ObjectType.Instance(Attached())>:
+    +value: Qt.ObjectType.Instance(Attached()) <- Qt.ObjectType.new(~Attached())
+    Qt.ObjectType.set(~Attached(), ~label(), value, "Attached in Bend")
     return value
 
-def make_extension(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.QtObject.Instance(Extension())):
-  do Qt.Action<Qt.QtObject.Instance(Extension())>:
-    +value: Qt.QtObject.Instance(Extension()) <- Qt.QtObject.new(~Extension())
-    Qt.Property.set(~detail(), Qt.QtObject.as_QObject(~Extension(), value), "Extended in Bend")
+def make_extension(state: Unit, target: Qt.QObject) -> Qt.Action(Qt.ObjectType.Instance(Extension())):
+  do Qt.Action<Qt.ObjectType.Instance(Extension())>:
+    +value: Qt.ObjectType.Instance(Extension()) <- Qt.ObjectType.new(~Extension())
+    Qt.ObjectType.set(~Extension(), ~detail(), value, "Extended in Bend")
     return value
 
 def verify(ok: Bool) -> Qt.Action(Unit):
@@ -43,7 +43,7 @@ def verify(ok: Bool) -> Qt.Action(Unit):
 
 def demo() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +registration: Qt.QObject <- Qt.Qml.registerType(~Card(), "Bend.Creatable", 1, 0, "Card")
+    +registration: Qt.Qml.Registration(Card()) <- Qt.Qml.registerType(~Card(), "Bend.Creatable", 1, 0, "Card")
     Qt.Qml.handleCreate(~Card(), ~Unit, ~initialize, registration, Unit{})
     Qt.Qml.handleAttached(~Card(), ~Unit, ~make_attached, registration, Unit{})
     Qt.Qml.handleExtension(~Card(), ~Unit, ~make_extension, registration, Unit{})

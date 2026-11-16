@@ -8,15 +8,15 @@ def QtBase.Value(base: QtBase) -> Data:
     case QtBase{Value, native, parent, encode, decode}: Value
 
 type Property is Type:
-  Property{name: String, argument: SignalArgument, flags: U32, major: U32, minor: U32, notify: List<&1, Signal>}
+  Property{name: String, argument: TypeDescriptor, flags: U32, major: U32, minor: U32, notify: List<&1, Signal>}
 
-def Property.define(name: String, argument: SignalArgument) -> Property:
+def Property.define(name: String, argument: TypeDescriptor) -> Property:
   Property{name, argument, 0, 0, 0, Nil{}}
 
-def Property.readOnly(name: String, argument: SignalArgument) -> Property:
+def Property.readOnly(name: String, argument: TypeDescriptor) -> Property:
   Property{name, argument, 1, 0, 0, Nil{}}
 
-def Property.constant(name: String, argument: SignalArgument) -> Property:
+def Property.constant(name: String, argument: TypeDescriptor) -> Property:
   Property{name, argument, 2, 0, 0, Nil{}}
 
 def Property.withFlag(property: Property, +flag: U32, enabled: Bool) -> Property:
@@ -76,7 +76,7 @@ def Property.withoutNotify(property: Property) -> Property:
     case Property{name, argument, flags, major, minor, previous}:
       Property{name, argument, U32.or(U32.and(flags, 4294950911), 4096), major, minor, Nil{}}
 
-def Property.argument(property: Property) -> SignalArgument:
+def Property.argument(property: Property) -> TypeDescriptor:
   match property:
     case Property{name, argument, flags, major, minor, notify}: argument
 
@@ -85,13 +85,13 @@ def Property.name(property: Property) -> String:
     case Property{name, argument, flags, major, minor, notify}: name
 
 def Property.Value(property: Property) -> Data:
-  SignalArgument.Value(Property.argument(property))
+  TypeDescriptor.Value(Property.argument(property))
 
 def Property.schema(property: Property) -> Action(Wire):
   match property:
     case Property{name, argument, flags, major, minor, notify}:
       do Action<Wire>:
-        declared: Wire <- SignalArgument.schema(argument)
+        declared: Wire <- TypeDescriptor.schema(argument)
         change: Wire <- SignalSchemas.encode(notify)
         return WireSequence{[WireText{name}, declared, WireScalar{flags, 0}, WireScalar{major, minor}, change]}
 
@@ -105,9 +105,9 @@ def Property.schemas(properties: List<&1, Property>) -> Action(List<&2, Wire>):
         return wire <> tail
 
 type Method is Type:
-  Method{name: String, arguments: SignalArguments, result: SignalArgument, names: List<&1, String>, tag: String, flags: U32, access: QMetaMethod.Access, major: U32, minor: U32}
+  Method{name: String, arguments: SignalArguments, result: TypeDescriptor, names: List<&1, String>, tag: String, flags: U32, access: QMetaMethod.Access, major: U32, minor: U32}
 
-def Method.define(name: String, arguments: List<&1, SignalArgument>, result: SignalArgument) -> Method:
+def Method.define(name: String, arguments: List<&1, TypeDescriptor>, result: TypeDescriptor) -> Method:
   Method{name, SignalArguments.fromList(arguments), result, Nil{}, "", 0, QMetaMethod.Access.Public(), 0, 0}
 
 def Method.withArgumentNames(method: Method, names: List<&1, String>) -> Method:
@@ -152,7 +152,7 @@ def Method.schema(method: Method) -> Action(Wire):
     case Method{name, arguments, result, names, tag, flags, access, major, minor}:
       do Action<Wire>:
         types: List<&2, Wire> <- SignalArguments.names(arguments)
-        output: Wire <- SignalArgument.schema(result)
+        output: Wire <- TypeDescriptor.schema(result)
         return WireSequence{[WireText{name}, WireSequence{types}, output,
           WireSequence{[WireSequence{Method.argumentNamesWire(names)}, WireText{tag}, WireScalar{flags, QMetaMethod.Access.word(access)}, WireScalar{major, minor}]}]}
 
@@ -165,112 +165,112 @@ def Method.schemas(methods: List<&1, Method>) -> Action(List<&2, Wire>):
         tail: List<&2, Wire> <- Method.schemas(rest)
         return wire <> tail
 
-type QtObject is Type:
-  QtObject{name: String, base: QtBase, properties: List<&1, Property>, signals: List<&1, Signal>, methods: List<&1, Method>, attached: List<&1, QtObject>, extension: List<&1, QtObject>, info: List<&1, PairValue<String, String>>, enums: List<&1, Enum>}
+type ObjectType is Type:
+  ObjectType{name: String, base: QtBase, properties: List<&1, Property>, signals: List<&1, Signal>, methods: List<&1, Method>, attached: List<&1, ObjectType>, extension: List<&1, ObjectType>, info: List<&1, PairValue<String, String>>, enums: List<&1, Enum>}
 
-def Internal.QtObject.define(name: String, base: QtBase, properties: List<&1, Property>) -> QtObject:
-  QtObject{name, base, properties, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}}
+def Internal.ObjectType.define(name: String, base: QtBase, properties: List<&1, Property>) -> ObjectType:
+  ObjectType{name, base, properties, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}}
 
-def QtObject.withSignals(object: QtObject, signals: List<&1, Signal>) -> QtObject:
+def ObjectType.withSignals(object: ObjectType, signals: List<&1, Signal>) -> ObjectType:
   match object:
-    case QtObject{name, base, properties, previous, methods, attached, extension, info, enums}: QtObject{name, base, properties, signals, methods, attached, extension, info, enums}
+    case ObjectType{name, base, properties, previous, methods, attached, extension, info, enums}: ObjectType{name, base, properties, signals, methods, attached, extension, info, enums}
 
-def QtObject.withMethods(object: QtObject, methods: List<&1, Method>) -> QtObject:
+def ObjectType.withMethods(object: ObjectType, methods: List<&1, Method>) -> ObjectType:
   match object:
-    case QtObject{name, base, properties, signals, previous, attached, extension, info, enums}: QtObject{name, base, properties, signals, methods, attached, extension, info, enums}
+    case ObjectType{name, base, properties, signals, previous, attached, extension, info, enums}: ObjectType{name, base, properties, signals, methods, attached, extension, info, enums}
 
-def QtObject.withAttached(object: QtObject, attached: QtObject) -> QtObject:
+def ObjectType.withAttached(object: ObjectType, attached: ObjectType) -> ObjectType:
   match object:
-    case QtObject{name, base, properties, signals, methods, previous, extension, info, enums}: QtObject{name, base, properties, signals, methods, [attached], extension, info, enums}
+    case ObjectType{name, base, properties, signals, methods, previous, extension, info, enums}: ObjectType{name, base, properties, signals, methods, [attached], extension, info, enums}
 
-def QtObject.withExtension(object: QtObject, extension: QtObject) -> QtObject:
+def ObjectType.withExtension(object: ObjectType, extension: ObjectType) -> ObjectType:
   match object:
-    case QtObject{name, base, properties, signals, methods, attached, previous, info, enums}: QtObject{name, base, properties, signals, methods, attached, [extension], info, enums}
+    case ObjectType{name, base, properties, signals, methods, attached, previous, info, enums}: ObjectType{name, base, properties, signals, methods, attached, [extension], info, enums}
 
-def QtObject.withClassInfo(object: QtObject, key: String, value: String) -> QtObject:
+def ObjectType.withClassInfo(object: ObjectType, key: String, value: String) -> ObjectType:
   match object:
-    case QtObject{name, base, properties, signals, methods, attached, extension, info, enums}:
-      QtObject{name, base, properties, signals, methods, attached, extension, PairValue{key, value} <> info, enums}
+    case ObjectType{name, base, properties, signals, methods, attached, extension, info, enums}:
+      ObjectType{name, base, properties, signals, methods, attached, extension, PairValue{key, value} <> info, enums}
 
-def QtObject.withEnums(object: QtObject, enums: List<&1, Enum>) -> QtObject:
+def ObjectType.withEnums(object: ObjectType, enums: List<&1, Enum>) -> ObjectType:
   match object:
-    case QtObject{name, base, properties, signals, methods, attached, extension, info, previous}:
-      QtObject{name, base, properties, signals, methods, attached, extension, info, enums}
+    case ObjectType{name, base, properties, signals, methods, attached, extension, info, previous}:
+      ObjectType{name, base, properties, signals, methods, attached, extension, info, enums}
 
-def QtObject.withDefaultProperty(object: QtObject, name: String) -> QtObject:
-  QtObject.withClassInfo(object, "DefaultProperty", name)
+def ObjectType.withDefaultProperty(object: ObjectType, name: String) -> ObjectType:
+  ObjectType.withClassInfo(object, "DefaultProperty", name)
 
-def QtObject.attachedType(object: QtObject) -> QtObject:
+def ObjectType.attachedType(object: ObjectType) -> ObjectType:
   match object:
-    case QtObject{name, base, properties, signals, methods, attached <> rest, extension, info, enums}: attached
-    case QtObject{name, base, properties, signals, methods, Nil{}, extension, info, enums}: QtObject{name ++ "Attached", base, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}}
+    case ObjectType{name, base, properties, signals, methods, attached <> rest, extension, info, enums}: attached
+    case ObjectType{name, base, properties, signals, methods, Nil{}, extension, info, enums}: ObjectType{name ++ "Attached", base, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}}
 
-def QtObject.extensionType(object: QtObject) -> QtObject:
+def ObjectType.extensionType(object: ObjectType) -> ObjectType:
   match object:
-    case QtObject{name, base, properties, signals, methods, attached, extension <> rest, info, enums}: extension
-    case QtObject{name, base, properties, signals, methods, attached, Nil{}, info, enums}: QtObject{name ++ "Extension", base, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}}
+    case ObjectType{name, base, properties, signals, methods, attached, extension <> rest, info, enums}: extension
+    case ObjectType{name, base, properties, signals, methods, attached, Nil{}, info, enums}: ObjectType{name ++ "Extension", base, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}, Nil{}}
 
-def QtObject.name(object: QtObject) -> String:
+def ObjectType.name(object: ObjectType) -> String:
   match object:
-    case QtObject{name, base, properties, signals, methods, attached, extension, info, enums}: name
+    case ObjectType{name, base, properties, signals, methods, attached, extension, info, enums}: name
 
-def QtObject.nativeBase(object: QtObject) -> QtBase:
+def ObjectType.nativeBase(object: ObjectType) -> QtBase:
   match object:
-    case QtObject{name, base, properties, signals, methods, attached, extension, info, enums}: base
+    case ObjectType{name, base, properties, signals, methods, attached, extension, info, enums}: base
 
-def QtObject.classInfos(info: List<&1, PairValue<String, String>>) -> List<&2, Wire>:
+def ObjectType.classInfos(info: List<&1, PairValue<String, String>>) -> List<&2, Wire>:
   match info:
     case Nil{}: Nil{}
-    case PairValue{key, value} <> rest: WireSequence{[WireText{key}, WireText{value}]} <> QtObject.classInfos(rest)
+    case PairValue{key, value} <> rest: WireSequence{[WireText{key}, WireText{value}]} <> ObjectType.classInfos(rest)
 
-def QtObject.schema(object: QtObject) -> Action(Wire):
+def ObjectType.schema(object: ObjectType) -> Action(Wire):
   match object:
-    case QtObject{name, QtBase{Value, native, parent, encode, decode}, properties, signals, methods, attached, extension, info, enums}:
+    case ObjectType{name, QtBase{Value, native, parent, encode, decode}, properties, signals, methods, attached, extension, info, enums}:
       do Action<Wire>:
         inherited: Wire <- parent
         fields: List<&2, Wire> <- Property.schemas(properties)
         events: Wire <- SignalSchemas.encode(signals)
         functions: List<&2, Wire> <- Method.schemas(methods)
         return WireSequence{[WireText{name}, WireScalar{native, 0}, inherited,
-          WireSequence{fields}, events, WireSequence{functions}, WireSequence{QtObject.classInfos(info)}, WireSequence{Enum.schemas(enums)}]}
+          WireSequence{fields}, events, WireSequence{functions}, WireSequence{ObjectType.classInfos(info)}, WireSequence{Enum.schemas(enums)}]}
 
-def QtObject.optionalSchema(objects: List<&1, QtObject>) -> Action(Wire):
+def ObjectType.optionalSchema(objects: List<&1, ObjectType>) -> Action(Wire):
   match objects:
     case Nil{}: Action.pure(Wire, WireScalar{0, 0})
-    case object <> rest: QtObject.schema(object)
+    case object <> rest: ObjectType.schema(object)
 
-def QtObject.attachedSchema(object: QtObject) -> Action(Wire):
+def ObjectType.attachedSchema(object: ObjectType) -> Action(Wire):
   match object:
-    case QtObject{name, base, properties, signals, methods, attached, extension, info, enums}: QtObject.optionalSchema(attached)
+    case ObjectType{name, base, properties, signals, methods, attached, extension, info, enums}: ObjectType.optionalSchema(attached)
 
-def QtObject.extensionSchema(object: QtObject) -> Action(Wire):
+def ObjectType.extensionSchema(object: ObjectType) -> Action(Wire):
   match object:
-    case QtObject{name, base, properties, signals, methods, attached, extension, info, enums}: QtObject.optionalSchema(extension)
+    case ObjectType{name, base, properties, signals, methods, attached, extension, info, enums}: ObjectType.optionalSchema(extension)
 
-def QtObject.qmlSchema(~object: QtObject) -> Action(Wire):
+def ObjectType.qmlSchema(~object: ObjectType) -> Action(Wire):
   do Action<Wire>:
-    schema: Wire <- QtObject.schema(object)
-    attached: Wire <- QtObject.attachedSchema(object)
-    extension: Wire <- QtObject.extensionSchema(object)
+    schema: Wire <- ObjectType.schema(object)
+    attached: Wire <- ObjectType.attachedSchema(object)
+    extension: Wire <- ObjectType.extensionSchema(object)
     return WireSequence{[schema, attached, extension]}
 
 type QtInstance<-Name: String> is Data:
   QtInstance{word: U32}
 
-def QtObject.Instance(-object: QtObject) -> Data:
-  QtInstance<QtObject.name(object)>
+def ObjectType.Instance(-object: ObjectType) -> Data:
+  QtInstance<ObjectType.name(object)>
 
-def QtObject.word(~object: QtObject, value: QtObject.Instance(object)) -> U32:
+def ObjectType.word(~object: ObjectType, value: ObjectType.Instance(object)) -> U32:
   match value:
     case QtInstance{word}: word
 
-def QtObject.wrap(~object: QtObject, result: Result<&1, &1, U32 & String, U32>) -> Result<&1, &1, U32 & String, QtObject.Instance(object)>:
+def ObjectType.wrap(~object: ObjectType, result: Result<&1, &1, U32 & String, U32>) -> Result<&1, &1, U32 & String, ObjectType.Instance(object)>:
   match result:
     case Fail{error}: Fail{error}
     case Done{word}: Done{QtInstance{word}}
 
-def QtObject.as_QObject(~object: QtObject, value: QtObject.Instance(object)) -> QObject:
-  QObject{QtObject.word(~object, value)}
+def ObjectType.as_QObject(~object: ObjectType, value: ObjectType.Instance(object)) -> QObject:
+  QObject{ObjectType.word(~object, value)}
 
 def QtBase.decode(base: QtBase, word: U32) -> QtBase.Value(base):
   match base:
@@ -280,16 +280,16 @@ def QtBase.word(base: QtBase, value: QtBase.Value(base)) -> U32:
   match base:
     case QtBase{Value, native, parent, encode, decode}: encode(value)
 
-def QtObject.asNativeBase(~object: QtObject, value: QtObject.Instance(object)) -> QtBase.Value(QtObject.nativeBase(object)):
-  QtBase.decode(QtObject.nativeBase(object), QtObject.word(~object, value))
+def ObjectType.asNativeBase(~object: ObjectType, value: ObjectType.Instance(object)) -> QtBase.Value(ObjectType.nativeBase(object)):
+  QtBase.decode(ObjectType.nativeBase(object), ObjectType.word(~object, value))
 
-def QtObject.base_value(~object: QtObject, base: QtBase) -> QtBase:
+def ObjectType.base_value(~object: ObjectType, base: QtBase) -> QtBase:
   match base:
     case QtBase{Value, native, parent, encode, decode}:
-      QtBase{Value, native, QtObject.schema(object), encode, decode}
+      QtBase{Value, native, ObjectType.schema(object), encode, decode}
 
-def QtObject.derive(~parent: QtObject, name: String, properties: List<&1, Property>) -> QtObject:
-  Internal.QtObject.define(name, QtObject.base_value(~parent, QtObject.nativeBase(parent)), properties)
+def ObjectType.derive(~parent: ObjectType, name: String, properties: List<&1, Property>) -> ObjectType:
+  Internal.ObjectType.define(name, ObjectType.base_value(~parent, ObjectType.nativeBase(parent)), properties)
 
 def QtInstance.encode(-name: String, value: QtInstance<name>) -> Wire:
   match value:
@@ -300,23 +300,23 @@ def QtInstance.decode(-name: String, wire: Wire) -> Maybe<&2, QtInstance<name>>:
     case WireScalar{word, 0}: Some{QtInstance{word}}
     case _: None{}
 
-def QtObject.reference(+name: String) -> SignalArgument:
-  SignalArgument{QtInstance<name>, name ++ "*", value => QtInstance.encode(name, value),
+def ObjectType.reference(+name: String) -> TypeDescriptor:
+  TypeDescriptor{QtInstance<name>, name ++ "*", value => QtInstance.encode(name, value),
     wire => QtInstance.decode(name, wire), Action.pure(Wire, WireScalar{0, 0})}
 
-def QtObject.argument(object: QtObject) -> SignalArgument:
+def ObjectType.argument(object: ObjectType) -> TypeDescriptor:
   match object:
-    case QtObject{+name, base, properties, signals, methods, attached, extension, info, enums}:
-      SignalArgument{QtInstance<name>, name ++ "*", value => QtInstance.encode(name, value),
-        wire => QtInstance.decode(name, wire), QtObject.schema(QtObject{name, base, properties, signals, methods, attached, extension, info, enums})}
+    case ObjectType{+name, base, properties, signals, methods, attached, extension, info, enums}:
+      TypeDescriptor{QtInstance<name>, name ++ "*", value => QtInstance.encode(name, value),
+        wire => QtInstance.decode(name, wire), ObjectType.schema(ObjectType{name, base, properties, signals, methods, attached, extension, info, enums})}
 
-def QtObject.arg(~object: QtObject) -> SignalArgument:
-  QtObject.argument(object)
+def ObjectType.arg(~object: ObjectType) -> TypeDescriptor:
+  ObjectType.argument(object)
 
 def UnitArgument.decode(wire: Wire) -> Maybe<&2, Unit>:
   match wire:
     case WireScalar{0, 0}: Some{Unit{}}
     case _: None{}
 
-def unit() -> SignalArgument:
-  SignalArgument{Unit, "void", value => WireScalar{0, 0}, UnitArgument.decode, Action.pure(Wire, WireScalar{0, 0})}
+def unit() -> TypeDescriptor:
+  TypeDescriptor{Unit, "void", value => WireScalar{0, 0}, UnitArgument.decode, Action.pure(Wire, WireScalar{0, 0})}

@@ -9,22 +9,27 @@ def require(ok: Bool, message: String) -> Qt.Action(Unit):
 def title() -> Qt.Property:
   Qt.Property.define("title", Qt.string())
 
-def Card() -> Qt.QtObject:
+def Card() -> Qt.ObjectType:
   Qt.QObject.define("UncreatableModeCard", [title()])
 
-def Anonymous() -> Qt.QtObject:
+def Anonymous() -> Qt.ObjectType:
   Qt.QObject.define("AnonymousModeCard", [title()])
 
 def child() -> Qt.Property:
-  Qt.Property.define("child", Qt.QtObject.arg(~Anonymous()))
+  Qt.Property.define("child", Qt.ObjectType.arg(~Anonymous()))
 
-def Holder() -> Qt.QtObject:
+def Holder() -> Qt.ObjectType:
   Qt.QObject.define("AnonymousModeHolder", [child()])
 
-def NonDefault() -> Qt.QtObject:
+def NonDefault() -> Qt.ObjectType:
   Qt.QSocketNotifier.define("UncreatableModeNotifier", [])
 
-def expect_error(result: Result<&1, &1, U32 & String, Qt.QObject>, expected: U32) -> Qt.Action(Unit):
+def promoted_registration() -> Qt.Action(Qt.Qml.Registration(Card())):
+  do Qt.Action<Qt.Qml.Registration(Card())>:
+    registration: Qt.Qml.Registration(Card()) <- Qt.Qml.registerUncreatable(~Card(), "Bend.UncreatableMode", 1, 0, "Card", "Cards come from Bend")
+    Qt.Qml.Registration.moveToParentScope(~Card(), registration)
+
+def expect_error(-A: Type, result: Result<&1, &1, U32 & String, A>, expected: U32) -> Qt.Action(Unit):
   match result:
     case Fail{(+code, message)}:
       require(U32.is_eq(code, expected), "QML registration error " ++ U32.show(code) ++ ": " ++ message)
@@ -68,30 +73,31 @@ def read_title(source: String, name: String, object: Qt.QObject) -> Qt.Action(Un
 
 def cases() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    uncreatable: Qt.QObject <- Qt.Qml.registerUncreatable(~Card(), "Bend.UncreatableMode", 1, 0, "Card", "Cards come from Bend")
-    +card: Qt.QtObject.Instance(Card()) <- Qt.QtObject.new(~Card())
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Card(), card), "from-bend")
-    Qt.scoped(Unit, read_title("import QtQml\nimport Bend.UncreatableMode 1.0\nQtObject { property Card card: provided; property string result: card.title }", "provided", Qt.QtObject.as_QObject(~Card(), card)))
+    uncreatable: Qt.Qml.Registration(Card()) <- Qt.scoped(Qt.Qml.Registration(Card()), promoted_registration())
+    +card: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.new(~Card())
+    Qt.ObjectType.set(~Card(), ~title(), card, "from-bend")
+    Qt.scoped(Unit, read_title("import QtQml\nimport Bend.UncreatableMode 1.0\nQtObject { property Card card: provided; property string result: card.title }", "provided", Qt.ObjectType.as_QObject(~Card(), card)))
     Qt.scoped(Unit, rejected("import Bend.UncreatableMode 1.0\nCard {}", "Cards come from Bend"))
-    nondefault: Qt.QObject <- Qt.Qml.registerUncreatable(~NonDefault(), "Bend.UncreatableMode", 1, 0, "Notifier", "Native constructor requires arguments")
-    Qt.scoped(Unit, rejected("import Bend.UncreatableMode 1.0\nNotifier {}", "Native constructor requires arguments"))
-    anonymous: Qt.QObject <- Qt.Qml.registerAnonymous(~Anonymous(), "Bend.AnonymousMode", 1)
-    +related: Qt.QtObject.Instance(Anonymous()) <- Qt.QtObject.new(~Anonymous())
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Anonymous(), related), "from-bend")
-    +holder: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
-    Qt.Property.set(~child(), Qt.QtObject.as_QObject(~Holder(), holder), related)
-    Qt.scoped(Unit, read_title("import QtQml\nimport Bend.AnonymousMode 1.0\nQtObject { property string result: provided.child.title }", "provided", Qt.QtObject.as_QObject(~Holder(), holder)))
+    Qt.Qml.Registration.with(~NonDefault(), Unit,
+      Qt.Qml.registerUncreatable(~NonDefault(), "Bend.UncreatableMode", 1, 0, "Notifier", "Native constructor requires arguments"),
+      registration => Qt.scoped(Unit, rejected("import Bend.UncreatableMode 1.0\nNotifier {}", "Native constructor requires arguments")))
+    anonymous: Qt.Qml.Registration(Anonymous()) <- Qt.Qml.registerAnonymous(~Anonymous(), "Bend.AnonymousMode", 1)
+    +related: Qt.ObjectType.Instance(Anonymous()) <- Qt.ObjectType.new(~Anonymous())
+    Qt.ObjectType.set(~Anonymous(), ~title(), related, "from-bend")
+    +holder: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
+    Qt.ObjectType.set(~Holder(), ~child(), holder, related)
+    Qt.scoped(Unit, read_title("import QtQml\nimport Bend.AnonymousMode 1.0\nQtObject { property string result: provided.child.title }", "provided", Qt.ObjectType.as_QObject(~Holder(), holder)))
     Qt.scoped(Unit, rejected("import Bend.AnonymousMode 1.0\nAnonymousModeCard {}", "AnonymousModeCard is not a type"))
-    unavailable: Qt.QObject <- Qt.Qml.registerUnavailable("Bend.UnavailableMode", 1, 0, "Missing", "Missing is unavailable in this build")
+    unavailable: Qt.Qml.RegistrationHandle <- Qt.Qml.registerUnavailable("Bend.UnavailableMode", 1, 0, "Missing", "Missing is unavailable in this build")
     Qt.scoped(Unit, rejected("import Bend.UnavailableMode 1.0\nMissing {}", "Missing is unavailable in this build"))
-    bad_version: Result<&1, &1, U32 & String, Qt.QObject> <- Qt.Action.attempt(Qt.QObject, Qt.Qml.registerUnavailable("Bend.InvalidMode", 255, 0, "Missing", "unavailable"))
-    expect_error(bad_version, 34)
-    bad_name: Result<&1, &1, U32 & String, Qt.QObject> <- Qt.Action.attempt(Qt.QObject, Qt.Qml.registerUnavailable("Bend.InvalidMode", 1, 0, "lowercase", "unavailable"))
-    expect_error(bad_name, 22)
-    bad_uri: Result<&1, &1, U32 & String, Qt.QObject> <- Qt.Action.attempt(Qt.QObject, Qt.Qml.registerAnonymous(~Anonymous(), "", 1))
-    expect_error(bad_uri, 22)
-    bad_version: Result<&1, &1, U32 & String, Qt.QObject> <- Qt.Action.attempt(Qt.QObject, Qt.Qml.registerUncreatable(~Card(), "Bend.InvalidMode", 1, 255, "Card", "uncreatable"))
-    expect_error(bad_version, 34)
+    bad_version: Result<&1, &1, U32 & String, Qt.Qml.RegistrationHandle> <- Qt.Action.attempt(Qt.Qml.RegistrationHandle, Qt.Qml.registerUnavailable("Bend.InvalidMode", 255, 0, "Missing", "unavailable"))
+    expect_error(Qt.Qml.RegistrationHandle, bad_version, 34)
+    bad_name: Result<&1, &1, U32 & String, Qt.Qml.RegistrationHandle> <- Qt.Action.attempt(Qt.Qml.RegistrationHandle, Qt.Qml.registerUnavailable("Bend.InvalidMode", 1, 0, "lowercase", "unavailable"))
+    expect_error(Qt.Qml.RegistrationHandle, bad_name, 22)
+    bad_uri: Result<&1, &1, U32 & String, Qt.Qml.Registration(Anonymous())> <- Qt.Action.attempt(Qt.Qml.Registration(Anonymous()), Qt.Qml.registerAnonymous(~Anonymous(), "", 1))
+    expect_error(Qt.Qml.Registration(Anonymous()), bad_uri, 22)
+    bad_version: Result<&1, &1, U32 & String, Qt.Qml.Registration(Card())> <- Qt.Action.attempt(Qt.Qml.Registration(Card()), Qt.Qml.registerUncreatable(~Card(), "Bend.InvalidMode", 1, 255, "Card", "uncreatable"))
+    expect_error(Qt.Qml.Registration(Card()), bad_version, 34)
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

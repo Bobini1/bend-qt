@@ -26,7 +26,7 @@ def stamp() -> Qt.Property:
 def entries() -> Qt.Property:
   Qt.Property.define("entries", Qt.list(Qt.value(~Time())))
 
-def Holder() -> Qt.QtObject:
+def Holder() -> Qt.ObjectType:
   Qt.QObject.define("BendValueHolder", [stamp(), entries()])
 
 def list_values(values: List<&2, Qt.ValueType.Instance(Time())>, expected: String) -> Qt.Action(Unit):
@@ -53,8 +53,8 @@ def values() -> Qt.Action(Unit):
     +list: Qt.QVariant <- Qt.QVariant.fromValue(~Qt.list(Qt.value(~Time())), [first])
     copied: List<&2, Qt.ValueType.Instance(Time())> <- Qt.QVariant.toValue(~Qt.list(Qt.value(~Time())), list)
     list_values(copied, "bend")
-    +holder: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.new(~Holder())
-    +object: Qt.QObject = Qt.QtObject.as_QObject(~Holder(), holder)
+    +holder: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.new(~Holder())
+    +object: Qt.QObject = Qt.ObjectType.as_QObject(~Holder(), holder)
     Qt.Property.set(~stamp(), object, first)
     Qt.Property.set(~entries(), object, [copy])
     held: Qt.ValueType.Instance(Time()) <- Qt.Property.get(~stamp(), object)
@@ -110,7 +110,7 @@ def signals() -> Qt.Action(Unit):
 def qml() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     registration: U32 <- Qt.ValueType.register(~Time(), "BendValueRecords", 1, 0, "bendTime")
-    holder: Qt.QObject <- Qt.Qml.registerType(~Holder(), "BendValueRecords", 1, 0, "Holder")
+    holder: Qt.Qml.Registration(Holder()) <- Qt.Qml.registerType(~Holder(), "BendValueRecords", 1, 0, "Holder")
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +component: Qt.QQmlComponent <- Qt.QQmlComponent.new__QQmlEngine_QObject(engine, Qt.QObject{0})
     source: Qt.QByteArray <- Qt.QByteArray.fromUtf8("import QtQml\nimport BendValueRecords 1.0\nHolder { stamp: ({tick:73, text:'qml'}); entries: [({tick:74, text:'list'})]; Component.onCompleted: { stamp.text = 'updated'; entries[0].text = 'list-updated'; } }")

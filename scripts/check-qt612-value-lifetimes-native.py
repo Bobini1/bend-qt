@@ -18,6 +18,8 @@ sys.path.insert(0, str(ROOT / 'generator'))
 import callbacks
 import native_objects
 import representations
+import qobject_interfaces
+import qio_pipe
 from backend import command, compile_backend
 from generate import Generator
 from lifetime import cpp_tables, evaluate_tables
@@ -101,8 +103,8 @@ def inject_registration_failures(runtime):
     sites = [
         ('alive = std::make_shared<std::atomic<bool>>(true);',
          'test_registration_fault(1, 0);\n        alive = std::make_shared<std::atomic<bool>>(true);'),
-        ('            try {\n            if (object) {',
-         '            try {\n            if (object) test_registration_fault(2, id);\n            if (object) {'),
+        ('            try {\n            native_pointer_publish(id);\n',
+         '            try {\n            if (object) test_registration_fault(2, id);\n            native_pointer_publish(id);\n'),
         ('            if (!attach_graphics_context(r, id) || !attach_rhi_identity(r, id)) {',
          '            if (object) test_registration_fault(3, id);\n            if (!attach_graphics_context(r, id) || !attach_rhi_identity(r, id)) {'),
     ]
@@ -197,6 +199,8 @@ def main():
         result = command([args.extractor, headers, typesystem, args.work / 'api.json', logdir, *includes], env=environment)
         (args.work / 'extraction.log').write_text(result.stdout + result.stderr)
         api = json.loads((args.work / 'api.json').read_text())
+        qobject_interfaces.restore(api, args.work)
+        qio_pipe.restore(api, args.work)
         native_objects.refine_traits(api, args.qt_root, modules, args.work, args.cxx)
         generator = Generator(api, profile)
         generator.collect()
@@ -204,6 +208,7 @@ def main():
         generator.methods = [method for method in generator.methods if method['bend_name'] in needed]
         callbacks.prepare(generator)
         generator.callback_classes, generator.callback_methods = [], {}
+        generator.callback_functions = []
         inject(generator)
         bend, effects, dispatch = generator.emit()
         dispatch = dispatch.replace('struct ValueGuard {', 'static bool test_fail_value_assignment = false;\nstruct ValueGuard {', 1)

@@ -33,7 +33,7 @@ def emit(g):
         g.emit_effect(name, args, result, operation, has_self=self_arg)
     for name in ('QMutexLocker', 'QRecursiveMutexLocker'):
         g.emit_scope(name, 'release')
-        scope_actions.keep(g, name)
+        scope_actions.escapes(g, name)
     g.mutex_locker_operations = operations
     g.bend += [(HERE / 'templates/mutex_lockers.bend').read_text()]
 

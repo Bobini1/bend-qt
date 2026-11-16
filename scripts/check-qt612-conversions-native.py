@@ -12,6 +12,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'generator'))
 from backend import compiler_flags
+import native_linker
+from native_shards import compile_objects, write_changed
+from native_workspace import open_workspace
 
 
 def codec(source, pattern, label):
@@ -299,7 +302,8 @@ def volume_operations(source):
         'GET': ('get<QCustom3DVolume>', 'const auto *data = self->textureData();'),
         'IMAGES': ('get<QCustom3DVolume>', 'self->createTextureData(images)'),
         'SLICE': ('get<QCustom3DVolume>', 'volume_slice_extent(r, self', 'reinterpret_cast<const uchar *>(a2->constData())'),
-        'SIGNAL': ('get<QCustom3DVolume>', '&QCustom3DVolume::textureDataChanged'),
+        'SIGNAL': ('get<QCustom3DVolume>', '&QCustom3DVolume::textureDataChanged',
+                   'uint32_t requested_type = 0;'),
     }
     definitions = []
     for suffix, fragments in selectors.items():
@@ -511,19 +515,76 @@ def rhi_native_operations(source):
     return result
 
 
+def compile_sharded_fixture(command, driver, wrappers, source, output, linker):
+    """Compile the same fixture with the production operation-unit splitter."""
+    marker = '#include BQT_GENERATED_WRAPPERS\n'
+    original = driver.read_text()
+    if original.count(marker) != 1:
+        raise RuntimeError('Native conversion fixture lost its generated-source include')
+    before, after = original.split(marker)
+    expanded = output / 'conversions-expanded.cpp'
+    next_line = before.count('\n') + 2
+    write_changed(expanded, before + '#line 1 ' + json.dumps(str(wrappers)) + '\n' + source +
+                  '\n#line ' + str(next_line) + ' ' + json.dumps(str(driver)) + '\n' + after)
+    position = command.index(str(driver))
+    flags = [value for value in command[:position]
+             if not value.startswith(('-DBQT_GENERATED_WRAPPERS=', '--ld-path='))]
+    flags += ['-iquote', str(driver.parent)]
+    with open_workspace(expanded, output) as workspace:
+        metadata = compile_objects(expanded, workspace.work, flags, combine=False)
+        executable = workspace.work / 'conversions-native'
+        arguments = command[position + 1:]
+        arguments[arguments.index('-o') + 1] = str(executable)
+        linked = subprocess.run([command[0], *linker['flags'], *metadata['object_files'],
+                                 *arguments], text=True, capture_output=True)
+        (output / 'build.log').write_text(linked.stdout + linked.stderr)
+        if linked.returncode:
+            raise RuntimeError(f'Native conversion fixture failed to link; see {output / "build.log"}')
+        workspace.publish(['conversions-native'])
+    return metadata
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--work', type=Path, default=ROOT / 'build/qt612')
     parser.add_argument('--coverage', type=Path, default=ROOT / 'packages/qt612/coverage.json')
     parser.add_argument('--qt-root', type=Path,
                         default=Path.home() / '.cache/bend-qt-generator/Qt/6.12.0/gcc_64')
+    parser.add_argument('--extractor', type=Path,
+                        default=Path.home() / '.cache/bend-qt-generator/build/bend-qt-extract')
     parser.add_argument('--cxx', default='clang++-19')
     args = parser.parse_args()
-    wrappers = (args.work / 'wrappers.cpp').resolve()
+    # Full distribution builds emit separate native modules and no longer
+    # update work/wrappers.cpp. Generate this diagnostic's inputs explicitly.
+    generated = (args.work / 'conversions-source').resolve()
+    profile = ROOT / 'generator/qt612-conversions'
+    emitted = subprocess.run([sys.executable, str(ROOT / 'generator/generate.py'),
+        '--profile', str(profile), '--work', str(generated), '--emit-only',
+        '--qt-prefix', str(args.qt_root), '--extractor', str(args.extractor)],
+        text=True, capture_output=True)
+    generated.mkdir(parents=True, exist_ok=True)
+    (generated / 'generation.log').write_text(emitted.stdout + emitted.stderr)
+    if emitted.returncode:
+        raise RuntimeError(f'Fresh conversion source generation failed; see {generated / "generation.log"}')
+    wrappers = generated / 'wrappers.cpp'
     source = wrappers.read_text()
     optional = codec(source, r'static std::optional<std::optional<quint64>>\s+(read_wire_\w+)\(', 'optional quint64 reader')
     array_list = codec(source, r'static BqtValue\s+(write_wire_\w+)\(BqtRequest \*r, QList<QByteArray> const &value\)', 'QByteArray list writer')
-    modules = json.loads(args.coverage.read_text())['qt_modules']
+    modules = json.loads((generated / 'upstream.json').read_text())['modules']
+    public_modules = set(json.loads(args.coverage.read_text())['qt_modules'])
+    if set(modules) - public_modules:
+        raise RuntimeError(f'Conversion profile exceeds the package module scope: {set(modules) - public_modules}')
+    families = [future_operations, inout_operations, matrix_operations,
+                graphics_filter_operations, gl_buffer_operations, texture_operations,
+                sync_operations, allocated_operations, interop_operations, legacy_operations,
+                raw_mapping_operations, retained_gl_operations, byte_iterator_operations,
+                volume_operations, compressed_operations, pixel_offset_operations,
+                text_output_operations, platform_operations, fixed_array_codecs,
+                qtest_operations, descriptor_operations, rhi_native_operations]
+    operations = {function.__name__: function(source) for function in families}
+    missing = [name for name, definitions in operations.items() if not definitions]
+    if missing:
+        raise RuntimeError(f'Fresh conversion profile omitted required native controls: {missing}')
     output = args.work / 'conversions-native-check'
     output.mkdir(parents=True, exist_ok=True)
     fixed_integer_aliases(output)
@@ -533,7 +594,11 @@ def main():
     # Hub consumers separately exercise the optimized packaged native payload.
     flags = [f for f in compiler_flags(args.qt_root, args.cxx, modules) if f not in ('-DNDEBUG', '-O1')]
     flags.append('-O0')
-    test_operations = qtest_operations(source)
+    compiler = subprocess.run([args.cxx, '--version'], text=True, capture_output=True, check=True).stdout
+    linker = native_linker.select(args.cxx) if 'clang' in compiler.lower() else None
+    if linker:
+        flags += linker['flags']
+    test_operations = operations['qtest_operations']
     if test_operations:
         moc = subprocess.run([str(args.qt_root / 'libexec/moc'), '-DBQT_QTEST_FORMAT=1',
             str(ROOT / 'examples/qt612/qtest-values-native.h'),
@@ -544,36 +609,21 @@ def main():
                '-DBQT_GENERATED_WRAPPERS=' + json.dumps(str(wrappers)),
                '-DBQT_READ_OPTIONAL_U64=' + optional,
                '-DBQT_WRITE_BYTE_ARRAY_LIST=' + array_list,
-               *future_operations(source),
-               *inout_operations(source),
-               *matrix_operations(source),
-               *graphics_filter_operations(source),
-               *gl_buffer_operations(source),
-               *texture_operations(source),
-               *sync_operations(source),
-               *allocated_operations(source),
-               *interop_operations(source),
-               *legacy_operations(source),
-               *raw_mapping_operations(source),
-               *retained_gl_operations(source),
-               *byte_iterator_operations(source),
-               *volume_operations(source),
-               *compressed_operations(source),
-               *pixel_offset_operations(source),
-               *text_output_operations(source),
-               *platform_operations(source),
-               *fixed_array_codecs(source),
-               *test_operations, '-I' + str(output),
-               *descriptor_operations(source),
-               *rhi_native_operations(source),
+               *[definition for definitions in operations.values() for definition in definitions],
+               '-I' + str(output),
                str(ROOT / 'examples/qt612/conversions-native.cpp'),
                '-L' + str(args.qt_root / 'lib'),
                *['-lQt6' + m.removeprefix('Qt') for m in reversed(modules)],
                '-o', str(executable)]
-    compiled = subprocess.run(command, text=True, capture_output=True)
-    (output / 'build.log').write_text(compiled.stdout + compiled.stderr)
-    if compiled.returncode:
-        raise RuntimeError(f'Native conversion fixture failed to compile; see {output / "build.log"}')
+    native_build = None
+    if linker is not None:
+        native_build = compile_sharded_fixture(command, ROOT / 'examples/qt612/conversions-native.cpp',
+                                               wrappers, source, output, linker)
+    else:
+        compiled = subprocess.run(command, text=True, capture_output=True)
+        (output / 'build.log').write_text(compiled.stdout + compiled.stderr)
+        if compiled.returncode:
+            raise RuntimeError(f'Native conversion fixture failed to compile; see {output / "build.log"}')
     env = dict(os.environ, LD_LIBRARY_PATH=str(args.qt_root / 'lib'), QT_QPA_PLATFORM='offscreen',
                QT_PLUGIN_PATH=str(args.qt_root / 'plugins'),
                QT_QPA_PLATFORM_PLUGIN_PATH=str(args.qt_root / 'plugins/platforms'))
@@ -583,7 +633,10 @@ def main():
         raise RuntimeError(f'Native conversion fixture failed; see {output / "run.log"}')
     (output / 'receipt.json').write_text(json.dumps(dict(
         wrappers=str(wrappers), wrappers_sha256=hashlib.sha256(source.encode()).hexdigest(),
-        qt_root=str(args.qt_root), modules=modules,
+        profile=str(profile), profile_sha256=hashlib.sha256((profile / 'profile.json').read_bytes()).hexdigest(),
+        controls={name: [value.split('=', 1)[0] for value in definitions]
+                  for name, definitions in operations.items()},
+        qt_root=str(args.qt_root), modules=modules, linker=linker, native_build=native_build,
         markers=[line for line in checked.stdout.splitlines() if line.startswith('QT612_NATIVE_')],
         proof_boundary='Native integration checks; no native scheduling, lifetime or allocation theorem is claimed.'), indent=2) + '\n')
     print(checked.stdout.strip())

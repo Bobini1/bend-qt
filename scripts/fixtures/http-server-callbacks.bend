@@ -14,7 +14,7 @@ def expected(-A: Type, result: Result<&1, &1, U32 & String, A>, code: U32) -> Qt
 def saved() -> Qt.Property:
   Qt.Property.define("saved", Qt.u32())
 
-def Model() -> Qt.QtObject:
+def Model() -> Qt.ObjectType:
   Qt.QObject.define("HttpCallbackState", [saved()])
 
 def route(state: Unit, request: Qt.QHttpServerRequest) -> Qt.Action(String):
@@ -29,7 +29,7 @@ def changed_body(state: Qt.QObject, +response: Qt.QHttpServerResponse) -> Qt.Act
     ok: Bool <- Qt.QHttpHeaders.append__String_String(headers, "X-Bend", "yes")
     require(ok, "The after-request callback could not append a header")
     Qt.QHttpServerResponse.setHeaders(response, headers)
-    Qt.Property.store(~saved(), state, Qt.QHttpServerResponse.word(response))
+    Qt.Property.writeStorage(~saved(), state, Qt.QHttpServerResponse.word(response))
 
 def changed(state: Qt.QObject, request: Qt.QHttpServerRequest, response: Qt.QHttpServerResponse) -> Qt.Action(Unit):
   changed_body(state, response)
@@ -40,8 +40,8 @@ def refused_after(state: Unit, request: Qt.QHttpServerRequest, response: Qt.QHtt
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +server: Qt.QHttpServer <- Qt.QHttpServer.new()
-    +instance: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +state: Qt.QObject = Qt.QtObject.as_QObject(~Model(), instance)
+    +instance: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +state: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), instance)
     ok: Bool <- Qt.QHttpServer.routeWithHandler(~Unit, ~route, server, "/ok", Unit{})
     require(ok, "Qt rejected the HTTP route")
     ok: Bool <- Qt.QHttpServer.routeWithHandler(~Unit, ~refused, server, "/fail", Unit{})

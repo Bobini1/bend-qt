@@ -754,7 +754,7 @@ static bool attach_definition(BqtRequest *r, uint32_t id, const std::shared_ptr<
         return reject(r, EINVAL, "Use the selected native base's newAs constructor for this schema");
     if (host->bqt_object || host->bqt_exposed) return reject(r, EBUSY, "Attach a QObject schema before exposing its native base");
     if (e->object->metaObject() != schema->base.meta && !e->object->metaObject()->inherits(schema->meta))
-        return reject(r, ENOTSUP, "This native base needs schema-aware construction with QtObject.new or its newAs constructor");
+        return reject(r, ENOTSUP, "This native base needs schema-aware construction with ObjectType.new or its newAs constructor");
     auto value = std::make_shared<RuntimeObjectState>(e->object, id, schema);
     for (size_t index = 0; index < schema->properties.size(); ++index) {
         const auto &property = schema->properties[index];

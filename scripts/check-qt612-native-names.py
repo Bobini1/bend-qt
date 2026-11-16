@@ -16,6 +16,8 @@ from upstream import prepare
 import callbacks
 import native_objects
 import representations
+import qobject_interfaces
+import qio_pipe
 import effect_transport
 
 PROGRAM = '''import Base
@@ -82,6 +84,8 @@ def main():
                          qt / 'include', qt / 'mkspecs/linux-g++', *[qt / 'include' / m for m in modules]], env=env)
     (work / 'extraction.log').write_text(extracted.stdout + extracted.stderr)
     api = json.loads((work / 'api.json').read_text())
+    qobject_interfaces.restore(api, work)
+    qio_pipe.restore(api, work)
     native_objects.refine_traits(api, qt, modules, work, 'clang++-19')
     g = Generator(api, profile); g.collect()
     pairs = {('QTextStream', 'operator<<'), ('QHelpGlobal', 'uniquifyConnectionName'),
@@ -94,7 +98,8 @@ def main():
     bend, effects, dispatch = add_fixture(g, bend, effects, dispatch)
     abi = (ROOT / 'generator/templates/abi.h').read_text().replace('@ARGUMENT_CAPACITY@', str(g.argument_capacity))
     aliases = ''.join(f'using {name} = {native};\n' for name, native in api['typedefs'].items() if name in g.ids) + representations.aliases(g)
-    source = headers.read_text() + aliases + (ROOT / 'generator/templates/runtime.cpp').read_text()
+    prefix, suffix = callbacks.qml_sources(g, qt, work)
+    source = headers.read_text() + aliases + prefix + (ROOT / 'generator/templates/runtime.cpp').read_text() + suffix
     source = source.replace('// @ABI@', abi).replace('// @LIFETIME@', cpp_tables(evaluate_tables(work)))
     source = source.replace('// @NATIVE_OBJECTS@', native_objects.traits(g)).replace('// @DISPATCH@', dispatch)
     native = work / 'wrappers.cpp'; native.write_text(source)

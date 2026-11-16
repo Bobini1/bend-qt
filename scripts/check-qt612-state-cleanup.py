@@ -48,6 +48,8 @@ def main():
         profile['qt_modules'] = modules
         api = json.loads((args.model_work / 'api.json').read_text())
         api['classes'] = [c for c in api['classes'] if c.get('package', '').removeprefix('PySide6.') in modules and '/rhi/' not in c.get('source_file', '')]
+        # Namespace-level enums belong to modules too; keep only the selected ones.
+        api['enums'] = [e for e in api.get('enums', []) if e.get('package', '').removeprefix('PySide6.') in modules]
         api['global_functions'] = []
         traits = json.loads((args.model_work / 'native-traits.json').read_text())
         for c in api['classes']:
@@ -93,7 +95,8 @@ def main():
         dispatch=dispatch.replace(site,'if(cleanup_test_fail){cleanup_test_fail=false;throw std::bad_alloc();} '+site)
         abi = (ROOT / 'generator/templates/abi.h').read_text().replace('@ARGUMENT_CAPACITY@', str(g.argument_capacity))
         aliases = ''.join(f'using {name} = {native};\n' for name, native in api['typedefs'].items() if name in g.ids) + representations.aliases(g)
-        source_cpp = headers.read_text() + aliases + FIXTURE + (ROOT / 'generator/templates/runtime.cpp').read_text()
+        prefix, suffix = callbacks.qml_sources(g, args.qt_root, work)
+        source_cpp = headers.read_text() + aliases + prefix + FIXTURE + (ROOT / 'generator/templates/runtime.cpp').read_text() + suffix
         for key, value in [('ABI', abi), ('LIFETIME', cpp_tables(evaluate_tables(work))),
                            ('NATIVE_OBJECTS', native_objects.traits(g)), ('DISPATCH', dispatch)]:
             source_cpp = source_cpp.replace('// @' + key + '@', value)

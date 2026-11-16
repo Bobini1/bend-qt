@@ -35,9 +35,9 @@ def map_property() -> Qt.Property:
 def echo_method() -> Qt.Method:
   Qt.Method.define("echo", [Qt.arg(~Payload)], Qt.arg(~Payload))
 
-def Holder() -> Qt.QtObject:
-  Qt.QtObject.withMethods(
-    Qt.QtObject.withSignals(Qt.QObject.define("BendOpaqueHolder", [data_property(), map_property()]), [delivered()]),
+def Holder() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(
+    Qt.ObjectType.withSignals(Qt.QObject.define("BendOpaqueHolder", [data_property(), map_property()]), [delivered()]),
     [echo_method()])
 
 def echo(state: Unit, value: Payload) -> Qt.Action(Payload):
@@ -106,8 +106,8 @@ def engine(+holder: Qt.QObject, +engine: Qt.QQmlEngine) -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    holder: Qt.QtObject.Instance(Holder()) <- Qt.QtObject.newWith(~Holder(), Qt.QObject.newOverride())
-    +object: Qt.QObject = Qt.QtObject.as_QObject(~Holder(), holder)
+    holder: Qt.ObjectType.Instance(Holder()) <- Qt.ObjectType.attachUsing(~Holder(), Qt.QObject.newOverride())
+    +object: Qt.QObject = Qt.ObjectType.as_QObject(~Holder(), holder)
     Qt.Method.handle(~echo_method(), ~Unit, ~echo, object, Unit{})
     Qt.Property.set(~data_property(), object, payload())
     boxed: Qt.QVariant <- Qt.QVariant.fromData(~Payload, payload())

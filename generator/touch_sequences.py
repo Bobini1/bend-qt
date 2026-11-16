@@ -46,6 +46,17 @@ def cpp(g):
     return result.replace('@RETENTION_SLOT@', str(g.touch_sequence_slot))
 
 
+def public_adapter(g, method):
+    # Newer extraction snapshots include the native zero-default overload.
+    # The public helper already supplies its defaults through createDevice,
+    # which also scopes the observed view of Qt's application-owned device.
+    if (getattr(g, 'touch_sequence_operations', {}) and
+            method['bend_name'] == 'QTest.createTouchDevice' and not method['args']):
+        method['operation'] = g.touch_sequence_operations['createDevice']
+        return True
+    return False
+
+
 def includes(g):
     return '#include <QtGui/qtestsupport_gui.h>\n' if 'QtTest' in g.profile['qt_modules'] else ''
 

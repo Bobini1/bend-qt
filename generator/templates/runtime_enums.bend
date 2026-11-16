@@ -131,11 +131,11 @@ def EnumValue.decode(-name: String, value: Wire) -> Maybe<&2, EnumValue<name>>:
     case WireScalar{lo, hi}: Some{EnumValue{lo, hi}}
     case _: None{}
 
-def Enum.argument(enum: Enum) -> SignalArgument:
+def Enum.argument(enum: Enum) -> TypeDescriptor:
   match enum:
     case Enum{+name, entries, flags, alias}:
-      SignalArgument{EnumValue<name>, name, value => EnumValue.encode(name, value),
+      TypeDescriptor{EnumValue<name>, name, value => EnumValue.encode(name, value),
         wire => EnumValue.decode(name, wire), Action.pure(Wire, Enum.schema(Enum{name, entries, flags, alias}))}
 
-def Enum.arg(~enum: Enum) -> SignalArgument:
+def Enum.arg(~enum: Enum) -> TypeDescriptor:
   Enum.argument(enum)

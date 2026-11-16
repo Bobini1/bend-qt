@@ -18,13 +18,13 @@ def text() -> Qt.Property:
 def values() -> Qt.Property:
   Qt.Property.withBindable(Qt.Property.define("values", Qt.variantList()), True{})
 
-def Target() -> Qt.QtObject:
+def Target() -> Qt.ObjectType:
   Qt.QObject.define("BindingTarget", [])
 
 def peer() -> Qt.Property:
-  Qt.Property.withBindable(Qt.Property.define("peer", Qt.QtObject.arg(~Target())), True{})
+  Qt.Property.withBindable(Qt.Property.define("peer", Qt.ObjectType.arg(~Target())), True{})
 
-def Model() -> Qt.QtObject:
+def Model() -> Qt.ObjectType:
   Qt.QObject.define("BindingModel", [number(), readonly_number(), text(), values(), peer()])
 
 def compute(self: Qt.QObject) -> Qt.Action(Qt.Int32):
@@ -60,8 +60,8 @@ def qml(+source: Qt.QObject, +target: Qt.QObject) -> Qt.Action(Unit):
     require(ready, "QML bindable-property component did not compile")
     +root: Qt.QObject <- Qt.QQmlComponent.create__QQmlContext(component, Qt.QQmlContext{0})
     Qt.Property.set(~number(), source, Qt.Int32{11})
-    actual: Qt.Int32 <- Qt.Property.get(~number(), target)
-    require(U32.is_eq(Qt.Int32.word(actual), 22), "QML binding did not update the native bindable")
+    +actual: Qt.Int32 <- Qt.Property.get(~number(), target)
+    require(U32.is_eq(Qt.Int32.word(actual), 22), "QML binding did not update the native bindable: " ++ U32.show(Qt.Int32.word(actual)))
     observed: Qt.QVariant <- Qt.QQmlProperty.read__QObject_String(root, "observed")
     number: Qt.Int32 <- Qt.QVariant.toInt32(observed)
     require(U32.is_eq(Qt.Int32.word(number), 22), "QML consumer did not observe a bindable update")
@@ -75,24 +75,24 @@ def qml(+source: Qt.QObject, +target: Qt.QObject) -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +first: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +second: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +source: Qt.QObject = Qt.QtObject.as_QObject(~Model(), first)
-    +target: Qt.QObject = Qt.QtObject.as_QObject(~Model(), second)
+    +first: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +second: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +source: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), first)
+    +target: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), second)
     Qt.Property.set(~number(), source, Qt.Int32{3})
-    Qt.Property.bind(~number(), ~number(), target, source)
-    bound: Bool <- Qt.Property.hasBinding(~number(), target)
+    Qt.ObjectType.bind(~Model(), ~number(), ~Model(), ~number(), second, first)
+    bound: Bool <- Qt.ObjectType.hasBinding(~Model(), ~number(), second)
     actual: Qt.Int32 <- Qt.Property.get(~number(), target)
     require(bound && U32.is_eq(Qt.Int32.word(actual), 3), "Native property binding was not installed")
     Qt.Property.set(~number(), source, Qt.Int32{8})
     actual: Qt.Int32 <- Qt.Property.get(~number(), target)
     require(U32.is_eq(Qt.Int32.word(actual), 8), "Bound property did not update")
-    Qt.Property.unbind(~number(), target)
+    Qt.ObjectType.unbind(~Model(), ~number(), second)
     bound: Bool <- Qt.Property.hasBinding(~number(), target)
     Qt.Property.set(~number(), source, Qt.Int32{9})
     actual: Qt.Int32 <- Qt.Property.get(~number(), target)
     require(Bool.not(bound) && U32.is_eq(Qt.Int32.word(actual), 8), "Unbinding changed the stored value or left a binding")
-    Qt.Property.handleBinding(~number(), ~Qt.QObject, ~compute, target, source)
+    Qt.ObjectType.handleBinding(~Model(), ~number(), ~Qt.QObject, ~compute, second, source)
     actual: Qt.Int32 <- Qt.Property.get(~number(), target)
     require(U32.is_eq(Qt.Int32.word(actual), 28), "Computed binding did not evaluate")
     Qt.Property.set(~number(), source, Qt.Int32{4})
@@ -120,10 +120,10 @@ def objects() -> Qt.Action(Unit):
     values: List<&2, Qt.QVariant> <- Qt.Property.get(~values(), target)
     require(U32.is_eq(U32.from_nat(List.length(&2, Qt.QVariant, values)), 2), "Container binding did not update")
     Qt.Property.bind(~peer(), ~peer(), target, source)
-    +object: Qt.QtObject.Instance(Target()) <- Qt.QtObject.new(~Target())
+    +object: Qt.ObjectType.Instance(Target()) <- Qt.ObjectType.new(~Target())
     Qt.Property.set(~peer(), source, object)
-    result: Qt.QtObject.Instance(Target()) <- Qt.Property.get(~peer(), target)
-    require(U32.is_eq(Qt.QtObject.word(~Target(), object), Qt.QtObject.word(~Target(), result)), "Runtime QObject pointer binding lost its concrete type")
+    result: Qt.ObjectType.Instance(Target()) <- Qt.Property.get(~peer(), target)
+    require(U32.is_eq(Qt.ObjectType.word(~Target(), object), Qt.ObjectType.word(~Target(), result)), "Runtime QObject pointer binding lost its concrete type")
     +meta: Qt.QMetaObject <- Qt.QObject.metaObject(source)
     index: Qt.Int32 <- Qt.QMetaObject.indexOfProperty(meta, "number")
     property: Qt.QMetaProperty <- Qt.QMetaObject.property(meta, index)

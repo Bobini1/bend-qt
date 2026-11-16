@@ -40,7 +40,7 @@ static bool scope_adopt_result(BqtRequest *r, QObject *object, uint32_t target, 
             if (target == r->scope) continue;
             auto owner = resource_scopes.find(target);
             if (!target || owner == resource_scopes.end() || owner->second.closing) {
-                fail(r, EBUSY, "A new QObject result needs a live calling scope or an explicit keep"); return false;
+                fail(r, EBUSY, "A new QObject result needs a live calling scope or detachFromScope before returning"); return false;
             }
             if (adopted) adopted->push_back(token(i, e.generation));
             scope_append(target, owner->second, {token(i, e.generation), 0});
@@ -60,7 +60,7 @@ static bool scope_adopt_native_result(BqtRequest *r, uint32_t id, uint32_t targe
         if (value->owned && r->scope && value->scope_owner == r->scope && target != r->scope) {
             auto owner = resource_scopes.find(target);
             if (!target || owner == resource_scopes.end() || owner->second.closing) {
-                fail(r, EBUSY, "A new native object result needs a live calling scope or an explicit keep"); return false;
+                fail(r, EBUSY, "A new native object result needs a live calling scope or detachFromScope before returning"); return false;
             }
             if (adopted) adopted->push_back(id);
             scope_append(target, owner->second, {id, 0});
@@ -153,26 +153,28 @@ static bool scope_close(BqtRequest *r) {
     }
     return true;
 }
-static bool scope_keep(BqtRequest *r) {
+static bool scope_transfer(BqtRequest *r) {
     uint8_t kind = uint8_t(r->arguments[0].word);
     uint32_t id = r->arguments[1].word;
-    if (r->arguments[0].word > 2 || !r->scope) return fail(r, EINVAL, "Keep requires a live typed Qt scope");
+    if (r->arguments[2].word > 1) return fail(r, EINVAL, "Invalid Qt scope transfer mode");
+    bool detach = r->arguments[2].word != 0;
+    if (r->arguments[0].word > 2 || !r->scope) return fail(r, EINVAL, "Scope transfer requires a live typed Qt scope");
     auto current = resource_scopes.find(r->scope);
     if (current == resource_scopes.end() || current->second.closing) return fail(r, ESTALE, "Qt scope has ended");
+    uint32_t parent = detach ? 0 : current->second.parent;
+    if (!detach && !parent) return fail(r, EINVAL, "The root scope has no parent; use detachFromScope for explicit cleanup");
     uint32_t *owner = nullptr;
     if (kind == 0) { auto *e = entry(id); if (e) owner = &e->scope_owner; }
     else if (kind == 1) { auto *c = connection(id); if (c) owner = &c->scope_owner; }
     else { auto it = auxiliary_scope_owners.find({kind, id}); if (it != auxiliary_scope_owners.end()) owner = &it->second; }
     if (!owner) return fail(r, ESTALE, "The Qt resource has ended");
-    if (*owner == r->scope) {
-        uint32_t parent = current->second.parent;
-        if (parent) {
-            auto it = resource_scopes.find(parent);
-            if (it == resource_scopes.end() || it->second.closing) return fail(r, ESTALE, "Parent Qt scope has ended");
-            scope_append(parent, it->second, {id, kind});
-        }
-        *owner = parent;
+    if (*owner != r->scope) return fail(r, EPERM, "The current scope does not own this resource's cleanup");
+    if (parent) {
+        auto it = resource_scopes.find(parent);
+        if (it == resource_scopes.end() || it->second.closing) return fail(r, ESTALE, "Parent Qt scope has ended");
+        scope_append(parent, it->second, {id, kind});
     }
+    *owner = parent;
     r->result.word = id;
     return true;
 }

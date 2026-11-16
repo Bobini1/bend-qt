@@ -100,7 +100,7 @@ def assign(g):
     eligible = {c['name'] for c in g.callback_classes if qt_objects.eligible(g, c)}
     schemas = [(constructor, entry, dict(entry, base='newAs',
                 key=entry['key'].replace('override ', 'schema-constructor ', 1),
-                result='QtObject.Instance(schema)'))
+                result='ObjectType.Instance(schema)'))
                for constructor, _, entry in overrides if entry['owner'] in eligible]
     overload_names.assign_family(g, g.name_lock, list(methods.values()) + [e for _, e in functions]
                                 + [e for _, _, e in overrides] + [e for _, _, e in schemas] + [e for _, e in signal_types])

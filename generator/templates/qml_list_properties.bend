@@ -1,19 +1,19 @@
-def qmlList(element: SignalArgument) -> SignalArgument:
+def qmlList(element: TypeDescriptor) -> TypeDescriptor:
   QmlListArgument{element}
 
-def Property.qmlList(name: String, element: SignalArgument) -> Property:
+def Property.qmlList(name: String, element: TypeDescriptor) -> Property:
   Property.readOnly(name, qmlList(element))
 
-def Internal.ListProperty.element(argument: SignalArgument) -> SignalArgument:
+def Internal.ListProperty.element(argument: TypeDescriptor) -> TypeDescriptor:
   match argument:
     case QmlListArgument{element}: element
     case _: unit()
 
-def ListProperty.element(property: Property) -> SignalArgument:
+def ListProperty.element(property: Property) -> TypeDescriptor:
   Internal.ListProperty.element(Property.argument(property))
 
 def ListProperty.Element(property: Property) -> Data:
-  SignalArgument.Value(ListProperty.element(property))
+  TypeDescriptor.Value(ListProperty.element(property))
 
 def ListProperty.withAppend(property: Property, enabled: Bool) -> Property:
   Property.withFlag(property, 65536, Bool.not(enabled))
@@ -60,16 +60,16 @@ def Internal.ListProperty.call(~property: Property, self: QObject, kind: U32, st
     Internal.ListProperty.operate(self, schema, kind, storage, Convert_Int64.encode(index), value)
 
 def Internal.ListProperty.change(~property: Property, self: QObject, kind: U32, storage: U32, index: Int64, value: ListProperty.Element(property)) -> Action(Unit):
-  Wire.withData(Unit, SignalArgument.encode(ListProperty.element(property), value), encoded =>
+  Wire.withData(Unit, TypeDescriptor.encode(ListProperty.element(property), value), encoded =>
     Wire.withData(Unit, Internal.ListProperty.call(~property, self, kind, storage, index, encoded), wire => Action.pure(Unit, Unit{})))
 
 def Internal.ListProperty.count(~property: Property, self: QObject, storage: U32) -> Action(Int64):
   Wire.withData(Int64, Internal.ListProperty.call(~property, self, 1, storage, Int64{0, 0}, WireScalar{0, 0}),
-    wire => SignalArgument.decode(int64(), wire))
+    wire => TypeDescriptor.decode(int64(), wire))
 
 def Internal.ListProperty.at(~property: Property, self: QObject, storage: U32, index: Int64) -> Action(ListProperty.Element(property)):
   Wire.withData(ListProperty.Element(property), Internal.ListProperty.call(~property, self, 2, storage, index, WireScalar{0, 0}),
-    wire => SignalArgument.decode(ListProperty.element(property), wire))
+    wire => TypeDescriptor.decode(ListProperty.element(property), wire))
 
 def Internal.ListProperty.unit(~property: Property, self: QObject, kind: U32, storage: U32) -> Action(Unit):
   Wire.withData(Unit, Internal.ListProperty.call(~property, self, kind, storage, Int64{0, 0}, WireScalar{0, 0}), wire => Action.pure(Unit, Unit{}))
@@ -110,7 +110,7 @@ def ListProperty.replaceStorage(~property: Property, self: QObject, index: Int64
 def ListProperty.removeLastStorage(~property: Property, self: QObject) -> Action(Unit):
   Internal.ListProperty.unit(~property, self, 5, 1)
 
-def QmlListView.reference(~element: SignalArgument, value: QmlListView<SignalArgument.name(element)>) -> Action(QQmlListReference):
+def QmlListView.reference(~element: TypeDescriptor, value: QmlListView<TypeDescriptor.name(element)>) -> Action(QQmlListReference):
   match value:
     case QmlListView{word}: Internal.QmlListView.reference(word)
 

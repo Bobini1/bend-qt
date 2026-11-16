@@ -90,7 +90,7 @@ def wizard() -> Qt.Action(Unit):
 def title() -> Qt.Property:
   Qt.Property.define("title", Qt.string())
 
-def Card() -> Qt.QtObject:
+def Card() -> Qt.ObjectType:
   Qt.QObject.define("ConvenienceSingletonCard", [title()])
 
 def translation() -> Qt.Action(Unit):
@@ -100,19 +100,19 @@ def translation() -> Qt.Action(Unit):
     require(installed, "Translation test could not install its translator")
     text: String <- Qt.QPushButton.tr__String("source")
     require(String.eq(text, "QPushButton:source"), "Native tr used an inherited QObject context")
-    text: String <- Qt.QtObject.tr(~Card(), "source")
+    text: String <- Qt.ObjectType.tr(~Card(), "source")
     require(String.eq(text, "ConvenienceSingletonCard:source"), "Schema tr lost the declared class context")
     removed: Bool <- Qt.QCoreApplication.removeTranslator(translator)
     require(removed, "Translation test could not remove its translator")
 
 def singleton() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +registration: Qt.QObject <- Qt.Qml.registerSingleton(~Card(), "Bend.ConvenienceSingleton", 1, 0, "Card")
+    +registration: Qt.Qml.Registration(Card()) <- Qt.Qml.registerSingleton(~Card(), "Bend.ConvenienceSingleton", 1, 0, "Card")
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
-    +card: Qt.QtObject.Instance(Card()) <- Qt.QQmlEngine.singletonInstance(~Qt.QtObject.arg(~Card()), engine, "Bend.ConvenienceSingleton", "Card")
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Card(), card), "typed")
-    +again: Qt.QtObject.Instance(Card()) <- Qt.QQmlEngine.singletonInstance(~Qt.QtObject.arg(~Card()), engine, "Bend.ConvenienceSingleton", "Card")
-    +text: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~Card(), again))
+    +card: Qt.ObjectType.Instance(Card()) <- Qt.QQmlEngine.singletonInstance(~Qt.ObjectType.arg(~Card()), engine, "Bend.ConvenienceSingleton", "Card")
+    Qt.ObjectType.set(~Card(), ~title(), card, "typed")
+    +again: Qt.ObjectType.Instance(Card()) <- Qt.QQmlEngine.singletonInstance(~Qt.ObjectType.arg(~Card()), engine, "Bend.ConvenienceSingleton", "Card")
+    +text: String <- Qt.ObjectType.get(~Card(), ~title(), again)
     require(String.eq(text, "typed"), "Singleton lookup lost its concrete QObject schema")
     +script: Qt.QJSValue <- Qt.QQmlEngine.singletonInstance(~Qt.QJSValue.arg(), engine, "Bend.ConvenienceSingleton", "Card")
     +field: Qt.QJSValue <- Qt.QJSValue.property__String(script, "title")
@@ -194,14 +194,14 @@ def basic_models() -> Qt.Action(Unit):
     require(good, "Range model could not store its own QObject pointer")
     Qt.QRangeModel.destroy(table)
 
-def ExtendedRange() -> Qt.QtObject:
+def ExtendedRange() -> Qt.ObjectType:
   Qt.QRangeModel.define("ConvenienceExtendedRange", [title()])
 
 def schema_models() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +one: Qt.QVariant <- Qt.QVariant.fromValue(~Qt.int32(), Qt.Int32{1})
-    +instance: Qt.QtObject.Instance(ExtendedRange()) <- Qt.QRangeModel.newAs__List_QVariant_QObject(~ExtendedRange(), [one], Qt.QObject{0})
-    +model: Qt.QRangeModel = Qt.QtObject.asNativeBase(~ExtendedRange(), instance)
+    +instance: Qt.ObjectType.Instance(ExtendedRange()) <- Qt.QRangeModel.newAs__List_QVariant_QObject(~ExtendedRange(), [one], Qt.QObject{0})
+    +model: Qt.QRangeModel = Qt.ObjectType.asNativeBase(~ExtendedRange(), instance)
     Qt.Property.set(~title(), Qt.QRangeModel.as_QObject(model), "extended")
     text: String <- Qt.Property.get(~title(), Qt.QRangeModel.as_QObject(model))
     require(String.eq(text, "extended"), "Range schema constructor lost its properties")

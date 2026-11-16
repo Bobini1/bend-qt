@@ -20,13 +20,13 @@ def saved() -> Qt.Property:
 def body() -> Qt.Property:
   Qt.Property.define("body", Qt.string())
 
-def Model() -> Qt.QtObject:
+def Model() -> Qt.ObjectType:
   Qt.QObject.define("CallbackSurfaceState", [calls(), saved(), body()])
 
 def increment(+state: Qt.QObject) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     count: U32 <- Qt.Property.get(~calls(), state)
-    Qt.Property.store(~calls(), state, U32.add(count, 1))
+    Qt.Property.writeStorage(~calls(), state, U32.add(count, 1))
 
 def permission_body(+state: Qt.QObject, result: Qt.QPermission) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -40,8 +40,8 @@ def permission(state: Qt.QObject, result: Qt.QPermission) -> Qt.Action(Unit):
 def completed_body(+state: Qt.QObject, +reply: Qt.QRestReply) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     text: String <- Qt.QRestReply.readText(reply)
-    Qt.Property.store(~body(), state, text)
-    Qt.Property.store(~saved(), state, Qt.QRestReply.word(reply))
+    Qt.Property.writeStorage(~body(), state, text)
+    Qt.Property.writeStorage(~saved(), state, Qt.QRestReply.word(reply))
     increment(state)
 
 def completed(state: Qt.QObject, reply: Qt.QRestReply) -> Qt.Action(Unit):
@@ -61,7 +61,7 @@ def resolved_body(+state: Qt.QObject, +result: Qt.QHostInfo) -> Qt.Action(Unit):
     error: Qt.QHostInfo.HostInfoError <- Qt.QHostInfo.error(result)
     require(U32.is_eq(Qt.QHostInfo.HostInfoError.word(error), 0), "Resolving localhost failed")
     name: String <- Qt.QHostInfo.hostName(result)
-    Qt.Property.store(~body(), state, name)
+    Qt.Property.writeStorage(~body(), state, name)
     increment(state)
 
 def resolved(state: Qt.QObject, result: Qt.QHostInfo) -> Qt.Action(Unit):
@@ -69,8 +69,8 @@ def resolved(state: Qt.QObject, result: Qt.QHostInfo) -> Qt.Action(Unit):
 
 def timers_and_lookup() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +instance: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +state: Qt.QObject = Qt.QtObject.as_QObject(~Model(), instance)
+    +instance: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +state: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), instance)
     Qt.QTimer.singleShotWithHandler__Int32(~Qt.QObject, ~tick, Qt.Int32{0}, state)
     Qt.QTimer.singleShotWithHandler__Int32_QObject(~Qt.QObject, ~tick, Qt.Int32{0}, state, state)
     done: Bool <- Qt.CallbackProbe.waitCalls(state, 2)
@@ -88,8 +88,8 @@ def timers_and_lookup() -> Qt.Action(Unit):
 
 def permissions() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +instance: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +state: Qt.QObject = Qt.QtObject.as_QObject(~Model(), instance)
+    +instance: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +state: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), instance)
     app: Qt.QCoreApplication <- Qt.QCoreApplication.instance()
     camera: Qt.QCameraPermission <- Qt.QCameraPermission.new()
     Qt.QCoreApplication.requestPermissionWithHandler__QCameraPermission_QObject(~Qt.QObject, ~permission, app, camera, state, state)
@@ -104,8 +104,8 @@ def rest() -> Qt.Action(Unit):
     +request: Qt.QNetworkRequest <- Qt.QNetworkRequest.new__QUrl(url)
     +network: Qt.QNetworkAccessManager <- Qt.QNetworkAccessManager.new()
     +manager: Qt.QRestAccessManager <- Qt.QRestAccessManager.new__QNetworkAccessManager(network)
-    +instance: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +state: Qt.QObject = Qt.QtObject.as_QObject(~Model(), instance)
+    +instance: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +state: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), instance)
     +reply: Qt.QNetworkReply <- Qt.QRestAccessManager.getWithHandler__QNetworkRequest_QObject(~Qt.QObject, ~completed, manager, request, state, state)
     done: Bool <- Qt.CallbackProbe.waitCalls(state, 1)
     require(done, "The REST GET callback did not run")

@@ -18,8 +18,8 @@ def optionResult() -> Qt.Method:
 def evaluations() -> Qt.Property:
   Qt.Property.define("evaluations", Qt.int32())
 
-def Model() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QObject.define("NondefaultPropertyModel", [option(), accessor(), evaluations()]), [optionResult()])
+def Model() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.QObject.define("NondefaultPropertyModel", [option(), accessor(), evaluations()]), [optionResult()])
 
 type ComputedState is Data:
   ComputedState{source: Qt.QObject, target: Qt.QObject}
@@ -49,10 +49,10 @@ def expect_option(+value: Qt.QFontInfo, expected: U32) -> Qt.Action(Unit):
 
 def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +first: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +second: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +source: Qt.QObject = Qt.QtObject.as_QObject(~Model(), first)
-    +target: Qt.QObject = Qt.QtObject.as_QObject(~Model(), second)
+    +first: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +second: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +source: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), first)
+    +target: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), second)
     empty: Result<&1, &1, U32 & String, Qt.QFontInfo> <- Qt.Action.attempt(Qt.QFontInfo, Qt.Property.get(~option(), source))
     expected_empty(empty)
     +font: Qt.QFont <- Qt.QFont.new()
@@ -60,7 +60,7 @@ def objects() -> Qt.Action(Unit):
     +initial: Qt.QFontInfo <- Qt.QFontInfo.new__QFont(font)
     Qt.QFont.setPixelSize(font, Qt.Int32{22})
     +updated: Qt.QFontInfo <- Qt.QFontInfo.new__QFont(font)
-    Qt.Property.store(~option(), source, initial)
+    Qt.Property.writeStorage(~option(), source, initial)
     value: Qt.QFontInfo <- Qt.Property.get(~option(), source)
     expect_option(value, 11)
     Qt.Property.handleGetter(~accessor(), ~Qt.QFontInfo, ~read_option, source, updated)
@@ -73,8 +73,8 @@ def objects() -> Qt.Action(Unit):
     Qt.Property.set(~option(), source, updated)
     value: Qt.QFontInfo <- Qt.Property.get(~option(), target)
     expect_option(value, 22)
-    +third: Qt.QtObject.Instance(Model()) <- Qt.QtObject.new(~Model())
-    +calculated: Qt.QObject = Qt.QtObject.as_QObject(~Model(), third)
+    +third: Qt.ObjectType.Instance(Model()) <- Qt.ObjectType.new(~Model())
+    +calculated: Qt.QObject = Qt.ObjectType.as_QObject(~Model(), third)
     Qt.Property.handleBinding(~option(), ~ComputedState, ~computed, calculated, ComputedState{source, calculated})
     value: Qt.QFontInfo <- Qt.Property.get(~option(), calculated)
     expect_option(value, 22)

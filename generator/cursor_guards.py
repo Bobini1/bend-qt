@@ -27,7 +27,7 @@ def emit(g):
         g.cases.append(f'case {operation}: {{\n    return NativeCursorGuards::{call};\n}}')
         g.emit_effect(name + '.' + suffix, args, result, operation, has_self=self_arg)
     g.emit_scope(name, 'release')
-    scope_actions.keep(g, name)
+    scope_actions.escapes(g, name)
     g.bend += ['def QOverrideCursorGuard.restore(self: QOverrideCursorGuard) -> Action(Unit):',
                '  QOverrideCursorGuard.restoreOverrideCursor(self)', '']
 

@@ -46,14 +46,14 @@ def qml_text(+engine: Qt.QQmlEngine) -> Qt.Action(String):
     value: Qt.QVariant <- Qt.QQmlProperty.read__QObject_String(root, "text")
     Qt.QVariant.toString(value)
 
-def one_engine(+registration: Qt.QObject) -> Qt.Action(Unit):
+def one_engine(+registration: Qt.Qml.RegistrationHandle) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +value: Qt.QJSValue <- Qt.QQmlEngine.singletonInstance(~Qt.QJSValue.arg(), engine, "Bend.ScriptSingletons", "Data")
     +answer: Qt.QJSValue <- Qt.QJSValue.property__String(value, "answer")
     number: Qt.Int32 <- Qt.QJSValue.toInt(answer)
     require(U32.is_eq(Qt.Int32.word(number), 42), "Script singleton lost its JavaScript object")
-    held: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QObject.destroy(registration))
+    held: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.Qml.RegistrationHandle.destroy(registration))
     expected(Unit, held, 16)
     held: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QQmlEngine.destroy(engine))
     expected(Unit, held, 16)
@@ -66,44 +66,44 @@ def one_engine(+registration: Qt.QObject) -> Qt.Action(Unit):
 def engines() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +state: Qt.QObject <- Qt.QObject.new()
-    +registration: Qt.QObject <- Qt.Qml.registerScriptSingleton(~Qt.QObject, ~create, "Bend.ScriptSingletons", 1, 0, "Data", state)
+    +registration: Qt.Qml.RegistrationHandle <- Qt.Qml.registerScriptSingleton(~Qt.QObject, ~create, "Bend.ScriptSingletons", 1, 0, "Data", state)
     one_engine(registration)
     one_engine(registration)
     count: String <- Qt.QObject.objectName(state)
     require(String.eq(count, "xx"), "The script singleton factory did not run once per engine")
-    Qt.QObject.destroy(registration)
+    Qt.Qml.RegistrationHandle.destroy(registration)
     Qt.QObject.destroy(state)
 
 def failures() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +registration: Qt.QObject <- Qt.Qml.registerScriptSingleton(~Unit, ~refused, "Bend.ScriptFailures", 1, 0, "Data", Unit{})
+    +registration: Qt.Qml.RegistrationHandle <- Qt.Qml.registerScriptSingleton(~Unit, ~refused, "Bend.ScriptFailures", 1, 0, "Data", Unit{})
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     result: Result<&1, &1, U32 & String, Qt.QJSValue> <- Qt.Action.attempt(Qt.QJSValue,
       Qt.QQmlEngine.singletonInstance(~Qt.QJSValue.arg(), engine, "Bend.ScriptFailures", "Data"))
     expected(Qt.QJSValue, result, 91)
     Qt.QQmlEngine.destroy(engine)
-    Qt.QObject.destroy(registration)
-    result: Result<&1, &1, U32 & String, Qt.QObject> <- Qt.Action.attempt(Qt.QObject,
+    Qt.Qml.RegistrationHandle.destroy(registration)
+    result: Result<&1, &1, U32 & String, Qt.Qml.RegistrationHandle> <- Qt.Action.attempt(Qt.Qml.RegistrationHandle,
       Qt.Qml.registerScriptSingleton(~Unit, ~refused, "Bend.ScriptFailures", 255, 0, "Invalid", Unit{}))
-    expected(Qt.QObject, result, 34)
+    expected(Qt.Qml.RegistrationHandle, result, 34)
 
 def wrong_engine() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +source: Qt.QJSEngine <- Qt.QJSEngine.new()
     +value: Qt.QJSValue <- Qt.QJSEngine.newObject(source)
-    +registration: Qt.QObject <- Qt.Qml.registerScriptSingleton(~Qt.QJSValue, ~foreign, "Bend.ScriptForeign", 1, 0, "Data", value)
+    +registration: Qt.Qml.RegistrationHandle <- Qt.Qml.registerScriptSingleton(~Qt.QJSValue, ~foreign, "Bend.ScriptForeign", 1, 0, "Data", value)
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     result: Result<&1, &1, U32 & String, Qt.QJSValue> <- Qt.Action.attempt(Qt.QJSValue,
       Qt.QQmlEngine.singletonInstance(~Qt.QJSValue.arg(), engine, "Bend.ScriptForeign", "Data"))
     expected(Qt.QJSValue, result, 18)
     Qt.QQmlEngine.destroy(engine)
-    Qt.QObject.destroy(registration)
+    Qt.Qml.RegistrationHandle.destroy(registration)
     Qt.QJSValue.destroy(value)
     Qt.QJSEngine.destroy(source)
 
 def external_data() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +registration: Qt.QObject <- Qt.Qml.registerScriptSingleton(~Unit, ~image_factory, "Bend.ScriptImage", 1, 0, "Data", Unit{})
+    +registration: Qt.Qml.RegistrationHandle <- Qt.Qml.registerScriptSingleton(~Unit, ~image_factory, "Bend.ScriptImage", 1, 0, "Data", Unit{})
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +value: Qt.QJSValue <- Qt.QQmlEngine.singletonInstance(~Qt.QJSValue.arg(), engine, "Bend.ScriptImage", "Data")
     +boxed: Qt.QVariant <- Qt.QJSValue.toVariant(value)
@@ -116,7 +116,7 @@ def external_data() -> Qt.Action(Unit):
     Qt.QVariant.destroy(boxed)
     Qt.QJSValue.destroy(value)
     Qt.QQmlEngine.destroy(engine)
-    Qt.QObject.destroy(registration)
+    Qt.Qml.RegistrationHandle.destroy(registration)
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

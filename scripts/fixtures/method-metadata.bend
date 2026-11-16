@@ -27,14 +27,14 @@ def protected_method() -> Qt.Method:
 def versioned() -> Qt.Method:
   Qt.Method.withVersionRevision(Qt.Method.define("versioned", [], Qt.unit()), 3, 4)
 
-def Subject() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QObject.define("MethodMetadataSubject", []), [compose(), invokable(), private_method(), protected_method(), versioned()])
+def Subject() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.QObject.define("MethodMetadataSubject", []), [compose(), invokable(), private_method(), protected_method(), versioned()])
 
-def Derived() -> Qt.QtObject:
-  Qt.QtObject.withMethods(Qt.QtObject.derive(~Subject(), "MethodMetadataDerived", []), [compose()])
+def Derived() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(Qt.ObjectType.derive(~Subject(), "MethodMetadataDerived", []), [compose()])
 
-def InheritedOnly() -> Qt.QtObject:
-  Qt.QtObject.derive(~Subject(), "MethodMetadataInheritedOnly", [])
+def InheritedOnly() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~Subject(), "MethodMetadataInheritedOnly", [])
 
 def compose_value(state: Unit, text: String, count: Qt.Int32) -> Qt.Action(String):
   Qt.Action.pure(String, text ++ U32.show(Qt.Int32.word(count)))
@@ -42,17 +42,17 @@ def compose_value(state: Unit, text: String, count: Qt.Int32) -> Qt.Action(Strin
 def direct_value(state: Unit) -> Qt.Action(String):
   Qt.Action.pure(String, "direct")
 
-def initialize(state: Unit, value: Qt.QtObject.Instance(Subject())) -> Qt.Action(Unit):
+def initialize(state: Unit, value: Qt.ObjectType.Instance(Subject())) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Subject(), value)
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Subject(), value)
     Qt.Method.handle(~compose(), ~Unit, ~compose_value, self, Unit{})
     Qt.Method.handle(~invokable(), ~Unit, ~direct_value, self, Unit{})
 
 def derived_value(state: Unit, text: String, count: Qt.Int32) -> Qt.Action(String):
   Qt.Action.pure(String, "derived-" ++ text ++ U32.show(Qt.Int32.word(count)))
 
-def initialize_derived(state: Unit, value: Qt.QtObject.Instance(Derived())) -> Qt.Action(Unit):
-  Qt.Method.handle(~compose(), ~Unit, ~derived_value, Qt.QtObject.as_QObject(~Derived(), value), Unit{})
+def initialize_derived(state: Unit, value: Qt.ObjectType.Instance(Derived())) -> Qt.Action(Unit):
+  Qt.Method.handle(~compose(), ~Unit, ~derived_value, Qt.ObjectType.as_QObject(~Derived(), value), Unit{})
 
 def meta_method(self: Qt.QObject, signature: String) -> Qt.Action(Qt.QMetaMethod):
   do Qt.Action<Qt.QMetaMethod>:
@@ -123,14 +123,14 @@ def invalid_result(-A: Type, result: Result<&1, &1, U32 & String, A>, expected: 
     case Fail{(+code, message)}: require(U32.is_eq(code, expected), "Wrong method rejection " ++ U32.show(code) ++ ": " ++ message)
     case Done{object}: Qt.Action.fail(Unit, 1, "Invalid method attributes were accepted")
 
-def invalid(~schema: Qt.QtObject, expected: U32) -> Qt.Action(Unit):
+def invalid(~schema: Qt.ObjectType, expected: U32) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    result: Result<&1, &1, U32 & String, Qt.QtObject.Instance(schema)> <- Qt.Action.attempt(Qt.QtObject.Instance(schema), Qt.QtObject.new(~schema))
-    invalid_result(Qt.QtObject.Instance(schema), result, expected)
+    result: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(schema)> <- Qt.Action.attempt(Qt.ObjectType.Instance(schema), Qt.ObjectType.new(~schema))
+    invalid_result(Qt.ObjectType.Instance(schema), result, expected)
 
 def qml_derived() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +registration: Qt.QObject <- Qt.Qml.registerTypeRevision(~Derived(), "Bend.DerivedMethodMetadata", 1, 0, "Derived", 2)
+    +registration: Qt.Qml.Registration(Derived()) <- Qt.Qml.registerTypeRevision(~Derived(), "Bend.DerivedMethodMetadata", 1, 0, "Derived", 2)
     Qt.Qml.handleCreate(~Derived(), ~Unit, ~initialize_derived, registration, Unit{})
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +component: Qt.QQmlComponent <- Qt.QQmlComponent.new__QQmlEngine_QObject(engine, Qt.QObject{0})
@@ -146,37 +146,37 @@ def qml_derived() -> Qt.Action(Unit):
 
 def cases() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +subject: Qt.QtObject.Instance(Subject()) <- Qt.QtObject.new(~Subject())
+    +subject: Qt.ObjectType.Instance(Subject()) <- Qt.ObjectType.new(~Subject())
     initialize(Unit{}, subject)
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Subject(), subject)
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Subject(), subject)
     text: String <- Qt.Method.call(~compose(), self, "bend", Qt.Int32{3})
     require(String.eq(text, "bend3"), "Metadata changed Bend method dispatch")
     Qt.scoped(Unit, inspect(self))
-    +older: Qt.QObject <- Qt.Qml.registerTypeRevision(~Subject(), "Bend.MethodMetadata", 1, 0, "Subject", 0)
+    +older: Qt.Qml.Registration(Subject()) <- Qt.Qml.registerTypeRevision(~Subject(), "Bend.MethodMetadata", 1, 0, "Subject", 0)
     Qt.Qml.handleCreate(~Subject(), ~Unit, ~initialize, older, Unit{})
-    +newer: Qt.QObject <- Qt.Qml.registerTypeRevision(~Subject(), "Bend.MethodMetadata", 1, 1, "Subject", 2)
+    +newer: Qt.Qml.Registration(Subject()) <- Qt.Qml.registerTypeRevision(~Subject(), "Bend.MethodMetadata", 1, 1, "Subject", 2)
     Qt.Qml.handleCreate(~Subject(), ~Unit, ~initialize, newer, Unit{})
     Qt.scoped(Unit, qml(0, "hidden"))
     Qt.scoped(Unit, qml(1, "qml4"))
-    +derived: Qt.QtObject.Instance(Derived()) <- Qt.QtObject.new(~Derived())
+    +derived: Qt.ObjectType.Instance(Derived()) <- Qt.ObjectType.new(~Derived())
     initialize_derived(Unit{}, derived)
-    text: String <- Qt.Method.call(~compose(), Qt.QtObject.as_QObject(~Derived(), derived), "bend", Qt.Int32{6})
+    text: String <- Qt.ObjectType.call(~Derived(), ~compose(), derived, "bend", Qt.Int32{6})
     require(String.eq(text, "derived-bend6"), "Bend did not route the overriding method")
-    invoked: Bool <- Qt.CallbackProbe.parentMethodDispatch(Qt.QtObject.as_QObject(~Derived(), derived))
+    invoked: Bool <- Qt.CallbackProbe.parentMethodDispatch(Qt.ObjectType.as_QObject(~Derived(), derived))
     require(invoked, "A parent QMetaMethod did not invoke the child override")
-    +inherited: Qt.QtObject.Instance(InheritedOnly()) <- Qt.QtObject.new(~InheritedOnly())
-    +child: Qt.QObject = Qt.QtObject.as_QObject(~InheritedOnly(), inherited)
+    +inherited: Qt.ObjectType.Instance(InheritedOnly()) <- Qt.ObjectType.new(~InheritedOnly())
+    +child: Qt.QObject = Qt.ObjectType.as_QObject(~InheritedOnly(), inherited)
     Qt.Method.handle(~compose(), ~Unit, ~derived_value, child, Unit{})
     invoked: Bool <- Qt.CallbackProbe.parentMethodDispatch(child)
     require(invoked, "A parent QMetaMethod did not invoke an inherited handler")
     Qt.scoped(Unit, qml_derived())
-    invalid(~Qt.QtObject.withMethods(Qt.QObject.define("BadMethodNamesCount", []), [Qt.Method.withArgumentNames(Qt.Method.define("bad", [Qt.string(), Qt.int32()], Qt.unit()), ["one"])]), 22)
-    invalid(~Qt.QtObject.withMethods(Qt.QObject.define("BadMethodName", []), [Qt.Method.withArgumentNames(Qt.Method.define("bad", [Qt.string()], Qt.unit()), ["bad-name"])]), 22)
-    invalid(~Qt.QtObject.withMethods(Qt.QObject.define("BadMethodRevision", []), [Qt.Method.withRevision(Qt.Method.define("bad", [], Qt.unit()), 255)]), 34)
-    invalid(~Qt.QtObject.withMethods(Qt.QObject.define("BadMethodVersion", []), [Qt.Method.withVersionRevision(Qt.Method.define("bad", [], Qt.unit()), 255, 0)]), 34)
-    invalid(~Qt.QtObject.withMethods(Qt.QObject.define("BadMethodVersionSentinel", []), [Qt.Method.withVersionRevision(Qt.Method.define("bad", [], Qt.unit()), 65535, 0)]), 34)
-    invalid(~Qt.QtObject.withMethods(Qt.QObject.define("BadMethodAccess", []), [Qt.Method.withAccess(Qt.Method.define("bad", [], Qt.unit()), Qt.QMetaMethod.Access{3})]), 22)
-    invalid(~Qt.QtObject.withMethods(Qt.QtObject.derive(~Subject(), "BadMethodOverrideResult", []), [Qt.Method.define("compose", [Qt.string(), Qt.int32()], Qt.u32())]), 22)
+    invalid(~Qt.ObjectType.withMethods(Qt.QObject.define("BadMethodNamesCount", []), [Qt.Method.withArgumentNames(Qt.Method.define("bad", [Qt.string(), Qt.int32()], Qt.unit()), ["one"])]), 22)
+    invalid(~Qt.ObjectType.withMethods(Qt.QObject.define("BadMethodName", []), [Qt.Method.withArgumentNames(Qt.Method.define("bad", [Qt.string()], Qt.unit()), ["bad-name"])]), 22)
+    invalid(~Qt.ObjectType.withMethods(Qt.QObject.define("BadMethodRevision", []), [Qt.Method.withRevision(Qt.Method.define("bad", [], Qt.unit()), 255)]), 34)
+    invalid(~Qt.ObjectType.withMethods(Qt.QObject.define("BadMethodVersion", []), [Qt.Method.withVersionRevision(Qt.Method.define("bad", [], Qt.unit()), 255, 0)]), 34)
+    invalid(~Qt.ObjectType.withMethods(Qt.QObject.define("BadMethodVersionSentinel", []), [Qt.Method.withVersionRevision(Qt.Method.define("bad", [], Qt.unit()), 65535, 0)]), 34)
+    invalid(~Qt.ObjectType.withMethods(Qt.QObject.define("BadMethodAccess", []), [Qt.Method.withAccess(Qt.Method.define("bad", [], Qt.unit()), Qt.QMetaMethod.Access{3})]), 22)
+    invalid(~Qt.ObjectType.withMethods(Qt.ObjectType.derive(~Subject(), "BadMethodOverrideResult", []), [Qt.Method.define("compose", [Qt.string(), Qt.int32()], Qt.u32())]), 22)
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

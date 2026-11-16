@@ -60,14 +60,14 @@ def basic_models() -> Qt.Action(Unit):
 def title() -> Qt.Property:
   Qt.Property.define("title", Qt.string())
 
-def ExtendedRange() -> Qt.QtObject:
+def ExtendedRange() -> Qt.ObjectType:
   Qt.QRangeModel.define("ConvenienceExtendedRange", [title()])
 
 def schema_models() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +one: Qt.QVariant <- Qt.QVariant.fromValue(~Qt.int32(), Qt.Int32{1})
-    +instance: Qt.QtObject.Instance(ExtendedRange()) <- Qt.QRangeModel.newAs__List_QVariant_QObject(~ExtendedRange(), [one], Qt.QObject{0})
-    +model: Qt.QRangeModel = Qt.QtObject.asNativeBase(~ExtendedRange(), instance)
+    +instance: Qt.ObjectType.Instance(ExtendedRange()) <- Qt.QRangeModel.newAs__List_QVariant_QObject(~ExtendedRange(), [one], Qt.QObject{0})
+    +model: Qt.QRangeModel = Qt.ObjectType.asNativeBase(~ExtendedRange(), instance)
     Qt.Property.set(~title(), Qt.QRangeModel.as_QObject(model), "extended")
     text: String <- Qt.Property.get(~title(), Qt.QRangeModel.as_QObject(model))
     require(String.eq(text, "extended"), "Range schema constructor lost its properties")

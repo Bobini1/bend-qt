@@ -54,6 +54,7 @@ def main():
     args = parser.parse_args()
     work = args.work.resolve(); work.mkdir(parents=True, exist_ok=True)
     g = Generator.__new__(Generator)
+    g.api = dict(qt_headers=json.loads((args.package / 'coverage.json').read_text())['minimum_qt'])
     g.bend, g.effects = [], []
     g.types, g.selected, g.enums = {'Int32': 'scalar', 'UInt64': 'wide'}, [], {}
     g.argument_capacity = 8

@@ -66,7 +66,7 @@ def cases() -> Qt.Action(Unit):
 def escaped(+cursor: Qt.QCursor) -> Qt.Action(Qt.QOverrideCursorGuard):
   do Qt.Action<Qt.QOverrideCursorGuard>:
     guard: Qt.QOverrideCursorGuard <- Qt.QOverrideCursorGuard.new(cursor)
-    Qt.QOverrideCursorGuard.keep(guard)
+    Qt.QOverrideCursorGuard.moveToParentScope(guard)
 
 def kept() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

@@ -19,47 +19,47 @@ def ping() -> Qt.Signal:
   Qt.Signal.define("ping", [Qt.string()])
 
 def echoPeer() -> Qt.Method:
-  Qt.Method.define("echoPeer", [Qt.QtObject.reference("BendCard")], Qt.QtObject.reference("BendCard"))
+  Qt.Method.define("echoPeer", [Qt.ObjectType.reference("BendCard")], Qt.ObjectType.reference("BendCard"))
 
 def makePeer() -> Qt.Method:
-  Qt.Method.define("makePeer", [], Qt.QtObject.reference("BendCard"))
+  Qt.Method.define("makePeer", [], Qt.ObjectType.reference("BendCard"))
 
-def Card() -> Qt.QtObject:
-  Qt.QtObject.withMethods(
-    Qt.QtObject.withSignals(Qt.QQuickItem.define("BendCard", [title(), counter()]), [ping()]),
+def Card() -> Qt.ObjectType:
+  Qt.ObjectType.withMethods(
+    Qt.ObjectType.withSignals(Qt.QQuickItem.define("BendCard", [title(), counter()]), [ping()]),
     [greeting(), echoPeer(), makePeer()])
 
-def echo_peer(state: Unit, value: Qt.QtObject.Instance(Card())) -> Qt.Action(Qt.QtObject.Instance(Card())):
-  Qt.Action.pure(Qt.QtObject.Instance(Card()), value)
+def echo_peer(state: Unit, value: Qt.ObjectType.Instance(Card())) -> Qt.Action(Qt.ObjectType.Instance(Card())):
+  Qt.Action.pure(Qt.ObjectType.Instance(Card()), value)
 
-def make_peer(state: Unit) -> Qt.Action(Qt.QtObject.Instance(Card())):
-  do Qt.Action<Qt.QtObject.Instance(Card())>:
-    +card: Qt.QtObject.Instance(Card()) <- Qt.QtObject.new(~Card())
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~Card(), card), "fresh")
+def make_peer(state: Unit) -> Qt.Action(Qt.ObjectType.Instance(Card())):
+  do Qt.Action<Qt.ObjectType.Instance(Card())>:
+    +card: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.new(~Card())
+    Qt.ObjectType.set(~Card(), ~title(), card, "fresh")
     return card
 
 def greet(state: Unit, name: String) -> Qt.Action(String):
   Qt.Action.pure(String, "Hello " ++ name)
 
-def setter(self: Qt.QObject, value: String) -> Qt.Action(Unit):
-  Qt.Property.store(~title(), self, "set:" ++ value)
-
-def GetterCard() -> Qt.QtObject:
+def GetterCard() -> Qt.ObjectType:
   Qt.QObject.define("GetterCard", [title()])
 
-def getter(self: Qt.QObject) -> Qt.Action(String):
+def setter(self: Qt.ObjectType.Instance(GetterCard()), value: String) -> Qt.Action(Unit):
+  Qt.ObjectType.writeStorage(~GetterCard(), ~title(), self, "set:" ++ value)
+
+def getter(self: Qt.ObjectType.Instance(GetterCard())) -> Qt.Action(String):
   do Qt.Action<String>:
-    text: String <- Qt.Property.readStorage(~title(), self)
+    text: String <- Qt.ObjectType.readStorage(~GetterCard(), ~title(), self)
     return "get:" ++ text
 
 def changed(probe: Qt.QObject, text: String) -> Qt.Action(Unit):
   Qt.QObject.setObjectName(probe, text)
 
-def Child() -> Qt.QtObject:
-  Qt.QtObject.derive(~Card(), "BendChildCard", [Qt.Property.constant("version", Qt.int32())])
+def Child() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~Card(), "BendChildCard", [Qt.Property.constant("version", Qt.int32())])
 
 def peer() -> Qt.Property:
-  Qt.Property.define("peer", Qt.QtObject.arg(~Card()))
+  Qt.Property.define("peer", Qt.ObjectType.arg(~Card()))
 
 def details() -> Qt.Property:
   Qt.Property.define("details", Qt.variantMap())
@@ -67,7 +67,7 @@ def details() -> Qt.Property:
 def variant_value() -> Qt.Property:
   Qt.Property.define("variantValue", Qt.variant())
 
-def Box() -> Qt.QtObject:
+def Box() -> Qt.ObjectType:
   Qt.QObject.define("BendBox", [peer(), details(), variant_value()])
 
 def map_text(values: List<&2, Qt.PairValue<String, Qt.QVariant>>) -> Qt.Action(String):
@@ -76,11 +76,11 @@ def map_text(values: List<&2, Qt.PairValue<String, Qt.QVariant>>) -> Qt.Action(S
     case _: Qt.Action.fail(String, 1, "QML map property has the wrong shape")
 
 def cardReady() -> Qt.Signal:
-  Qt.Signal.define("cardReady", [Qt.QtObject.arg(~Card())])
+  Qt.Signal.define("cardReady", [Qt.ObjectType.arg(~Card())])
 
-def received(probe: Qt.QObject, card: Qt.QtObject.Instance(Card())) -> Qt.Action(Unit):
+def received(probe: Qt.QObject, card: Qt.ObjectType.Instance(Card())) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    title: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~Card(), card))
+    title: String <- Qt.ObjectType.get(~Card(), ~title(), card)
     Qt.QObject.setObjectName(probe, title)
 
 def expected(-A: Type, value: Result<&1, &1, U32 & String, A>, code: U32) -> Qt.Action(Unit):
@@ -88,37 +88,37 @@ def expected(-A: Type, value: Result<&1, &1, U32 & String, A>, code: U32) -> Qt.
     case Fail{(actual, message)}: require(U32.is_eq(actual, code), message)
     case Done{result}: Qt.Action.fail(Unit, 1, "Expected runtime QObject rejection")
 
-def DuplicateParent() -> Qt.QtObject:
+def DuplicateParent() -> Qt.ObjectType:
   Qt.QObject.define("BendDuplicateDirect", [title()])
 
-def DuplicateChild() -> Qt.QtObject:
-  Qt.QtObject.derive(~DuplicateParent(), "BendDuplicateDirect", [])
+def DuplicateChild() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~DuplicateParent(), "BendDuplicateDirect", [])
 
-def ConflictingParent() -> Qt.QtObject:
+def ConflictingParent() -> Qt.ObjectType:
   Qt.QObject.define("BendDuplicateDirect", [])
 
-def DuplicateRoot() -> Qt.QtObject:
+def DuplicateRoot() -> Qt.ObjectType:
   Qt.QObject.define("BendDuplicateDeep", [title()])
 
-def DuplicateMiddle() -> Qt.QtObject:
-  Qt.QtObject.derive(~DuplicateRoot(), "BendDuplicateMiddle", [])
+def DuplicateMiddle() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~DuplicateRoot(), "BendDuplicateMiddle", [])
 
-def DuplicateLeaf() -> Qt.QtObject:
-  Qt.QtObject.derive(~DuplicateMiddle(), "BendDuplicateDeep", [])
+def DuplicateLeaf() -> Qt.ObjectType:
+  Qt.ObjectType.derive(~DuplicateMiddle(), "BendDuplicateDeep", [])
 
-def NativeCollision() -> Qt.QtObject:
+def NativeCollision() -> Qt.ObjectType:
   Qt.QObject.define("QTimer", [])
 
-def NativePointerCollision() -> Qt.QtObject:
+def NativePointerCollision() -> Qt.ObjectType:
   Qt.QObject.define("QSGNode", [])
 
-def NativeValueCollision() -> Qt.QtObject:
+def NativeValueCollision() -> Qt.ObjectType:
   Qt.QObject.define("QString", [])
 
-def reject_duplicate(~schema: Qt.QtObject) -> Qt.Action(Unit):
+def reject_duplicate(~schema: Qt.ObjectType) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     result: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit,
-      Qt.QtObject.with(~schema, Unit, Qt.QtObject.new(~schema), value => Qt.Action.pure(Unit, Unit{})))
+      Qt.ObjectType.with(~schema, Unit, Qt.ObjectType.new(~schema), value => Qt.Action.pure(Unit, Unit{})))
     expected(Unit, result, 17)
 
 def duplicate_names() -> Qt.Action(Unit):
@@ -130,22 +130,22 @@ def duplicate_names() -> Qt.Action(Unit):
     # These ancestors must not be registered before the conflicting child.
     reject_duplicate(~DuplicateChild())
     reject_duplicate(~DuplicateLeaf())
-    +parent: Qt.QtObject.Instance(DuplicateParent()) <- Qt.QtObject.new(~DuplicateParent())
-    +other: Qt.QtObject.Instance(DuplicateParent()) <- Qt.QtObject.new(~DuplicateParent())
-    +parent_object: Qt.QObject = Qt.QtObject.as_QObject(~DuplicateParent(), parent)
+    +parent: Qt.ObjectType.Instance(DuplicateParent()) <- Qt.ObjectType.new(~DuplicateParent())
+    +other: Qt.ObjectType.Instance(DuplicateParent()) <- Qt.ObjectType.new(~DuplicateParent())
+    +parent_object: Qt.QObject = Qt.ObjectType.as_QObject(~DuplicateParent(), parent)
     Qt.Property.set(~title(), parent_object, "parent remains valid")
     first: String <- Qt.Property.get(~title(), parent_object)
-    second: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~DuplicateParent(), other))
+    second: String <- Qt.ObjectType.get(~DuplicateParent(), ~title(), other)
     require(String.eq(first, "parent remains valid") && String.eq(second, ""), "Identical schemas did not create independent instances")
     reject_duplicate(~ConflictingParent())
-    +middle: Qt.QtObject.Instance(DuplicateMiddle()) <- Qt.QtObject.new(~DuplicateMiddle())
-    +middle_object: Qt.QObject = Qt.QtObject.as_QObject(~DuplicateMiddle(), middle)
-    root: Qt.QtObject.Instance(DuplicateRoot()) <- Qt.QtObject.cast(~DuplicateRoot(), middle_object)
-    Qt.Property.set(~title(), Qt.QtObject.as_QObject(~DuplicateRoot(), root), "ancestor remains valid")
+    +middle: Qt.ObjectType.Instance(DuplicateMiddle()) <- Qt.ObjectType.new(~DuplicateMiddle())
+    +middle_object: Qt.QObject = Qt.ObjectType.as_QObject(~DuplicateMiddle(), middle)
+    root: Qt.ObjectType.Instance(DuplicateRoot()) <- Qt.ObjectType.cast(~DuplicateRoot(), middle_object)
+    Qt.ObjectType.set(~DuplicateRoot(), ~title(), root, "ancestor remains valid")
     inherited: String <- Qt.Property.get(~title(), middle_object)
     require(String.eq(inherited, "ancestor remains valid"), "Failed child registration damaged ancestor metadata")
 
-def DynamicBase() -> Qt.QtObject:
+def DynamicBase() -> Qt.ObjectType:
   Qt.QQmlPropertyMap.define("BendDynamicNativeBase", [])
 
 def native_dynamic_meta() -> Qt.Action(Unit):
@@ -159,43 +159,43 @@ def native_dynamic_meta() -> Qt.Action(Unit):
     meta: Qt.QMetaObject <- Qt.QObject.metaObject(Qt.QQmlPropertyMap.as_QObject(map))
     index: Qt.Int32 <- Qt.QMetaObject.indexOfProperty(meta, "nativeValue")
     require(U32.is_ne(Qt.Int32.word(index), 4294967295), "A proxy hid the native dynamic metaobject")
-    refused: Result<&1, &1, U32 & String, Qt.QtObject.Instance(DynamicBase())> <- Qt.Action.attempt(Qt.QtObject.Instance(DynamicBase()), Qt.QtObject.attach(~DynamicBase(), map))
-    expected(Qt.QtObject.Instance(DynamicBase()), refused, 95)
+    refused: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(DynamicBase())> <- Qt.Action.attempt(Qt.ObjectType.Instance(DynamicBase()), Qt.ObjectType.attach(~DynamicBase(), map))
+    expected(Qt.ObjectType.Instance(DynamicBase()), refused, 95)
 
 def inheritance() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +child: Qt.QtObject.Instance(Child()) <- Qt.QtObject.new(~Child())
-    +object: Qt.QObject = Qt.QtObject.as_QObject(~Child(), child)
-    +card: Qt.QtObject.Instance(Card()) <- Qt.QtObject.cast(~Card(), object)
+    +child: Qt.ObjectType.Instance(Child()) <- Qt.ObjectType.new(~Child())
+    +object: Qt.QObject = Qt.ObjectType.as_QObject(~Child(), child)
+    +card: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.cast(~Card(), object)
     Qt.Property.set(~title(), object, "inherited")
-    Qt.Property.store(~counter(), object, Qt.Int32{7})
+    Qt.Property.writeStorage(~counter(), object, Qt.Int32{7})
     readonly: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.Property.set(~counter(), object, Qt.Int32{8}))
     expected(Unit, readonly, 1)
-    Qt.Property.store(~Qt.Property.constant("version", Qt.int32()), object, Qt.Int32{1})
+    Qt.Property.writeStorage(~Qt.Property.constant("version", Qt.int32()), object, Qt.Int32{1})
     version: Qt.Int32 <- Qt.Property.get(~Qt.Property.constant("version", Qt.int32()), object)
     frozen: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit,
-      Qt.Property.store(~Qt.Property.constant("version", Qt.int32()), object, Qt.Int32{2}))
+      Qt.Property.writeStorage(~Qt.Property.constant("version", Qt.int32()), object, Qt.Int32{2}))
     expected(Unit, frozen, 1)
-    +box: Qt.QtObject.Instance(Box()) <- Qt.QtObject.new(~Box())
-    +holder: Qt.QObject = Qt.QtObject.as_QObject(~Box(), box)
+    +box: Qt.ObjectType.Instance(Box()) <- Qt.ObjectType.new(~Box())
+    +holder: Qt.QObject = Qt.ObjectType.as_QObject(~Box(), box)
     unset: Qt.QVariant <- Qt.Property.get(~variant_value(), holder)
     storage: Result<&1, &1, U32 & String, Qt.MetaStorage> <- Qt.Action.attempt(Qt.MetaStorage, Qt.MetaStorage.fromVariant(unset))
     expected(Qt.MetaStorage, storage, 22)
     Qt.Property.set(~peer(), holder, card)
-    copied: Qt.QtObject.Instance(Card()) <- Qt.Property.get(~peer(), holder)
-    text: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~Card(), copied))
+    copied: Qt.ObjectType.Instance(Card()) <- Qt.Property.get(~peer(), holder)
+    text: String <- Qt.ObjectType.get(~Card(), ~title(), copied)
     require(String.eq(text, "inherited"), "Concrete QObject property type was lost")
-    mismatch: Result<&1, &1, U32 & String, Qt.QtObject.Instance(Card())> <- Qt.Action.attempt(Qt.QtObject.Instance(Card()), Qt.QtObject.cast(~Card(), holder))
-    expected(Qt.QtObject.Instance(Card()), mismatch, 22)
+    mismatch: Result<&1, &1, U32 & String, Qt.ObjectType.Instance(Card())> <- Qt.Action.attempt(Qt.ObjectType.Instance(Card()), Qt.ObjectType.cast(~Card(), holder))
+    expected(Qt.ObjectType.Instance(Card()), mismatch, 22)
     +sender: Qt.QObject <- Qt.QObject.newWithSignals("BendCardSignals", [cardReady()])
     +probe: Qt.QObject <- Qt.QObject.new()
     connection: Qt.Connection <- Qt.Signal.connect(~cardReady(), ~Qt.QObject, ~received, sender, probe)
     Qt.Signal.emit(~cardReady(), sender, card)
     result: String <- Qt.QObject.objectName(probe)
     require(String.eq(result, "inherited"), "Typed Bend class signal lost its identity")
-    Qt.QtObject.destroy(~Child(), child)
-    cleared: Qt.QtObject.Instance(Card()) <- Qt.Property.get(~peer(), holder)
-    require(U32.is_eq(Qt.QtObject.word(~Card(), cleared), 0), "Destroyed QObject property was not cleared")
+    Qt.ObjectType.destroy(~Child(), child)
+    cleared: Qt.ObjectType.Instance(Card()) <- Qt.Property.get(~peer(), holder)
+    require(U32.is_eq(Qt.ObjectType.word(~Card(), cleared), 0), "Destroyed QObject property was not cleared")
 
 def qml_source() -> String:
   "import QtQuick\nQtObject { property string captured: card.title; property string result: card.greet('QML'); property string nested: box.peer.title; property string typedResult: card.echoPeer(box.peer).title; property var made: card.makePeer(); property string fresh: made.title; property string mapName: box.details.name; property int count: card.counter; property real nativeWidth: card.width; Component.onCompleted: { card.title = 'from QML'; box.details = {name: 'edited'} } }"
@@ -205,9 +205,9 @@ def qml(+self: Qt.QObject) -> Qt.Action(Unit):
     +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +context: Qt.QQmlContext <- Qt.QQmlEngine.rootContext(engine)
     Qt.QQmlContext.setContextProperty__String_QObject(context, "card", self)
-    box: Qt.QtObject.Instance(Box()) <- Qt.QtObject.new(~Box())
-    +holder: Qt.QObject = Qt.QtObject.as_QObject(~Box(), box)
-    card: Qt.QtObject.Instance(Card()) <- Qt.QtObject.cast(~Card(), self)
+    box: Qt.ObjectType.Instance(Box()) <- Qt.ObjectType.new(~Box())
+    +holder: Qt.QObject = Qt.ObjectType.as_QObject(~Box(), box)
+    card: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.cast(~Card(), self)
     Qt.Property.set(~peer(), holder, card)
     map_value: Qt.QVariant <- Qt.QVariant.fromString("map")
     Qt.Property.set(~details(), holder, [Qt.PairValue{"name", map_value}])
@@ -251,52 +251,51 @@ def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     # References make the focused checker include these generated proxies.
     native: Qt.QQuickItem <- Qt.QQuickItem.newOverride()
-    +item: Qt.QtObject.Instance(Card()) <- Qt.QtObject.newWith(~Card(), Qt.Action.pure(Qt.QQuickItem, native))
-    +self: Qt.QObject = Qt.QtObject.as_QObject(~Card(), item)
-    Qt.QQuickItem.setWidth(Qt.QtObject.asNativeBase(~Card(), item), Qt.F64{0, 1079574528})
-    Qt.Property.store(~counter(), self, Qt.Int32{42})
-    Qt.Property.set(~title(), self, "initial")
-    Qt.Method.handle(~greeting(), ~Unit, ~greet, self, Unit{})
-    Qt.Method.handle(~echoPeer(), ~Unit, ~echo_peer, self, Unit{})
-    Qt.Method.handle(~makePeer(), ~Unit, ~make_peer, self, Unit{})
-    fresh: Qt.QtObject.Instance(Card()) <- Qt.Method.call(~makePeer(), self)
-    fresh_text: String <- Qt.Property.get(~title(), Qt.QtObject.as_QObject(~Card(), fresh))
+    +item: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.attachUsing(~Card(), Qt.Action.pure(Qt.QQuickItem, native))
+    +self: Qt.QObject = Qt.ObjectType.as_QObject(~Card(), item)
+    Qt.QQuickItem.setWidth(Qt.ObjectType.asNativeBase(~Card(), item), Qt.F64{0, 1079574528})
+    Qt.ObjectType.writeStorage(~Card(), ~counter(), item, Qt.Int32{42})
+    Qt.ObjectType.set(~Card(), ~title(), item, "initial")
+    Qt.ObjectType.handle(~Card(), ~greeting(), ~Unit, ~greet, item, Unit{})
+    Qt.ObjectType.handle(~Card(), ~echoPeer(), ~Unit, ~echo_peer, item, Unit{})
+    Qt.ObjectType.handle(~Card(), ~makePeer(), ~Unit, ~make_peer, item, Unit{})
+    fresh: Qt.ObjectType.Instance(Card()) <- Qt.ObjectType.call(~Card(), ~makePeer(), item)
+    fresh_text: String <- Qt.ObjectType.get(~Card(), ~title(), fresh)
     require(String.eq(fresh_text, "fresh"), "A new QObject result expired before Bend received it")
-    answer: String <- Qt.Method.call(~greeting(), self, "Bend")
+    answer: String <- Qt.ObjectType.call(~Card(), ~greeting(), item, "Bend")
     require(String.eq(answer, "Hello Bend"), "Named method failed in Bend")
     +probe: Qt.QObject <- Qt.QObject.new()
-    connection: Qt.Connection <- Qt.Signal.connect(~ping(), ~Qt.QObject, ~changed, self, probe)
-    Qt.Signal.emit(~ping(), self, "signal")
+    connection: Qt.Connection <- Qt.ObjectType.connect(~Card(), ~ping(), ~Qt.QObject, ~changed, item, probe)
+    Qt.ObjectType.emit(~Card(), ~ping(), item, "signal")
     name: String <- Qt.QObject.objectName(probe)
     require(String.eq(name, "signal"), "Schema signal failed")
     Qt.scoped(Unit, qml(self))
     base: Qt.QObject <- Qt.QObject.newOverride()
-    holder: Qt.QtObject.Instance(GetterCard()) <- Qt.QtObject.newWith(~GetterCard(), Qt.Action.pure(Qt.QObject, base))
-    +object: Qt.QObject = Qt.QtObject.as_QObject(~GetterCard(), holder)
-    Qt.Property.handleSetter(~title(), ~Qt.QObject, ~setter, object, object)
-    Qt.Property.handleGetter(~title(), ~Qt.QObject, ~getter, object, object)
-    Qt.Property.set(~title(), object, "value")
-    read: String <- Qt.Property.get(~title(), object)
+    +holder: Qt.ObjectType.Instance(GetterCard()) <- Qt.ObjectType.attachUsing(~GetterCard(), Qt.Action.pure(Qt.QObject, base))
+    Qt.ObjectType.handleSetter(~GetterCard(), ~title(), ~Qt.ObjectType.Instance(GetterCard()), ~setter, holder, holder)
+    Qt.ObjectType.handleGetter(~GetterCard(), ~title(), ~Qt.ObjectType.Instance(GetterCard()), ~getter, holder, holder)
+    Qt.ObjectType.set(~GetterCard(), ~title(), holder, "value")
+    read: String <- Qt.ObjectType.get(~GetterCard(), ~title(), holder)
     require(String.eq(read, "get:set:value"), "Typed property handlers failed")
 
-def MutualFirst() -> Qt.QtObject:
-  Qt.QObject.define("MutualFirst", [Qt.Property.define("peer", Qt.QtObject.reference("MutualSecond"))])
+def MutualFirst() -> Qt.ObjectType:
+  Qt.QObject.define("MutualFirst", [Qt.Property.define("peer", Qt.ObjectType.reference("MutualSecond"))])
 
-def MutualSecond() -> Qt.QtObject:
-  Qt.QObject.define("MutualSecond", [Qt.Property.define("peer", Qt.QtObject.reference("MutualFirst"))])
+def MutualSecond() -> Qt.ObjectType:
+  Qt.QObject.define("MutualSecond", [Qt.Property.define("peer", Qt.ObjectType.reference("MutualFirst"))])
 
 def mutual_references() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +first: Qt.QtObject.Instance(MutualFirst()) <- Qt.QtObject.new(~MutualFirst())
-    +first_object: Qt.QObject = Qt.QtObject.as_QObject(~MutualFirst(), first)
-    empty: Qt.QtObject.Instance(MutualSecond()) <- Qt.Property.get(~Qt.Property.define("peer", Qt.QtObject.reference("MutualSecond")), first_object)
-    require(U32.is_eq(Qt.QtObject.word(~MutualSecond(), empty), 0), "A forward reference did not default to null")
-    +second: Qt.QtObject.Instance(MutualSecond()) <- Qt.QtObject.new(~MutualSecond())
-    +second_object: Qt.QObject = Qt.QtObject.as_QObject(~MutualSecond(), second)
-    Qt.Property.set(~Qt.Property.define("peer", Qt.QtObject.reference("MutualSecond")), first_object, second)
-    Qt.Property.set(~Qt.Property.define("peer", Qt.QtObject.reference("MutualFirst")), second_object, first)
-    back: Qt.QtObject.Instance(MutualFirst()) <- Qt.Property.get(~Qt.Property.define("peer", Qt.QtObject.reference("MutualFirst")), second_object)
-    require(U32.is_eq(Qt.QtObject.word(~MutualFirst(), back), Qt.QtObject.word(~MutualFirst(), first)), "Mutual QObject references changed identity")
+    +first: Qt.ObjectType.Instance(MutualFirst()) <- Qt.ObjectType.new(~MutualFirst())
+    +first_object: Qt.QObject = Qt.ObjectType.as_QObject(~MutualFirst(), first)
+    empty: Qt.ObjectType.Instance(MutualSecond()) <- Qt.Property.get(~Qt.Property.define("peer", Qt.ObjectType.reference("MutualSecond")), first_object)
+    require(U32.is_eq(Qt.ObjectType.word(~MutualSecond(), empty), 0), "A forward reference did not default to null")
+    +second: Qt.ObjectType.Instance(MutualSecond()) <- Qt.ObjectType.new(~MutualSecond())
+    +second_object: Qt.QObject = Qt.ObjectType.as_QObject(~MutualSecond(), second)
+    Qt.Property.set(~Qt.Property.define("peer", Qt.ObjectType.reference("MutualSecond")), first_object, second)
+    Qt.Property.set(~Qt.Property.define("peer", Qt.ObjectType.reference("MutualFirst")), second_object, first)
+    back: Qt.ObjectType.Instance(MutualFirst()) <- Qt.Property.get(~Qt.Property.define("peer", Qt.ObjectType.reference("MutualFirst")), second_object)
+    require(U32.is_eq(Qt.ObjectType.word(~MutualFirst(), back), Qt.ObjectType.word(~MutualFirst(), first)), "Mutual QObject references changed identity")
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

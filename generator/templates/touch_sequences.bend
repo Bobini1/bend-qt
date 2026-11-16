@@ -74,9 +74,14 @@ def QTest.QTouchEventSequence.moveInWidget(self: QTest.QTouchEventSequence, touc
 def QTest.QTouchEventSequence.releaseInWidget(self: QTest.QTouchEventSequence, touchId: Int32, point: QPoint, widget: QWidget) -> Action(Unit):
   Internal.TouchSequence.releaseWidget(QTest.QTouchEventSequence.word(self), touchId, point, widget)
 
-def QTest.QTouchEventSequence.keep(self: QTest.QTouchEventSequence) -> Action(QTest.QTouchEventSequence):
+def QTest.QTouchEventSequence.moveToParentScope(self: QTest.QTouchEventSequence) -> Action(QTest.QTouchEventSequence):
   do Action.Raw<Result<&1, &1, U32 & String, QTest.QTouchEventSequence>>:
-    result: Result<&1, &1, U32 & String, U32> <- Scope.keep_raw(0, QTest.QTouchEventSequence.word(self))
+    result: Result<&1, &1, U32 & String, U32> <- Scope.transfer_raw(0, QTest.QTouchEventSequence.word(self), 0)
+    return QTest.QTouchEventSequence.wrap(result)
+
+def QTest.QTouchEventSequence.detachFromScope(self: QTest.QTouchEventSequence) -> Action(QTest.QTouchEventSequence):
+  do Action.Raw<Result<&1, &1, U32 & String, QTest.QTouchEventSequence>>:
+    result: Result<&1, &1, U32 & String, U32> <- Scope.transfer_raw(0, QTest.QTouchEventSequence.word(self), 1)
     return QTest.QTouchEventSequence.wrap(result)
 
 def QTest.QTouchEventSequence.with(-A: Type, acquire: Action(QTest.QTouchEventSequence), body: QTest.QTouchEventSequence -> Action(A)) -> Action(A):

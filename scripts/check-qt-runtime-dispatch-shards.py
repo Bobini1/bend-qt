@@ -60,6 +60,7 @@ static int argument_type(BqtRequest *, const QByteArray &, const BqtValue *) { r
 }
 namespace RuntimeValueTypes {
 static int argument_type(BqtRequest *, const QByteArray &, const BqtValue *) { return INT_MIN; }
+static int sequence_type(BqtRequest *, const QByteArray &, const BqtValue *) { return INT_MIN; }
 }
 static int runtime_argument_index(BqtRequest *, const QByteArray &, const BqtValue *) { return 91; }
 '''
