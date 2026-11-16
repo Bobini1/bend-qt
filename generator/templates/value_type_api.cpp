@@ -125,8 +125,16 @@ static int sequence_type(BqtRequest *r, const QByteArray &name, const BqtValue *
         // Qt registered this list, but no compiled codec reads it. Its own
         // sequence interface still adds and reads elements.
         QVariant probe(registered);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
         QMetaSequence::Iterable iterable;
-        if (!QMetaType::view(registered, probe.data(), QMetaType::fromType<QMetaSequence::Iterable>(), &iterable)) {
+        const auto view = QMetaType::fromType<QMetaSequence::Iterable>();
+#else
+        // Before 6.11, Qt registers container views to QIterable<QMetaSequence>,
+        // which QSequentialIterable extends without adding state.
+        QSequentialIterable iterable;
+        const auto view = QMetaType::fromType<QIterable<QMetaSequence>>();
+#endif
+        if (!QMetaType::view(registered, probe.data(), view, &iterable)) {
             fail(r, ENOTSUP, "This native list type has no sequence interface"); return INT_MIN;
         }
         value->type = registered; value->meta = iterable.metaContainer();
