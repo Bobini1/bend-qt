@@ -22,6 +22,7 @@ import native_objects
 import representations
 import overload_names
 from generate import Generator
+from adapters import native_header_support
 from lifetime import evaluate_tables, cpp_tables
 from backend import compile_backend, versioned_include_paths
 from upstream import prepare as prepare_upstream
@@ -2012,7 +2013,8 @@ public:
 };
 static RemoteProbe *probe_remote;
 '''
-    source = (coherent_headers + qml_prefix + '#include <QtCore/QEventLoop>\n#include <thread>\n' + aliases +
+    # As in production, header-defined helpers some modules leave unexported.
+    source = (coherent_headers + native_header_support(modules) + qml_prefix + '#include <QtCore/QEventLoop>\n#include <thread>\n' + aliases +
               '#define BQT_BUNDLED_RUNTIME_NATIVE 1\n' + (ROOT / 'generator/templates/runtime_paths.cpp').read_text() +
               'namespace bendqt {\n' + globals + '}\n' + (ROOT / 'generator/templates/runtime.cpp').read_text() + qml_suffix)
     source = (source.replace('// @ABI@', abi).replace('// @LIFETIME@', cpp_tables(tables))

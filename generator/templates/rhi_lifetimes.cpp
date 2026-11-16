@@ -78,6 +78,9 @@ static void rhi_native_cleanup(const std::shared_ptr<RhiDomain> &domain) {
         if (auto *e = entry(id)) {
             auto value = e->value; auto destroy = e->owned ? e->destroy : nullptr;
             invalidate(id);
+            // During native destruction invalidate() only marks the entry.
+            // Drop its RHI identity now, so it is not found and destroyed again.
+            rhi_forget(id);
             if (destroy) destroy(value);
         } else rhi_forget(id);
     }
@@ -283,10 +286,12 @@ static void rhi_frame_finished(uint32_t root) {
     ++domain->frame_epoch;
     domain->pass = 0;
     domain->commands = nullptr;
+    // During native destruction invalidate() only marks an entry; it leaves the
+    // registry when that destruction finishes. Skip entries already marked.
     for (;;) {
         uint32_t id = 0;
         for (const auto &value : rhi_identities()) if (value.domain == domain)
-            if (auto *e = entry(value.id); e && e->type == @QRHICOMMANDBUFFER_ID@) { id = value.id; break; }
+            if (auto *e = entry(value.id); e && e->type == @QRHICOMMANDBUFFER_ID@ && !e->deferred_invalidation) { id = value.id; break; }
         if (!id) break;
         invalidate(id);
     }

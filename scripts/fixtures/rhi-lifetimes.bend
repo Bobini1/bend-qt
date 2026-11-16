@@ -257,7 +257,7 @@ def checks() -> Qt.Action(Unit):
     texture_arrays()
     Qt.QOffscreenSurface.with(Unit, Qt.QRhiGles2InitParams.newFallbackSurface(), gles_surface)
     Qt.QRhi.with(Unit, Qt.QRhi.newNull(), root => frame_contract(root))
-    Qt.QRhi.with(Unit, Qt.QRhi.newNull(), queue_submit_parameters)
+    Qt.QRhi.with(Unit, Qt.QRhi.newNull(), root => queue_submit_parameters(root))
     objects: U32 <- Qt.Runtime.liveObjects()
     require(U32.is_eq(objects, 0), "RHI lifecycle leaked native handles")
     Qt.Action.lift(Unit, IO.print("QT612_RHI_LIFETIMES_OK null_backend=1 factory_ownership=1 root_retained=1 batch_consumed=1 frame_cleanup=1 frame_kind=1 frame_owner=1 finish_preserves_frame=1 readback_snapshot=1 readback_cancel=1 external_root_cleanup=1 objects=0"))
