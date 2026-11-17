@@ -17,11 +17,14 @@ extended native Vulkan experiment is archived separately and is not part of
 this package. Qt may still use Vulkan internally for rendering.
 
 Native groups and their runtime assets are retained through Bend's ordinary
-reachability. Core-only consumers omit the optional GPL module groups. The
-shared group currently contains 51 modules with an LGPL option; its footprint
-is larger than a minimal Qt Core installation. Referencing an optional native
-type or API retains its group and dependencies. For QML-only usage, call the
-corresponding action, such as `Modules.Graphs.load()`, before loading the QML.
+reachability. The shared group holds Qt Core, Gui, Widgets, QML/Quick and 20
+other common modules; a Core-only program is about 104 MB and extracts about
+172 MB of Qt runtime on first run. WebEngine, Multimedia, Qt3D, Pdf, Designer,
+Location and Connectivity are separate groups, as are the GPL-only modules.
+Referencing an optional native type or API retains its group and
+dependencies. For QML-only usage, call the corresponding action, such as
+`Modules.Multimedia.load()` for `import QtMultimedia` or `Modules.Graphs.load()`,
+before loading the QML.
 
 The original generator and Bend glue use MIT. Bundled Qt and third-party
 components retain their own licenses; see `LICENSE` and the bundled component

@@ -74,17 +74,23 @@ def qt_library_closure(qt, modules, command):
     return libraries
 
 
-def package(obj, qt, work, cxx, modules, command):
-    """Reuse a validated payload only while every link input remains identical."""
+def package(obj, qt, work, cxx, modules, command, objects=None):
+    """Reuse a validated payload only while every link input remains identical.
+
+    objects, when given, are the relocatable inputs that obj combines; linking
+    them directly keeps their address-significance tables for --icf=safe.
+    """
     started = time.monotonic()
     from native_linker import select
     linker = select(cxx)
+    inputs = [Path(path) for path in objects] if objects else [obj]
     dependency_file = work / 'native-link.d'
     has_dependencies = '--dependency-file' in command([linker['identity']['path'], '--help']).stdout
     payload_file, stamp = work / 'native-payload.c', work / 'native-package-cache.json'
     native = work / 'native.so'
     libraries = qt_library_closure(qt, modules, command)
     key = dict(object=_digest(obj), object_path=str(obj.resolve()), qt=str(qt.resolve()), modules=list(modules),
+               link_inputs=[str(path.resolve()) for path in inputs],
                compiler=command([cxx, '--version']).stdout, linker=linker['identity'], qt_libraries=libraries,
                packager=_digest(Path(__file__)), loader=_digest(Path(__file__).parent / 'templates/embedded_elf.c'),
                tools={tool: command([tool, '--version']).stdout
@@ -104,7 +110,7 @@ def package(obj, qt, work, cxx, modules, command):
                 return payload_file.read_text(), saved['loader'], saved['metadata']
         except (OSError, KeyError, TypeError, ValueError):
             pass
-    payload, loader, metadata = _build_package(obj, qt, work, cxx, modules, command, linker,
+    payload, loader, metadata = _build_package(inputs, qt, work, cxx, modules, command, linker,
                                                dependency_file if has_dependencies else None, libraries)
     if has_dependencies:
         paths = _link_dependencies(dependency_file)
@@ -119,11 +125,17 @@ def package(obj, qt, work, cxx, modules, command):
     return payload, loader, metadata
 
 
-def _build_package(obj, qt, work, cxx, modules, command, linker, dependency_file, libraries):
+def _build_package(inputs, qt, work, cxx, modules, command, linker, dependency_file, libraries):
     exports = work / 'native.exports'
     exports.write_text('{ global: ' + ' '.join(name + ';' for name in EXPORTS) + ' local: *; };\n')
     native = work / 'native.so'
-    result = command([cxx, *linker['flags'], '-shared', obj, '-o', native, '-L' + str(qt / 'lib'),
+    # Safe folding merges only functions whose address is never taken, so
+    # deleter and callback identities stay distinct; section GC drops inline
+    # functions nothing references. Exports and static constructors are GC
+    # roots. Other linkers keep the previous layout.
+    folding = ['-Wl,--icf=safe,--gc-sections'] if 'LLD' in linker['identity']['version'] else []
+    result = command([cxx, *linker['flags'], '-shared', *inputs, '-o', native, '-L' + str(qt / 'lib'),
+        *folding,
         *(['-Wl,--dependency-file=' + str(dependency_file)] if dependency_file else []),
         '-Wl,--as-needed,-z,defs,-z,now,-z,relro,-z,noexecstack',
         '-Wl,--version-script=' + str(exports),

@@ -1,4 +1,11 @@
 // Generated, compressed Linux ELF. Only the maintainer needs a C++ toolchain.
+// Each module's loader includes what it uses: a program importing only one
+// module does not compile the base adapter's includes before it.
+#include <dlfcn.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
 #include <linux/memfd.h>

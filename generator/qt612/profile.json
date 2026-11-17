@@ -65,6 +65,13 @@
     "QtXml"
   ],
   "native_modules": [
+    {"name": "WebEngine", "qt_modules": ["QtWebEngineCore", "QtWebEngineQuick", "QtWebEngineWidgets", "QtWebView"]},
+    {"name": "Multimedia", "qt_modules": ["QtMultimedia", "QtMultimediaWidgets", "QtSpatialAudio", "QtTextToSpeech"]},
+    {"name": "Qt3D", "qt_modules": ["Qt3DAnimation", "Qt3DCore", "Qt3DExtras", "Qt3DInput", "Qt3DLogic", "Qt3DRender"]},
+    {"name": "Pdf", "qt_modules": ["QtPdf", "QtPdfWidgets"]},
+    {"name": "Designer", "qt_modules": ["QtDesigner", "QtUiTools", "QtHelp"]},
+    {"name": "Location", "qt_modules": ["QtLocation", "QtPositioning"]},
+    {"name": "Connectivity", "qt_modules": ["QtBluetooth", "QtNfc", "QtSerialPort", "QtSerialBus", "QtSensors"]},
     {"name": "CanvasPainter", "qt_modules": ["QtCanvasPainter"]},
     {"name": "Graphs", "qt_modules": ["QtGraphs", "QtGraphsWidgets"]},
     {"name": "HttpServer", "qt_modules": ["QtHttpServer"]},

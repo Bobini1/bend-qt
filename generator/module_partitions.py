@@ -102,16 +102,79 @@ def qualify(g, namespaces):
     g.partition_qualified_types = replacements
 
 
-def scoped_api(api, modules, *, root=False):
+def declaring_module(function):
+    """The Qt module whose header declares a function, e.g. QtPositioning."""
+    match = re.search(r'/(Qt[A-Z0-9][A-Za-z0-9]+)/', function.get('source_file', ''))
+    return match[1] if match else None
+
+
+def member_assignments(groups):
+    """Assign members declared by another group's module to that group.
+
+    PySide attaches some free functions to classes of other modules, such as
+    QDataStream's stream operators for QGeoCoordinate, declared in a
+    QtPositioning header. A group compiles only its own modules' headers and
+    their dependencies, so such a member is emitted by the group that owns its
+    declaring module, as PySide generates it with that module.
+
+    `groups` holds (name, owned modules, compile modules, api) per group, the
+    shared group first. Returns the declaring-module owners and, per group,
+    the members it emits for classes it does not own.
+    """
+    owners = {module: name for name, own, _, _ in groups for module in own}
+    available = {name: set(modules) for name, _, modules, _ in groups}
+    members = {}
+    for index, (name, own, modules, api) in enumerate(groups):
+        packages = {'PySide6.' + module for module in own}
+        classes = {row['name']: row for row in api['classes']}
+
+        def functions(row, visited):
+            # Start from the row itself: a namespace has one row per module.
+            visited.add(row['name'])
+            yield from row.get('functions', [])
+            for base in row.get('bases', []):
+                if base not in visited and base in classes:
+                    yield from functions(classes[base], visited)
+
+        for row in api['classes']:
+            if not (row.get('package') in packages or (index == 0 and not row.get('package'))):
+                continue
+            for function in functions(row, set()):
+                module = declaring_module(function)
+                target = owners.get(module)
+                if not target or target == name or module in available[name]:
+                    continue
+                if row.get('package') and row['package'].removeprefix('PySide6.') not in available[target]:
+                    raise ValueError('A member of ' + row['name'] + ' is declared by ' + module +
+                                     ', whose group cannot compile its class')
+                members.setdefault(target, {}).setdefault(row['name'], set()).add(function['minimal_signature'])
+    return owners, members
+
+
+def scoped_api(api, modules, *, root=False, compile_modules=None, module_owners=None, assigned=None):
     """Keep an upstream module's complete API and discovered type dependencies.
 
     Imported classes retain their declarations for inheritance and conversion,
     while public methods/proxies are emitted by their owning module. There is
     no class catalogue: every owning class and every referenced class comes
     from the pinned extractor model.
+
+    With `compile_modules`, members declared by a header outside them that
+    another group owns are left to that group (see member_assignments), and
+    `assigned` names the members this group emits for classes it does not own.
     """
     packages = {'PySide6.' + module for module in modules}
-    classes = {row['name']: row for row in api['classes']}
+    rows = api['classes']
+    if compile_modules is not None and module_owners:
+        available = set(compile_modules)
+
+        def compiled(function):
+            module = declaring_module(function)
+            return module not in module_owners or module in available
+        # Filter each row: a namespace such as Qt has one row per module.
+        rows = [dict(row, functions=[f for f in row.get('functions', []) if compiled(f)]) for row in rows]
+    classes = {row['name']: row for row in rows}
+    assigned = assigned or {}
     owned = {name for name, row in classes.items()
              if row.get('package') in packages or (root and not row.get('package'))}
     needed = set(owned)
@@ -148,7 +211,7 @@ def scoped_api(api, modules, *, root=False):
         for base in classes[name].get('bases', []):
             inherited(base)
 
-    for name in owned:
+    for name in [*owned, *assigned]:
         inherited(name)
     functions = [row for row in api.get('global_functions', [])
                  if (function_packages(api, row) & packages) or (root and not function_packages(api, row))]
@@ -162,8 +225,11 @@ def scoped_api(api, modules, *, root=False):
             references(row.get('fields', []))
         if len(needed) == previous:
             break
-    result = copy.deepcopy(api)
-    result['classes'] = [row for row in result['classes'] if row['name'] in needed]
+    result = copy.deepcopy({key: value for key, value in api.items() if key != 'classes'})
+    result['classes'] = [copy.deepcopy(row) for row in rows if row['name'] in needed]
+    for row in result['classes']:
+        if row['name'] in assigned and row['name'] not in owned:
+            row['partition_members'] = sorted(assigned[row['name']])
     result['enums'] = [row for row in result['enums'] if row.get('package') in packages
                        or row['name'] in needed_enums or row['name'].rpartition('::')[0] in needed]
     result['global_functions'] = copy.deepcopy(functions)
@@ -303,13 +369,25 @@ def prepare_generators(records, lock, *, selective=False):
         generator.raw_effect_operations = operations
         generator.retention_slots = slots
         parts.append(SimpleNamespace(**vars(record), generator=generator))
+    # Synthetic adapter classes, such as QFuture<QStringList> or an array view
+    # of Qt3DAnimation::QChannel, have no package unless their element has one,
+    # and the shared group exports them. One that only separate groups use is
+    # exported by the first of those groups.
+    shared, claimed = parts[0].generator.classes if parts else {}, set()
+    for part in parts[1:]:
+        for name, row in part.generator.classes.items():
+            if (not row.get('package') and name not in shared and name not in claimed
+                    and row.get('adapter')):
+                row['partition_global'] = True
+                claimed.add(name)
     reserved = sorted({name for part in parts for name in (*part.generator.selected, *part.generator.enums)})
     isolate_metatypes(parts)
     next_operation = 10
     for part in parts:
         generator = part.generator
         generator.partition_native_names = reserved
-        owners = {name for name in generator.classes if exports_class(generator, name)}
+        owners = {name for name in generator.classes
+                  if exports_class(generator, name) or generator.classes[name].get('partition_members')}
         owners.update(generator.namespaces if not generator.partition_export_packages else
                       [name for name in generator.namespaces if name == 'Global'])
         generator.name_lock = overload_names.NameLock(names=copy.deepcopy({

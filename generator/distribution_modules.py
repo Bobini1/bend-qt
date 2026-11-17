@@ -47,10 +47,14 @@ def merged_lock(parts, original):
     missing = set(original.names) - set(result.names)
     if missing:
         raise ValueError('Native module selection lost locked owners: ' + ', '.join(sorted(missing)))
-    # A restored entry must not remain retired in a different partition.
+    # A restored entry must not remain retired in a different partition. A
+    # class whose members span groups (see member_assignments) retires the
+    # other group's members in each group's own lock.
     for owner, rows in result.names.items():
         for key in rows:
             result.removed.get(owner, {}).pop(key, None)
+    current = {(owner, name) for owner, rows in result.names.items() for name, _ in rows.values()}
+    result.tombstoned = [row for row in result.tombstoned if (row[0], row[1]) not in current]
     return result
 
 
@@ -252,7 +256,7 @@ def generate(args, profile, source_inputs, prepared_release):
     primary_profile = dict(profile, qt_modules=primary_modules)
     primary = driver.extract_api(args, primary_profile, primary_modules, args.work)
     api, _, _, _, _ = primary
-    records, snapshots = [], {}
+    records, snapshots, staged = [], {}, []
     for index, group in enumerate(groups):
         work = args.work / 'modules' / group['name']; work.mkdir(parents=True, exist_ok=True)
         own = group['qt_modules']
@@ -267,7 +271,14 @@ def generate(args, profile, source_inputs, prepared_release):
                 limited_abi=profile.get('limited_abi', False))
             logs = primary[4]
         part_profile['qt_modules'] = modules
-        scoped = module_partitions.scoped_api(raw, own, root=index == 0)
+        staged.append((index, group, work, own, part_profile, raw, headers, modules, upstream, logs))
+    module_owners, assigned = module_partitions.member_assignments(
+        [(group['name'], own, modules, raw) for _, group, _, own, _, raw, _, modules, _, _ in staged])
+    driver.json_write(args.work / 'module-members.json',
+                      {group: {name: sorted(rows) for name, rows in classes.items()} for group, classes in assigned.items()})
+    for index, group, work, own, part_profile, raw, headers, modules, upstream, logs in staged:
+        scoped = module_partitions.scoped_api(raw, own, root=index == 0, compile_modules=modules,
+                                              module_owners=module_owners, assigned=assigned.get(group['name']))
         driver.json_write(work / 'scoped-api.json', scoped)
         snapshots[(work / 'scoped-api.json').relative_to(args.work).as_posix()] = hashlib.sha256(
             (work / 'scoped-api.json').read_bytes()).hexdigest()

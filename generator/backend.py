@@ -38,8 +38,11 @@ def compiler_flags(qt: Path, cxx: str, modules):
     # O2's global value numbering becomes pathological on the full generated
     # proxy inventory. O1 keeps ordinary native optimization without that pass;
     # wrapper calls already cross the native effect boundary.
+    # Function sections and address-significance tables let LLD fold
+    # identical functions whose address is never taken (--icf=safe). The
+    # runtime identifies entry kinds by deleter address, so --icf=all is unsafe.
     flags = [cxx, "-std=c++17", "-O1", "-fPIC", "-fvisibility=hidden", "-ferror-limit=0",
-             "-fexceptions", "-frtti", "-fno-addrsig", "-fno-stack-protector",
+             "-fexceptions", "-frtti", "-ffunction-sections", "-faddrsig", "-fno-stack-protector",
              "-DQT_NO_VERSION_TAGGING", "-DQT_NO_DEBUG", "-DNDEBUG",
              "-I" + str(qt / "include"), "-I" + str(qt / "mkspecs/linux-g++")]
     for module in modules:
@@ -174,7 +177,15 @@ def _compile_backend(source: Path, qt: Path, work: Path, cxx: str, modules, work
         raise RuntimeError('Baseline Qt/C++ symbols are unavailable: ' + ', '.join(missing[:12]))
     verified = time.monotonic()
     from embedded_elf import package
-    embedded, loader, payload = package(obj, qt, work, cxx, modules, command)
+    # Link the shard objects themselves: a relocatable combine discards the
+    # address-significance tables that identical-code folding relies on.
+    objects = None
+    if sharded:
+        manifest = json.loads((work / 'shards' / 'manifest.json').read_text())
+        objects = [work / 'shards' / (Path(path).stem + '.o') for path in manifest['files']]
+        if not all(path.is_file() for path in objects):
+            objects = None
+    embedded, loader, payload = package(obj, qt, work, cxx, modules, command, objects=objects)
     receipt = {"platform": "linux-x86_64", "undefined_symbols": undefined,
                "compiler": compiler_version.splitlines()[0],
                "exceptions": True, "rtti": True, 'optimization': 'O1',

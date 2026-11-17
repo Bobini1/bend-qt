@@ -542,13 +542,18 @@ class Generator:
             if name not in self.classes:
                 raise ValueError(f"Selected class was not extracted: {name}")
             from module_partitions import exports_class
-            if not exports_class(self, name):
+            # A group also emits members declared by its own modules for a
+            # class owned elsewhere (module_partitions.member_assignments).
+            assigned = None if exports_class(self, name) else self.classes[name].get('partition_members')
+            if not exports_class(self, name) and not assigned:
                 continue
             if name in ("QString", "QStringView", "QAnyStringView"):
                 raise ValueError(f"{name} uses the String converter, not a handle class")
             if not self.classes[name]["public_destructor"] and not self.classes[name].get('borrow_only'):
                 raise ValueError(f"A non-public destructor needs an explicit lifetime policy: {name}")
             methods = self.inherited(name)
+            if assigned:
+                methods = [f for f in methods if f['minimal_signature'] in assigned]
             signal_counts = Counter(f["name"] for f in methods)
             for f in methods:
                 f = protected_members.callable_contract(self, name, f)

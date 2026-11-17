@@ -37,6 +37,10 @@ def runtime_type_dependencies(selected=()):
         'QTableWidgetItem': {'QTableWidget', 'QAbstractItemModel'},
         'QGraphicsItem': {'QGraphicsScene', 'QGraphicsObject'},
         'QLayoutItem': {'QLayout'},
+        # Role spans check their origin against a single QModelRoleData.
+        'QModelRoleDataSpan': {'QModelRoleData'},
+        # An engine enables the QML callback bridge and its list views.
+        'QQmlEngine': {'QQmlListReference'},
         'QRhi': {'QRhiResource', 'QRhiResourceUpdateBatch', 'QRhiCommandBuffer',
                  'QRhiReadbackResult', 'QRhiBuffer'},
     }

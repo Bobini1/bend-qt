@@ -91,7 +91,7 @@ QML_MODULES = ('Qt.labs.folderlistmodel', 'Qt.labs.synchronizer', 'QtCore',
 QML_IMPORTS=COMMON+'''
 def imports() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
+@LOADS@    +engine: Qt.QQmlEngine <- Qt.QQmlEngine.new()
     +component: Qt.QQmlComponent <- Qt.QQmlComponent.new__QQmlEngine_QObject(engine, Qt.QObject{0})
     +source: Qt.QByteArray <- Qt.QByteArray.fromUtf8(@QML@)
     +url: Qt.QUrl <- Qt.QUrl.new()
@@ -148,9 +148,14 @@ def main():
     if bad: raise ValueError('The full base payload depends on GPL modules: '+repr(bad))
     spec=importlib.util.spec_from_file_location('qt_package_check',ROOT/'scripts/check-qt612.py')
     checker=importlib.util.module_from_spec(spec);spec.loader.exec_module(checker)
+    # QML-only use of a separately grouped module retains it explicitly, as
+    # documented; modules in the shared group need no call.
+    grouped={module:row['name'] for row in optional for module in row['qt_modules']}
+    loads=sorted({grouped[name.split('.')[0]] for name in QML_MODULES if name.split('.')[0] in grouped})
+    qml_imports=QML_IMPORTS.replace('@LOADS@',''.join('    Qt.Modules.'+name+'.load()\n' for name in loads))
     programs=[('distribution-core',CORE,'QT_DISTRIBUTION_CORE_OK'),
               ('distribution-families',FAMILIES,'QT_DISTRIBUTION_FAMILIES_OK'),
-              ('distribution-qml-imports',QML_IMPORTS,'QT_DISTRIBUTION_QML_IMPORTS_OK')]
+              ('distribution-qml-imports',qml_imports,'QT_DISTRIBUTION_QML_IMPORTS_OK')]
     receipt=checker.check_package(package,programs,dict(os.environ,BENDRTS=''),[args.qt_root],work,jobs=1)
     binary=(work/'distribution-core').read_bytes()
     for row in optional:
