@@ -85,4 +85,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_EFFECT_TRANSPORT_OK alias=1 shapes=1 handlers=1 rejected_before_native=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))
+  IO.try(Unit, Qt.run(Unit, demo()))
