@@ -41,8 +41,16 @@ ACTIVE_COMMON = {'QObject', 'QByteArray', 'QVariant', 'QMetaType', 'QPointF', 'Q
                  'QJSEngine', 'QJSValue', 'QCoreApplication'}
 
 
-def fixture(path, families):
-    api = json.loads(path.read_text())
+def fixture(paths, families):
+    # The first path is the primary extraction. Families whose headers cannot
+    # share it come from their production group extractions, and replace the
+    # primary's classes of the same name: QtCharts and QtGraphs both declare
+    # QLineSeries, which is why they are extracted separately.
+    api = json.loads(paths[0].read_text())
+    for path in paths[1:]:
+        added = [cls for cls in json.loads(path.read_text())['classes'] if cls.get('package') in families]
+        names = {cls['name'] for cls in added}
+        api['classes'] = [cls for cls in api['classes'] if cls['name'] not in names] + added
     classes = {cls['name']: cls for cls in api['classes']}
     selected = set(COMMON) | {cls['name'] for cls in api['classes']
         if cls.get('package') in families and cls['name'] in FAMILY_TYPES}
@@ -89,15 +97,17 @@ def main():
         (work / 'emission.json').write_text(json.dumps(dict(verification_complete=False, stage='partition emission/native integration')) + '\n')
     base_modules = ['QtCore', 'QtGui', 'QtWidgets', 'QtQml', 'QtQuick', 'QtNetwork', 'QtOpenGL']
     records = []
+    production = ROOT / 'build/qt612'
     specifications = [
         ('modern', ['QtGraphs', 'QtGraphsWidgets'], {'PySide6.QtGraphs', 'PySide6.QtGraphsWidgets'}, {},
-         ROOT / 'build/qt612/api.json'),
+         [production / 'api.json']),
         ('legacy', ['QtCharts', 'QtDataVisualization'], {'PySide6.QtCharts', 'PySide6.QtDataVisualization'},
          {'PySide6.QtCharts': 'Charts', 'PySide6.QtDataVisualization': 'DataVisualization'},
-         ROOT / 'build/qt612-legacy-charts/api.json'),
+         [production / 'api.json', production / 'modules/Charts/api.json',
+          production / 'modules/DataVisualization/api.json']),
     ]
     if args.selective:
-        specifications.insert(0, ('base', [], set(), {}, ROOT / 'build/qt612/api.json'))
+        specifications.insert(0, ('base', [], set(), {}, [production / 'api.json']))
     for name, modules, families, namespaces, api_path in specifications:
         part_work = work / name; part_work.mkdir(exist_ok=True)
         headers = part_work / 'headers.h'
