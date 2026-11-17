@@ -93,7 +93,8 @@ def runtime_owners(prepared, parts, qt):
                              for child in dependencies.get(name, [])))
 
     # A group needs the groups owning its compiled modules: Multimedia needs Gui.
-    needs = {part.name: {module_groups[module] for module in part.profile['qt_modules']
+    needs = {part.name: {module_groups[module] for module in
+                         getattr(part, 'profile', {}).get('qt_modules', part.owned_modules)
                          if module in module_groups} - {part.name} for part in parts}
     # ...and the groups its own libraries link, such as WebEngineQuick -> Quick.
     def linked(name, seen):

@@ -35,7 +35,8 @@ def main():
     # A copied profile can narrow its module selection without pruning the
     # optional group catalogue by hand.
     small = plan(dict(profile, qt_modules=['QtCore', 'QtGui', 'QtWidgets', 'QtXml']), args.qt_root)
-    assert len(small) == 1 and small[0]['qt_modules'] == ['QtCore', 'QtGui', 'QtWidgets', 'QtXml']
+    assert [(row['name'], row['qt_modules']) for row in small] == [
+        ('base', ['QtCore', 'QtXml']), ('Gui', ['QtGui']), ('Widgets', ['QtWidgets'])]
     api = json.loads((ROOT / 'build/qt612/api.json').read_text())
     own = {'PySide6.QtGraphs', 'PySide6.QtGraphsWidgets'}
     scoped = scoped_api(api, ['QtGraphs', 'QtGraphsWidgets'])
