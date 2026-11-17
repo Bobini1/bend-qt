@@ -180,12 +180,31 @@ def package_files(package_dir):
     return {name: (root / name).read_bytes() for name in package_file_names(root)}
 
 
+def consumer_build_slots(files, jobs):
+    """How many consumer builds of this package fit in memory at once.
+
+    The Bend compiler holds about 106 bytes per byte of package Bend source
+    while it builds a consumer: 9.1 GB for the 86 MB Qt 6.12 qt.bend. Parallel
+    builds past the available memory get the machine OOM-killed, as happened to
+    16 GB CI runners, so builds take a slot; fixture runs stay parallel."""
+    source = sum(len(data) for name, data in files.items() if name.endswith('.bend'))
+    need = source * 128 + (512 << 20)
+    try:
+        meminfo = Path('/proc/meminfo').read_text()
+        available = int(re.search(r'^MemAvailable:\s+(\d+) kB$', meminfo, re.M).group(1)) * 1024
+    except (OSError, AttributeError):
+        return 1
+    return max(1, min(jobs, available // need))
+
+
 def check_package(package_dir, programs, env, runtimes, output, jobs=1, bundle=False, runtime_overrides=None):
     programs = list(programs)
     if not programs or jobs < 1:
         raise ValueError('Consumer checks require at least one program and one job')
     package_dir, output = Path(package_dir).resolve(), Path(output).resolve()
     files = package_files(package_dir)
+    build_slots = consumer_build_slots(files, jobs)
+    build_gate = threading.BoundedSemaphore(build_slots)
     coverage = package_dir / 'coverage.json'
     bundled_runtime = bool(json.loads(coverage.read_text()).get('bundled_runtime')) if coverage.is_file() else False
     if bundled_runtime:
@@ -252,7 +271,8 @@ def check_package(package_dir, programs, env, runtimes, output, jobs=1, bundle=F
                           'exit_code': None, 'validated': False}
                 builds.append(record)
                 try:
-                    compiled = capture(command, consumer_env, consumer, output / f'{label}-build.log', 600)
+                    with build_gate:
+                        compiled = capture(command, consumer_env, consumer, output / f'{label}-build.log', 600)
                     record['exit_code'] = compiled.returncode
                 finally:
                     record['elapsed_seconds'] = time.monotonic() - started
@@ -344,7 +364,7 @@ def check_package(package_dir, programs, env, runtimes, output, jobs=1, bundle=F
             thread.join()
     return {"package": package, "fetches": requests, "runs": results,
             "consumer_build": "bend main.bend -o app", "generator_used_by_consumer": False,
-            'build_mode': mode, 'builds': builds, 'compile_count': len(builds),
+            'build_mode': mode, 'builds': builds, 'compile_count': len(builds), 'build_slots': build_slots,
             'validation_executable': str(validation_executable), 'validation_arguments': validation_arguments}
 
 
