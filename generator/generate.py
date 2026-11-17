@@ -1367,9 +1367,14 @@ class Generator:
     case 0: return destroy_object(r);
     case 2: return disconnect_signal(r);
     case 3:
+    {
         // The application object is runtime-owned, not a leakable handle.
-        for (const auto &e : entries) if (e.value && !(e.object && e.object == application)) ++r->result.word;
+        // QCoreApplication::instance() stays set while Qt runs post routines
+        // from the application destructor, after teardown cleared `application`.
+        const QObject *app = QCoreApplication::instance();
+        for (const auto &e : entries) if (e.value && !(e.object && e.object == app)) ++r->result.word;
         return true;
+    }
     case 4:
         for (const auto &c : connections) if (c.active) ++r->result.word;
         return true;
