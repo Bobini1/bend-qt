@@ -13,8 +13,11 @@ template<class Mutex, unsigned Kind> struct TypedLocker final : Locker {
     QMutexLocker<Mutex> value;
     TypedLocker(Mutex *mutex, uint32_t source) : Locker(source, Kind), value(mutex) {}
     bool locked() const override { return value.isLocked(); }
-    void unlock() override { value.unlock(); }
-    void relock() override { value.relock(); }
+    // Qt 6.10+ only asserts these preconditions: unlock() on an unlocked or
+    // null locker dereferences or double-unlocks its mutex. Keep the earlier
+    // documented Qt 6 behavior, where both are no-ops in that state.
+    void unlock() override { if (value.isLocked()) value.unlock(); }
+    void relock() override { if (!value.isLocked() && value.mutex()) value.relock(); }
     void swap(Locker &other) override {
         value.swap(static_cast<TypedLocker &>(other).value);
         std::swap(source, other.source);

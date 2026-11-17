@@ -263,7 +263,8 @@ static bool adopt_accessible(BqtRequest *r, uint32_t id, QAccessibleInterface *v
         // Before transfer a wrapper keeps its referenced widget alive. Qt's
         // accessibility cache instead owns the interface until that QObject
         // dies. The old inverse dependency would prevent either from dying.
-        for (uint32_t i = 1; i < capacity; ++i) {
+        // Retention slots start at 0, unlike entry tokens.
+        for (uint32_t i = 0; i < capacity; ++i) {
             auto &edge = retentions[i];
             if (edge.owner == id && edge.target && entry_inside(owner, edge.target)) {
                 rollback.removed.emplace_back(i, edge);

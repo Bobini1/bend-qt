@@ -235,13 +235,17 @@ def frame_contract(+root: Qt.QRhi) -> Qt.Action(Unit):
     require(Bool.not(active), "Native exception left a native frame active")
     Qt.QRhiSwapChain.with(Unit, Qt.QRhi.newSwapChain(root), first => frame_first(root, first))
 
-def queue_submit_parameters(+root: Qt.QRhi) -> Qt.Action(Unit):
+def submit_parameters(+root: Qt.QRhi, +parameters: Qt.QRhiNativeHandles) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    parameters: Qt.QRhiNativeHandles <- Qt.QRhiNativeHandles.new()
     Qt.QRhi.setQueueSubmitParams(root, parameters)
     Qt.QRhi.setQueueSubmitParams(root, Qt.QRhiNativeHandles{0})
     active: Bool <- Qt.QRhi.isRecordingFrame(root)
     require(Bool.not(active), "Native queue-submit parameters changed frame state")
+
+# The scope destroys the record after the null record, the native no-op,
+# replaces it.
+def queue_submit_parameters(+root: Qt.QRhi) -> Qt.Action(Unit):
+  Qt.QRhiNativeHandles.with(Unit, Qt.QRhiNativeHandles.new(), parameters => submit_parameters(root, parameters))
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

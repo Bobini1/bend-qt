@@ -269,8 +269,9 @@ def image_models() -> Qt.Action(Unit):
     +model: Qt.QRangeModel <- Qt.QRangeModel.fromValues([boxed])
     Qt.QVariant.destroy(boxed)
     Qt.QImage.destroy(image)
-    held: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.ImageBuffer.destroy(buffer))
-    expected(Unit, held, 16)
+    # Qt's image cleanup lease, not the handle, keeps the pixel storage alive:
+    # releasing the buffer handle succeeds while the model still holds a copy.
+    Qt.ImageBuffer.destroy(buffer)
     +index: Qt.QModelIndex <- Qt.QRangeModel.index__Int32_Int32(model, Qt.Int32{0}, Qt.Int32{0})
     +value: Qt.QVariant <- Qt.QRangeModel.data__QModelIndex(model, index)
     +restored: Qt.QImage <- Qt.QVariant.toValue(~Qt.QImage.arg(), value)
@@ -282,7 +283,6 @@ def image_models() -> Qt.Action(Unit):
     Qt.QVariant.destroy(value)
     Qt.QModelIndex.destroy(index)
     Qt.QRangeModel.destroy(model)
-    Qt.ImageBuffer.destroy(buffer)
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

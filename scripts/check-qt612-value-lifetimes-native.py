@@ -82,12 +82,26 @@ r->result.word = clean;'''),
          f'NativeCallScope scope; auto *value = get<QTextDocument>(r, r->self, {generator.ids["QTextDocument"]});\n'
          'if (r->error) return true; delete value;'),
         ('deleteTree', [('self', handle('QTreeWidget')), ('iterator', handle('QTreeWidgetItemIterator'))], boolean,
-         f'NativeCallScope scope; auto *value = get<QTreeWidget>(r, r->self, {generator.ids["QTreeWidget"]});\n'
-         'if (r->error) return true;\n'
-         'QPointer<QAbstractItemModel> model = value->model(); bool observed = false;\n'
-         'uint32_t iterator_id = r->arguments[0].word;\n'
-         'QObject::connect(value, &QObject::destroyed, [model, iterator_id, &observed] { observed = model && !entry(iterator_id); });\n'
-         'delete value; r->result.word = observed;'),
+         f'''uint32_t iterator_id = r->arguments[0].word;
+bool destroyed_with_model = false;
+{{
+    NativeCallScope scope; auto *value = get<QTreeWidget>(r, r->self, {generator.ids["QTreeWidget"]});
+    if (r->error) return true;
+    auto *iterator = entry(iterator_id);
+    if (!iterator) return fail(r, EINVAL, "Expected a live tree iterator");
+    // Observe the iterator's native destructor itself. Invalidation inside a
+    // native call is deferred: the registry entry stays (destroying, without
+    // public access) until this call's destruction scope flushes.
+    static void (*native_destroy)(void *) = nullptr;
+    static QPointer<QAbstractItemModel> model;
+    static int destroyed = 0;
+    native_destroy = iterator->destroy; model = value->model(); destroyed = 0;
+    iterator->destroy = [](void *storage) {{ destroyed = model ? 1 : 2; native_destroy(storage); }};
+    delete value;
+    destroyed_with_model = destroyed == 1;
+}}
+// The flushed scope must also have removed the iterator from the registry.
+r->result.word = destroyed_with_model && !entry(iterator_id);'''),
     ]
     for offset, (name, args, result, body) in enumerate(operations):
         operation = 0x7fff0123 + offset

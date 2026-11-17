@@ -217,8 +217,9 @@ The property itself is read-only by default, while its list contents remain
 mutable. Other property attributes apply through the existing Property API.
 
 Native storage retains current elements until removal or replacement. Views
-retain their owner through copied values and queued delivery; expired native
-owners are rejected before accessing their storage. Self and native-ancestor
+retain their owner through copied values and queued delivery, including a
+signal emitted on another thread; expired native owners are rejected before
+accessing their storage. Self and native-ancestor
 references stay internal to their ownership tree. Contexts use generation
 checks and do not appear in `QObject.children()`. `QmlListView.with` and
 `release` provide the same cleanup policy as the other value handles.

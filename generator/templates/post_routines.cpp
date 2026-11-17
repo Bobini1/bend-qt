@@ -34,7 +34,11 @@ static void invoke(State *state) noexcept {
         auto *record = entry(state->view);
         if (record && record->destroy == delete_view) {
             auto *view = static_cast<View *>(record->value);
-            invalidate(state->view);
+            // Qt runs post routines from the application destructor, inside a
+            // native destruction scope where invalidate() defers. The view is
+            // a registration record, not a native object, and is deleted
+            // here, so its handle ends now rather than at the scope's flush.
+            invalidate_now(state->view);
             delete view;
         }
         state->view = 0;

@@ -47,7 +47,8 @@ jobs:
             libatk-bridge2.0-0t64 libcups2t64 libdrm2 libgbm1 libpango-1.0-0 \
             libpcsclite1 libxkbfile1 libwayland-client0 libwayland-cursor0 \
             libx11-xcb1 libxcb-util1 libxcb-shape0 libxcb-randr0 libxcb-sync1 \
-            libxcb-xfixes0 libxcb-shm0 libxcb-dri3-0 libgssapi-krb5-2
+            libxcb-xfixes0 libxcb-shm0 libxcb-dri3-0 libgssapi-krb5-2 \
+            libglx-mesa0
       - name: Install pinned Bend and Lean
         run: bash scripts/install-ci-tools.sh
       - name: Restore pinned Qt, sources and extractor
@@ -68,7 +69,11 @@ jobs:
       - name: Generate and compile complete distribution
         run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" generate
       - name: Validate fresh native consumers
-        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" verify
+        # Qt's offscreen platform creates OpenGL contexts through GLX, so the
+        # GL and scene graph fixtures need an X server even when headless.
+        run: >-
+          xvfb-run -a -s '-screen 0 1280x1024x24'
+          python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" verify
       - name: Package validated build
         run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" artifact
       - name: Collect diagnostics

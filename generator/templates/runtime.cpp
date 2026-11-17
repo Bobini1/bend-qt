@@ -347,6 +347,9 @@ static void post_routines_prepare();
 static int post_routines_shutdown();
 static void callback_drain_released();
 static void prune_qml_list_leases();
+// Installed with the first QML list view: whether a signal snapshot queued from
+// another thread still holds a QML list owner inside this subtree.
+static bool (*qml_list_queued_owner)(uint32_t) = nullptr;
 static void protected_fields_reconcile();
 static void release_static_native_view(void *);
 static bool cursor_guard_cleanup_ready(BqtRequest *, uint32_t);
@@ -484,6 +487,7 @@ static bool __attribute__((noinline)) active_in_subtree(uint32_t id)
 {
     auto *root = entry(id);
     if (!root) return false;
+    if (qml_list_queued_owner && qml_list_queued_owner(id)) return true;
     for (uint32_t i = 1; i < capacity; ++i)
         if (entries[i].value && (entries[i].active_calls ||
                 (entries[i].object && qobject_cast<QThread *>(entries[i].object) &&

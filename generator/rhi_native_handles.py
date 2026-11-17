@@ -123,7 +123,8 @@ def emit(g):
             dict(kind='void', bend='Unit', raw='Unit'), [
                 'NativeCallScope scope;',
                 f'auto *self = get<QRhi>(r, r->self, {g.ids["QRhi"]});',
-                f'auto *parameters = get<QRhiNativeHandles>(r, r->arguments[0].word, {g.ids["QRhiNativeHandles"]}, false, false);',
+                # A null record is accepted: it is the native no-op.
+                f'auto *parameters = get<QRhiNativeHandles>(r, r->arguments[0].word, {g.ids["QRhiNativeHandles"]}, true, false);',
                 'if (r->error) return true;',
                 'if (parameters && self->backend() != QRhi::Null && self->backend() != QRhi::OpenGLES2)',
                 '    return fail(r, ENOTSUP, "This backend requires a queue-submit parameter type outside the selected PySide binding scope");',

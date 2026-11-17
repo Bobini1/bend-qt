@@ -18,12 +18,17 @@ struct Observation {
     QPointer<QObject> object;
     Type *type;
     std::shared_ptr<std::atomic<bool>> alive = std::make_shared<std::atomic<bool>>(true);
+    // Signal snapshots of this view taken on another thread and not yet
+    // delivered or discarded on the main thread.
+    std::atomic<uint32_t> queued{0};
 };
 struct ContextSlot { uint32_t generation = 1; std::weak_ptr<Observation> observation; };
 static auto *context_slots = new std::vector<ContextSlot>(1);
 static auto *free_contexts = new std::vector<uint32_t>;
 static auto *context_mutex = new std::mutex;
+static bool queued_owner_inside(uint32_t);
 static std::shared_ptr<Observation> observe_context(uint32_t owner, QObject *object, Type *type) {
+    qml_list_queued_owner = queued_owner_inside;
     std::lock_guard<std::mutex> lock(*context_mutex);
     uint32_t index;
     if (free_contexts->empty()) {
@@ -53,10 +58,41 @@ static void forget_context(const std::shared_ptr<Observation> &value) {
     slot.observation.reset();
     if (slot.generation != 0xffffffu) { ++slot.generation; free_contexts->push_back(index); }
 }
+// A snapshot taken on another thread cannot pin the owner in the main-thread
+// registry. It counts itself on the observation instead; releasing the owner
+// waits for that count until the main thread has delivered the snapshot, which
+// pins the owner there, or discarded it.
+struct QueuedHold {
+    std::shared_ptr<Observation> observed;
+    explicit QueuedHold(std::shared_ptr<Observation> value) : observed(std::move(value)) {
+        observed->queued.fetch_add(1, std::memory_order_acq_rel);
+    }
+    QueuedHold(const QueuedHold &) = delete;
+    QueuedHold &operator=(const QueuedHold &) = delete;
+    ~QueuedHold() {
+        if (observed->queued.fetch_sub(1, std::memory_order_acq_rel) != 1) return;
+        if (QThread::currentThread() == main_thread) schedule_collection();
+        else if (auto *context = main_context.load(std::memory_order_acquire))
+            QMetaObject::invokeMethod(context, [] { schedule_collection(); }, Qt::QueuedConnection);
+    }
+};
+// Main thread: whether a queued snapshot still holds an owner in this subtree.
+static bool queued_owner_inside(uint32_t root) {
+    std::vector<uint32_t> owners;
+    {
+        std::lock_guard<std::mutex> lock(*context_mutex);
+        for (const auto &slot : *context_slots)
+            if (auto value = slot.observation.lock(); value && value->queued.load(std::memory_order_acquire))
+                owners.push_back(value->owner);
+    }
+    for (auto owner : owners) if (entry_inside(owner, root)) return true;
+    return false;
+}
 struct Capture {
     std::shared_ptr<Observation> observed;
     QPointer<QObject> object;
     QObject *identity = nullptr;
+    std::shared_ptr<QueuedHold> hold;
 };
 struct Header { QObject *object; void *data; };
 static Header header(const void *data) { Header value{}; if (data) std::memcpy(&value, data, sizeof(value)); return value; }
@@ -76,6 +112,8 @@ static std::optional<Capture> capture(const QVariant &value) {
     result.object = result.observed ? result.observed->object : QPointer<QObject>(view.object);
     if (!result.observed && view.object && view.object->thread() != main_thread)
         throw std::system_error(EXDEV, std::generic_category(), "A QML list owner belongs to another thread");
+    if (result.observed && QThread::currentThread() != main_thread)
+        result.hold = std::make_shared<QueuedHold>(result.observed);
     return result;
 }
 static bool live(const Capture &value) {
