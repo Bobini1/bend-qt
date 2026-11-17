@@ -349,7 +349,10 @@ static void callback_drain_released();
 static void prune_qml_list_leases();
 // Installed with the first QML list view: whether a signal snapshot queued from
 // another thread still holds a QML list owner inside this subtree.
-static bool (*qml_list_queued_owner)(uint32_t) = nullptr;
+// Spelled through an alias: the shared-state rewrite of runtime globals
+// handles a plain declarator, not a function-pointer one.
+using QmlListQueuedOwner = bool (*)(uint32_t);
+static QmlListQueuedOwner qml_list_queued_owner = nullptr;
 static void protected_fields_reconcile();
 static void release_static_native_view(void *);
 static bool cursor_guard_cleanup_ready(BqtRequest *, uint32_t);

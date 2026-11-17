@@ -114,6 +114,11 @@ def _transform(path, flags, *, external=None, save_pch=None, visibility=None):
                             if closing < 0:
                                 raise RuntimeError('Unclosed native state array extent')
                             suffix = suffix[closing + 1:].lstrip()
+                    if suffix and not suffix.startswith((b'=', b'{', b'(')):
+                        # e.g. ")(uint32_t) = nullptr" from a function-pointer
+                        # declarator; the rewrite needs the name last.
+                        raise RuntimeError('Native runtime state needs a plain declarator; '
+                                           'spell its type through an alias: ' + identity)
                     if suffix.startswith(b'='):
                         suffix = suffix[1:].lstrip()
                     key = clang.qualified(child)
