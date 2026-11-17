@@ -28,5 +28,11 @@ def checks() -> Qt.Action(Unit):
     require(U32.is_eq(objects, 0), "The QWebView handler leaked native objects")
     Qt.Action.lift(Unit, IO.print("QT612_WEBVIEW_CALLBACKS_OK native_window=1 default_callback=1 javascript_result=42 copied_variant=1 objects=0"))
 
+# Qt web modules are set up before the application object, as in C++.
+def web_application() -> Qt.Action(Qt.QApplication):
+  do Qt.Action<Qt.QApplication>:
+    Qt.QtWebView.initialize()
+    Qt.QApplication.new()
+
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, web_application(), application => checks())))

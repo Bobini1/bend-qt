@@ -141,4 +141,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_NATIVE_RESULT_VIEWS_OK widgets=1 static_factory=1 quick_controller=1 accessible_facets=1 native_spacer=1 sql_factory=1 query_copies=1 variant_origins=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

@@ -55,4 +55,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_SYNCHRONOUS_SIGNALS_OK credentials_before_return=1 copied_input=1 output_committed=1 handler_error=1 other_thread_reply=1 other_thread_error=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

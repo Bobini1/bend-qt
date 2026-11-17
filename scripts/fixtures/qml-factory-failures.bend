@@ -112,4 +112,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_QML_FACTORY_FAILURES_OK attached=67 extension=68 nondefault_root=38 nondefault_related=1 missing=38 failed=69 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

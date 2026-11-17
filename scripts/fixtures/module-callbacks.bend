@@ -71,4 +71,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_MODULE_CALLBACKS_OK can_factory=1 native_ownership=1 string_outputs=1 bool_outputs=1 container_outputs=1 pointer_list_outputs=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

@@ -94,4 +94,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_PROTECTED_FIELDS_OK foreign=1 bitfields=1 native_state_view=1 painting_epochs=1 pointer_retention=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

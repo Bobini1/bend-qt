@@ -134,4 +134,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_VALUE_PROVENANCE_OK script_copies=1 variant_roundtrip=1 iterator=1 recursive_container=1 assignment=1 cursor_copy=1 native_document_delete=1 property_context=1 unknown_managed_rejected=1 objects=0 retentions=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

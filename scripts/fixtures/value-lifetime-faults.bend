@@ -111,4 +111,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_VALUE_LIFETIME_FAULTS_OK qobject_registration_faults=6 exactly_one_destructor=1 no_dead_registration=1 assigned_stale=1 source_valid=1 result_copy_cleanup=1 native_tree_delete=1 model_alive_during_iterator_cleanup=1 native_document_delete=1 native_blocker_referent_delete=1 owned_finalization_rollback=1 host_teardown=1 objects=0 pins=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

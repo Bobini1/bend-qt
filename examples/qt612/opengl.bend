@@ -89,4 +89,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_OPENGL_OK native_context=1 wrong_context_rejected=1 context_retained=1 shared_buffer=1 context_local_vao=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

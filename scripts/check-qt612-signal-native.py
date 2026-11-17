@@ -105,7 +105,7 @@ static uint32_t active_connections()
 int main(int argc, char **argv)
 {
     BqtHost host{argc, argv, invoke, release, sources, runnable, run, flush};
-    require(!bqt_abi_start(&host), "start Qt");
+    require(!bqt_abi_start(&host) && !bendqt::construct_application(2), "start Qt");
     auto *group = new QActionGroup(nullptr);
     auto *action = new QAction(nullptr);
     expected_action = action;

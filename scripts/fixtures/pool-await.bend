@@ -60,4 +60,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_POOL_AWAIT_OK event_loop=1 poll=1 timeout=1 self_wait=35 failure=69 auto_delete=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

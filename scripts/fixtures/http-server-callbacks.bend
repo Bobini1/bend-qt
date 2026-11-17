@@ -62,4 +62,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_HTTP_SERVER_CALLBACKS_OK route=1 response_mutation=1 temporary_response=1 failures=91_92"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, Qt.scoped(Unit, checks())))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => Qt.scoped(Unit, checks()))))

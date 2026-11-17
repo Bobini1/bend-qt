@@ -219,6 +219,7 @@ template<class T> static uint32_t create_value_view(BqtRequest *r, T *value, uin
     }}
     return id;
 }}
+#if defined(BQT_HAS_GUI)
 static bool observe_cursor_value(BqtRequest *r, const BorrowedValueOrigin &view) {{
     if (QGuiApplication::overrideCursor() != view.address) {{ fail(r, ESTALE, "Override cursor stack changed"); return false; }}
     return true;
@@ -229,6 +230,7 @@ static bool observe_event_point_value(BqtRequest *r, const BorrowedValueOrigin &
     if (event->pointById(int32_t(view.auxiliary)) != view.address) {{ fail(r, ESTALE, "Pointer event storage changed"); return false; }}
     return true;
 }}
+#endif
 static bool invalidate_cursor_value_views(BqtRequest *r) {{
     for (const auto &view : borrowed_value_origins) {{
         auto *e = entry(view.id);

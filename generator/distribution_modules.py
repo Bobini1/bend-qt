@@ -21,8 +21,8 @@ def plan(profile, qt):
         claimed.update(modules)
         parts.append(dict(row, qt_modules=sorted(modules)))
     base = sorted(requested - claimed)
-    if not {'QtCore', 'QtGui', 'QtWidgets'} <= set(base):
-        raise ValueError('The shared native module needs Core, Gui and Widgets')
+    if 'QtCore' not in base:
+        raise ValueError('The shared native module needs Qt Core')
     Inventory(qt).require(base, 'lgpl')
     names = [row['name'] for row in parts]
     if 'base' in names or len(names) != len(set(names)):
@@ -39,6 +39,11 @@ def merged_lock(parts, original):
             target = getattr(result, attribute)
             for owner, rows in getattr(current, attribute).items():
                 for key, value in rows.items():
+                    preferred = getattr(part, 'lock_preferences', {}).get((owner, key))
+                    if preferred is not None and attribute == 'names':
+                        if parts[preferred] is part:
+                            target.setdefault(owner, {})[key] = copy.deepcopy(value)
+                        continue
                     if key in target.setdefault(owner, {}) and target[owner][key] != value:
                         raise ValueError('Native modules disagree about a public name: ' + owner + '/' + key)
                     target[owner][key] = copy.deepcopy(value)
@@ -87,13 +92,67 @@ def runtime_owners(prepared, parts, qt):
         return set().union(*(optional_dependencies(child, active | {name})
                              for child in dependencies.get(name, [])))
 
+    # A group needs the groups owning its compiled modules: Multimedia needs Gui.
+    needs = {part.name: {module_groups[module] for module in part.profile['qt_modules']
+                         if module in module_groups} - {part.name} for part in parts}
+    # ...and the groups its own libraries link, such as WebEngineQuick -> Quick.
+    def linked(name, seen):
+        for child in dependencies.get(name, []):
+            if child not in seen:
+                seen.add(child)
+                linked(child, seen)
+        return seen
+    for library, group in roots.items():
+        needs.setdefault(group, set()).update({roots[child] for child in linked(library, set())
+                                               if child in roots} - {group})
+
+    def ancestors(group, seen=None):
+        seen = set() if seen is None else seen
+        for parent in needs.get(group, ()):
+            if parent not in seen:
+                seen.add(parent)
+                ancestors(parent, seen)
+        return seen
+
+    def specific(groups):
+        # A plugin needing Multimedia and Gui belongs to Multimedia alone.
+        return {group for group in groups if not any(group in ancestors(other) for other in groups if other != group)}
+
+    def general(groups):
+        # An asset that Quick and QuickWidgets list belongs to Quick; groups
+        # built on Quick receive it with Quick's files.
+        return {group for group in groups if not any(other in ancestors(group) for other in groups if other != group)}
+
+    def attribute(linked, repository):
+        """The groups of a file outside the selected modules.
+
+        Prefer the most general group of its own repository that provides
+        everything it links: Qt.labs.platform links Quick and Widgets, so it
+        belongs to QuickWidgets, not to Quick or Widgets. Otherwise keep its
+        repository's groups among those it links (Qt3DQuick: Qt3D), or the most
+        specific groups it links.
+        """
+        linked, repository = linked - {'base'}, repository - {'base'}
+        covering = {group for group in repository if linked - {group} <= ancestors(group)}
+        if covering:
+            return {group for group in covering if not any(other in ancestors(group) for other in covering if other != group)}
+        return specific(repository & linked) or specific(linked) or repository
+
     owners = {}
     for name, row in binaries.items():
         evidence = evidence_owners.get(row.get('evidence'), set())
         explicit = {module_groups[module] for module in row.get('modules', []) if module in module_groups}
-        choices = {roots[name]} if name in roots else explicit | evidence | optional_dependencies(name)
+        if name in roots:
+            choices = {roots[name]}
+        elif explicit:
+            choices = explicit
+        else:
+            # A library outside the selected modules, such as Qt3DQuick, belongs
+            # to its repository's groups among those it builds on: Qt3D, not
+            # every group (Gui, Quick) it links.
+            choices = attribute(optional_dependencies(name), evidence)
         if choices:
-            owners[name] = choices - {'base'} or {'base'}
+            owners[name] = specific(choices - {'base'}) or {'base'}
         else:
             # Private/dependency-only libraries inherit their actual users.
             # They must not become shared merely because they lack an
@@ -111,17 +170,30 @@ def runtime_owners(prepared, parts, qt):
                     changed |= before != len(owners[child])
             if not changed:
                 break
+    # Each file's own attribution, before users' groups propagate into it.
+    attributed = {name: set(groups) for name, groups in owners.items()}
     propagate(libraries_only=True)
     # Dependency-only Qt libraries can acquire their owners from another
     # library's users. Resolve plugins after that pass, so e.g. QuickTimeline's
     # QML plugin follows its actual Quick3D owner instead of defaulting to Core.
+    def dependency_owner(child):
+        # A Qt library's own group, not every group that uses the library:
+        # QuickTemplates2 belongs to Quick although LabsStyleKit uses it too.
+        own = {roots[child]} if child in roots else (attributed.get(child) or owners[child])
+        return {'base'} if 'base' in own else own
+
     for name in binaries:
         if name.startswith('lib/'):
             continue
-        choices = owners[name] | set().union(*(
-            {'base'} if 'base' in owners[child] else owners[child]
-            for child in dependencies.get(name, [])))
-        owners[name] = choices - {'base'} or {'base'}
+        explicit = {module_groups[module] for module in binaries[name].get('modules', []) if module in module_groups}
+        if explicit:
+            # A recorded module, e.g. the WebView plugin's QtWebView, decides.
+            owners[name] = specific(explicit - {'base'}) or {'base'}
+            continue
+        # Multimedia's QML plugin links Quick and Multimedia; it belongs to the
+        # group of its own repository, Multimedia.
+        linked = owners[name] | set().union(*(dependency_owner(child) for child in dependencies.get(name, [])))
+        owners[name] = attribute(linked, evidence_owners.get(binaries[name].get('evidence'), set())) or {'base'}
     propagate()
     for name, row in prepared['manifest'].get('assets', {}).items():
         directory = str(Path(name).parent)
@@ -134,7 +206,7 @@ def runtime_owners(prepared, parts, qt):
             choices = {module_groups[module] for module in row['modules']} | native_owners
         else:
             choices = native_owners or {'base'}
-        owners[name] = choices - {'base'} or {'base'}
+        owners[name] = general(choices - {'base'}) or {'base'}
     assets = prepared['manifest'].get('assets', {})
     qml_modules = {row['provenance']['uri']: name.rsplit('/', 1)[0]
                    for name, row in assets.items()
@@ -179,7 +251,24 @@ def runtime_owners(prepared, parts, qt):
         if not changed:
             break
     propagate()
+    # A component notice and its SBOM travel with the files they cover, so a
+    # Core-only program does not carry, e.g., WebEngine's notices. A notice
+    # covering any shared-group file stays with the shared group.
+    source_rows = prepared['manifest'].get('sources', {})
+    covered = {}
+    for name, row in {**binaries, **assets}.items():
+        sources = [*row.get('sources', []), *([row['source']] if row.get('source') else []),
+                   *(root['downloadLocation'] for root in row.get('repositories', []))]
+        notices = row.get('notices') or [notice for source in sources
+                                         for notice in source_rows.get(source, {}).get('notices', [])]
+        if row.get('evidence'):
+            notices = [*notices, 'notices/sbom/' + Path(row['evidence']).name]
+        for notice in notices:
+            if isinstance(notice, str) and owners.get(name):
+                covered.setdefault(notice, set()).update(owners[name])
     for name in prepared['files']:
+        if name.startswith('notices/') and name in covered:
+            owners.setdefault(name, covered[name])
         owners.setdefault(name, {'base'})
     for name, row in {**binaries, **prepared['manifest'].get('assets', {})}.items():
         if not owners[name]:
@@ -189,6 +278,11 @@ def runtime_owners(prepared, parts, qt):
                 raise ValueError('A restricted runtime file has no selected owning module: ' + name)
         if 'base' in owners[name] and allows(row['expression'], 'lgpl') is not True:
             raise ValueError('A Core-only consumer would retain restricted Qt code: ' + name)
+    # A group's program also runs on the files of the groups it builds on: a
+    # Widgets program needs Gui's platform plugins even if it calls no QtGui API.
+    for name, groups in owners.items():
+        if 'base' not in groups:
+            owners[name] = groups | {group for group in needs if groups & ancestors(group)}
     return owners
 
 
@@ -260,7 +354,9 @@ def generate(args, profile, source_inputs, prepared_release):
     for index, group in enumerate(groups):
         work = args.work / 'modules' / group['name']; work.mkdir(parents=True, exist_ok=True)
         own = group['qt_modules']
-        selected = sorted(set(own) | {'QtCore', 'QtGui', 'QtWidgets'})
+        # Each group compiles its own modules, Qt Core and their type-system
+        # dependencies; the shared group needs no GUI module.
+        selected = sorted(set(own) | {'QtCore'})
         part_profile = dict(profile, qt_modules=selected)
         part_profile.pop('native_modules', None)
         if group.get('separate_headers'):
@@ -327,7 +423,7 @@ def generate(args, profile, source_inputs, prepared_release):
                                  part.profile['qt_modules'])
         if driver.generation_inputs(args.profile) != source_inputs:
             raise RuntimeError('Generator inputs changed during native module emission')
-        output_files.write_text(args.work / 'emitted-api.bend', module_partitions.merge_bend([part.bend for part in parts]))
+        output_files.write_text(args.work / 'emitted-api.bend', module_partitions.merge_bend([part.bend for part in parts], getattr(parts[0], 'bend_preferences', None)))
         print('Native module source emission complete', flush=True)
         return
     reports, manifests = [], []
@@ -382,6 +478,11 @@ def generate(args, profile, source_inputs, prepared_release):
         'LICENSE': prepared_release['package_license'].read_text()})
     for name, text in files.items():
         output_files.write_text(args.output / name, text)
+    # Generated C files of an earlier layout, such as runtime pieces beyond
+    # this bundle's count, must not remain beside the new package.
+    for path in args.output.glob('qt-*.c'):
+        if path.name not in files:
+            path.unlink()
     lock.write()
     completed = driver.generation_inputs(args.profile)
     lock_key = str(lock.path.relative_to(driver.ROOT) if lock.path.is_relative_to(driver.ROOT) else lock.path)

@@ -128,4 +128,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_MUTEX_LOCKERS_OK native=1 recursive=1 nullable=1 scopes=1 failure=1 swaps=1 future_mutex=1 keep=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

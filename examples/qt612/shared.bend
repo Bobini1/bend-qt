@@ -85,4 +85,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_SHARED_OK control_block=1 clone=1 identity=1 last_holder=1 transfer_rejected=1 quick_image=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

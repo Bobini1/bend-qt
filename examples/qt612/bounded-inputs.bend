@@ -97,4 +97,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_BOUNDED_INPUTS_OK bitmap=1 uuid=1 utf16=1 seed_range=1 empty_range=1 audio_sample=1 scalar_output=1 exception_stack=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

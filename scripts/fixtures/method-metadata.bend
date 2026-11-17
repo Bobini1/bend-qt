@@ -186,4 +186,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_METHOD_METADATA_OK names=1 tag=1 revisions=1 access=1 invokable=1 override=1 parent_invoke=1 inherited_handler=1 qml=1 validation=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

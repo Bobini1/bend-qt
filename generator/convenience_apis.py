@@ -63,7 +63,9 @@ def install(classes, selected):
     if 'QLocale' in selected:
         entries.append(_function('QLocale', 'system', [], _type('QLocale'), static=True, kind='system_locale'))
     if 'QAction' in selected and 'QMenu' in selected:
-        entries.append(_function('QAction', 'menu', [], _type('QMenu *', 'QMenu', pointers=1), kind='action_menu'))
+        menu = _function('QAction', 'menu', [], _type('QMenu *', 'QMenu', pointers=1), kind='action_menu')
+        menu['partition_module'] = 'QtWidgets'  # emitted with QMenu, not with QtGui's QAction
+        entries.append(menu)
     if 'QWizardPage' in selected:
         f = _function('QWizardPage', 'registerField', [('name', text), ('widget', _type('QWidget *', 'QWidget', pointers=1)),
                       ('property', text), ('changedSignal', text)], void, kind='wizard_field')

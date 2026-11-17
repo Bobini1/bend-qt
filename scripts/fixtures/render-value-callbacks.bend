@@ -41,4 +41,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_RENDER_VALUE_CALLBACKS_OK retained_const_copies=1 canonical_material_identity=1 private_virtual=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

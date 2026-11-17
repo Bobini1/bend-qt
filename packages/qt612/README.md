@@ -17,12 +17,18 @@ extended native Vulkan experiment is archived separately and is not part of
 this package. Qt may still use Vulkan internally for rendering.
 
 Native groups and their runtime assets are retained through Bend's ordinary
-reachability. The shared group holds Qt Core, Gui, Widgets, QML/Quick and 20
-other common modules; a Core-only program is about 104 MB and extracts about
-172 MB of Qt runtime on first run. WebEngine, Multimedia, Qt3D, Pdf, Designer,
-Location and Connectivity are separate groups, as are the GPL-only modules.
-Referencing an optional native type or API retains its group and
-dependencies. For QML-only usage, call the corresponding action, such as
+reachability. The shared group holds Qt Core and the modules that need no GUI:
+Concurrent, D-Bus, Network, QML, Remote Objects, SCXML, WebChannel,
+WebSockets and XML. Gui, Widgets, Quick, QuickWidgets (with QuickTest and
+Labs StyleKit), WebEngine, Multimedia, Qt3D, Pdf, Designer, Location and
+Connectivity are separate groups, as are the GPL-only modules. A program built
+on `QCoreApplication` is about 40 MB; with `QGuiApplication` about 63 MB, with
+`QApplication` about 72 MB, and a Qt Quick Controls program about 96 MB.
+
+Referencing an optional native type or API retains its group and the groups it
+builds on. `QQmlApplicationEngine` belongs to the Quick group, so a QML program
+using it has QtQuick. For other QML-only usage, call the corresponding action,
+such as `Modules.Quick.load()` for `import QtQuick` with a plain `QQmlEngine`,
 `Modules.Multimedia.load()` for `import QtMultimedia` or `Modules.Graphs.load()`,
 before loading the QML.
 
@@ -168,13 +174,29 @@ boundary.
 ## The main thread and event loops
 
 Qt and Bend share the process main thread. A Bend effect calls Qt directly and
-has Qt's result when it returns. The first Qt effect loads Qt and creates the
-`QApplication`, passing it the program's command-line arguments; the package
-owns that single application, so `QCoreApplication` constructors are not bound.
-If Qt cannot be loaded, or the loaded Qt version differs from 6.12.0,
-that effect fails with ELIBACC and a message, which `IO.try` reports. When the
-Bend `main` returns, the package destroys the objects Bend still owns and then
-the application. `IO.exit` ends the process without that teardown.
+has Qt's result when it returns. The first Qt effect loads Qt. As in C++, the
+program then constructs its single application object, which receives the
+program's command-line arguments:
+
+```bend
+def main() -> IO(Unit):
+  IO.try(Unit, Qt.run(Unit, Qt.QGuiApplication.with(Unit, Qt.QGuiApplication.new(), app => body())))
+```
+
+`QCoreApplication.new`, `QGuiApplication.new` and `QApplication.new` choose
+the kind, and only the chosen kind's modules are retained. A second `new` fails
+with EEXIST. Constructors and static functions of QtGui and QtWidgets classes,
+and of classes deriving from them, fail with ENXIO before the GUI application
+they need exists, instead of Qt aborting the
+process; static setters of global defaults, such as
+`QSurfaceFormat.setDefaultFormat` or `QQuickWindow.setGraphicsApi`, and
+`QtWebEngineQuick.initialize` work beforehand, as Qt documents. The package
+owns the application: the handle is released at the end of the scope, and the
+object lives until `Qt.run` ends. If Qt cannot be loaded, or the loaded Qt
+version differs from 6.12.0, that effect fails with ELIBACC and a message,
+which `IO.try` reports. When the Bend `main` returns, the package destroys the
+objects Bend still owns and then the application. `IO.exit` ends the process
+without that teardown.
 
 Qt processes events only inside a Qt event loop: `QCoreApplication.exec()`
 (which returns the exit code as an `Int32`), `QEventLoop.exec`, `QDialog.exec`

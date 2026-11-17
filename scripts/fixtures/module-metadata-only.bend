@@ -17,7 +17,7 @@ def create() -> Qt.Action(Unit):
 
 def main() -> IO(Unit):
   do IO<Unit>:
-    IO.try(Unit, Qt.run(Unit, create()))
+    IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => create())))
     maps: String <- Qt.Runtime.loadedLibraries()
     IO.print(maps)
     IO.print("QT_MODULE_METADATA_ONLY_OK")

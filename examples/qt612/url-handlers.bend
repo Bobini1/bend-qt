@@ -86,4 +86,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_URL_HANDLERS_OK dispatch=1 scope=1 replacement=1 parent_death=1 validation=1 cleanup=1 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

@@ -26,6 +26,8 @@ static void test_host_start(int argc, char **argv)
     static BqtHost host;
     host = BqtHost{argc, argv, test_invoke, test_release, test_sources, test_runnable, test_run, test_flush};
     const char *error = bqt_abi_start(&host);
+    // A Bend program constructs its application explicitly; so does the host.
+    if (!error) error = bendqt::construct_application(2);
     if (error) {
         std::fprintf(stderr, "Qt did not start: %s\n", error);
         std::exit(1);

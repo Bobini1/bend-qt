@@ -90,4 +90,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_BUFFERS_EXTENDED_OK compression=1 bounded_output=1 alias_scratch=1 typed_array_output=1 native_string_slot=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

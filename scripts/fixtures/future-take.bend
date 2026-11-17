@@ -73,4 +73,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_FUTURE_TAKE_OK move_only=1 shared_aliases=1 watcher_alias=1 repeated_rejected=1 pending_ready_rejected=1 exception=1 readonly=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

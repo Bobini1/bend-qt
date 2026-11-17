@@ -108,4 +108,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_TEXT_INDEXING_OK prefix_postfix=1 bounded_index=1 numeric_key=1 undefined_index=1 call_operator=1 const_pointer_ref=1 literal_log=1 deferred_slot=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

@@ -134,4 +134,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_ACTIONS_OK acquisition=1 short_circuit=1 cleanup_success=1 cleanup_failure=1 precedence=1 nested=1 handler_failure=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

@@ -84,4 +84,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_ACCESSIBLE_CALLBACKS_OK scalar_outputs=1 null_preserved=1 atomic_rejection=1 retained_pointer_lists=1 protected_destructor=1 malformed_list_rejected=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

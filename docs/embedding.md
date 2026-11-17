@@ -73,12 +73,18 @@ consumer executable has no link-time Qt or C++ dependency.
 
 ## Startup
 
-The first Qt effect starts Qt. It loads the libraries and payload as above and
-creates the program's single `QApplication` from Bend's command-line
-arguments; Qt removes the options it recognises from its own copy. Programs
-cannot construct another application object. Startup is attempted once. If
-it fails, that effect and every later Qt effect fail with ELIBACC (79) and the
-loader's message, which `IO.try` can report.
+The first Qt effect starts Qt. It loads the libraries and payload as above
+and starts the runtime without an application object. As in C++, the program
+then constructs exactly one with `QCoreApplication.new`,
+`QGuiApplication.new` or `QApplication.new`, from Bend's command-line
+arguments; Qt removes the options it recognises from its own copy. A second
+construction fails with EEXIST. Until a GUI application exists, constructors
+and static functions of QtGui and QtWidgets classes, and of classes deriving
+from them, fail with ENXIO, rather than letting Qt abort the process; static
+setters of global defaults and the web modules' `initialize` precede it, as
+Qt requires. Startup is attempted once. If it fails, that effect and every
+later Qt effect fail with ELIBACC (79) and the loader's message, which
+`IO.try` can report.
 
 ## One thread
 

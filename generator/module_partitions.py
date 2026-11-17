@@ -108,6 +108,27 @@ def declaring_module(function):
     return match[1] if match else None
 
 
+def function_modules(function, packages):
+    """Modules a member needs: its declaring header's and its signature types'.
+
+    QAction::menu, declared by QtGui, returns a QtWidgets QMenu.
+    """
+    found = {declaring_module(function)}
+
+    def visit(value):
+        if isinstance(value, dict):
+            if 'pointers' in value and isinstance(value.get('name'), str) and packages.get(value['name']):
+                found.add(packages[value['name']].removeprefix('PySide6.'))
+            for child in value.values():
+                visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+    visit({key: function.get(key) for key in ('arguments', 'return')})
+    found.discard(None)
+    return found
+
+
 def member_assignments(groups):
     """Assign members declared by another group's module to that group.
 
@@ -127,6 +148,7 @@ def member_assignments(groups):
     for index, (name, own, modules, api) in enumerate(groups):
         packages = {'PySide6.' + module for module in own}
         classes = {row['name']: row for row in api['classes']}
+        class_packages = {row['name']: row.get('package') for row in api['classes']}
 
         def functions(row, visited):
             # Start from the row itself: a namespace has one row per module.
@@ -140,14 +162,23 @@ def member_assignments(groups):
             if not (row.get('package') in packages or (index == 0 and not row.get('package'))):
                 continue
             for function in functions(row, set()):
-                module = declaring_module(function)
-                target = owners.get(module)
-                if not target or target == name or module in available[name]:
+                needed = function_modules(function, class_packages)
+                # Signature types of the always-present shared group, such as a
+                # QQmlEngine pointer, do not move a member; its declaring
+                # header and other groups' types do.
+                foreign = {module for module in needed if owners.get(module) not in (None, name)
+                           and module not in available[name]
+                           and (owners[module] != 'base' or module == declaring_module(function))}
+                if not foreign:
                     continue
-                if row.get('package') and row['package'].removeprefix('PySide6.') not in available[target]:
-                    raise ValueError('A member of ' + row['name'] + ' is declared by ' + module +
-                                     ', whose group cannot compile its class')
-                members.setdefault(target, {}).setdefault(row['name'], set()).add(function['minimal_signature'])
+                # The group that owns a foreign module and compiles all the rest.
+                targets = sorted(owners[module] for module in foreign
+                                 if needed - {m for m in needed if not owners.get(m)} <= available[owners[module]])
+                own_module = (row.get('package') or '').removeprefix('PySide6.')
+                if not targets or (own_module and own_module not in available[targets[0]]):
+                    raise ValueError('A member of ' + row['name'] + ' needs ' + ', '.join(sorted(foreign)) +
+                                     ', which no group compiles with its class')
+                members.setdefault(targets[0], {}).setdefault(row['name'], set()).add(function['minimal_signature'])
     return owners, members
 
 
@@ -168,18 +199,34 @@ def scoped_api(api, modules, *, root=False, compile_modules=None, module_owners=
     if compile_modules is not None and module_owners:
         available = set(compile_modules)
 
+        class_packages = {row['name']: row.get('package') for row in api['classes']}
+
         def compiled(function):
-            module = declaring_module(function)
-            return module not in module_owners or module in available
+            declared = declaring_module(function)
+            return all(module not in module_owners or module in available
+                       or (module_owners[module] == 'base' and module != declared)
+                       for module in function_modules(function, class_packages))
         # Filter each row: a namespace such as Qt has one row per module.
         rows = [dict(row, functions=[f for f in row.get('functions', []) if compiled(f)]) for row in rows]
     classes = {row['name']: row for row in rows}
     assigned = assigned or {}
+
+    from adapters import runtime_type_dependencies as carriers
+    unconditional = carriers(())
+
+    def carried(name):
+        # The common registry carriers, such as QTreeWidget for item lifetimes,
+        # join a group only when it compiles their module. A carrier implied by
+        # a class already in scope, such as QQmlEngine's list references, does.
+        if compile_modules is None or name not in unconditional:
+            return True
+        package = (classes[name].get('package') or '').removeprefix('PySide6.')
+        return not package or package in compile_modules
     owned = {name for name, row in classes.items()
              if row.get('package') in packages or (root and not row.get('package'))}
     needed = set(owned)
     from adapters import runtime_type_dependencies
-    needed.update(name for name in runtime_type_dependencies(needed) if name in classes)
+    needed.update(name for name in runtime_type_dependencies(needed) if name in classes and carried(name))
     enum_names = {row['name'] for row in api['enums']}
     needed_enums = set()
 
@@ -218,7 +265,7 @@ def scoped_api(api, modules, *, root=False, compile_modules=None, module_owners=
     references(functions)
     while True:
         previous = len(needed)
-        needed.update(name for name in runtime_type_dependencies(needed) if name in classes)
+        needed.update(name for name in runtime_type_dependencies(needed) if name in classes and carried(name))
         for name in list(needed):
             row = classes[name]
             needed.update(base for base in row.get('bases', []) if base in classes)
@@ -227,6 +274,11 @@ def scoped_api(api, modules, *, root=False, compile_modules=None, module_owners=
             break
     result = copy.deepcopy({key: value for key, value in api.items() if key != 'classes'})
     result['classes'] = [copy.deepcopy(row) for row in rows if row['name'] in needed]
+    for row in result['classes']:
+        # Each module row of a namespace such as Qt has its functions emitted
+        # by the group owning that module; enums stay for type references.
+        if row.get('namespace') and not (row.get('package') in packages or (root and not row.get('package'))):
+            row['functions'] = []
     for row in result['classes']:
         if row['name'] in assigned and row['name'] not in owned:
             row['partition_members'] = sorted(assigned[row['name']])
@@ -237,11 +289,28 @@ def scoped_api(api, modules, *, root=False, compile_modules=None, module_owners=
     return result
 
 
+def partition_assigned(g, name):
+    """Members this group emits for a class owned by another group.
+
+    These are members declared by, or typed with, this group's modules
+    (member_assignments) and conveniences provided by them, such as
+    QAction.menu returning a QtWidgets QMenu.
+    """
+    row = g.classes[name]
+    assigned = set(row.get('partition_members', ()))
+    packages = getattr(g, 'partition_export_packages', None) or set()
+    assigned.update(f['minimal_signature'] for f in row.get('functions', [])
+                    if f.get('partition_module') and 'PySide6.' + f['partition_module'] in packages)
+    return assigned
+
+
 def exports_class(g, name):
     if g.classes[name].get('partition_global'):
         return True
     packages = getattr(g, 'partition_export_packages', None)
     package = g.classes[name].get('package')
+    if packages and g.classes[name].get('namespace') and set(g.classes[name].get('packages', ())) & packages:
+        return True
     return not packages or package in packages or (not package and not getattr(g, 'partition_secondary', False))
 
 
@@ -318,15 +387,18 @@ static void __attribute__((constructor)) bqt_module_load_{module}_register(void)
 '''
 
 
-def merge_bend(parts):
+def merge_bend(parts, preferred=None):
     """Keep shared definitions once, with the primary partition's operations.
 
     Definitions are emitted at column zero by the Bend generator. Complete
     blocks, including their indented bodies, are retained without rewriting
     any Bend code. Names belonging to a secondary module remain distinct.
+    `preferred` maps a definition name prefix to the partition whose version
+    is kept (see family_preferences).
     """
+    preferred = preferred or {}
     seen, result = set(), []
-    for source in parts:
+    for position, source in enumerate(parts):
         starts = list(re.finditer(r'^(?:def|type)\s+([^\s(<:]+)', source, re.M))
         if not starts:
             raise ValueError('A native partition emitted no Bend definitions')
@@ -334,7 +406,9 @@ def merge_bend(parts):
             result.append(source[:starts[0].start()])
         for index, match in enumerate(starts):
             name = match[1]
-            if name in seen:
+            owner = next((value for prefix, value in preferred.items()
+                          if name == prefix or name.startswith(prefix + '.')), position)
+            if name in seen or owner != position:
                 continue
             seen.add(name)
             result.append(source[match.start():starts[index + 1].start() if index + 1 < len(starts) else len(source)])
@@ -369,17 +443,22 @@ def prepare_generators(records, lock, *, selective=False):
         generator.raw_effect_operations = operations
         generator.retention_slots = slots
         parts.append(SimpleNamespace(**vars(record), generator=generator))
-    # Synthetic adapter classes, such as QFuture<QStringList> or an array view
-    # of Qt3DAnimation::QChannel, have no package unless their element has one,
-    # and the shared group exports them. One that only separate groups use is
-    # exported by the first of those groups.
-    shared, claimed = parts[0].generator.classes if parts else {}, set()
-    for part in parts[1:]:
+    # Synthetic adapter classes, such as QFuture<QStringList>, an array view of
+    # Qt3DAnimation::QChannel or QSharedPointer<QTemporaryDir>, take their
+    # element's package, or none. The group owning that package (the shared
+    # group for none) exports them when it has them; otherwise the first group
+    # using them does.
+    owners = {package: part for part in parts for package in getattr(part.generator, 'partition_export_packages', ())}
+    claimed = set()
+    for part in parts:
         for name, row in part.generator.classes.items():
-            if (not row.get('package') and name not in shared and name not in claimed
-                    and row.get('adapter')):
-                row['partition_global'] = True
-                claimed.add(name)
+            if not row.get('adapter') or name in claimed:
+                continue
+            owner = owners.get(row.get('package'), parts[0])
+            if name in owner.generator.classes:
+                continue
+            row['partition_global'] = True
+            claimed.add(name)
     reserved = sorted({name for part in parts for name in (*part.generator.selected, *part.generator.enums)})
     isolate_metatypes(parts)
     next_operation = 10
@@ -387,7 +466,7 @@ def prepare_generators(records, lock, *, selective=False):
         generator = part.generator
         generator.partition_native_names = reserved
         owners = {name for name in generator.classes
-                  if exports_class(generator, name) or generator.classes[name].get('partition_members')}
+                  if exports_class(generator, name) or partition_assigned(generator, name)}
         owners.update(generator.namespaces if not generator.partition_export_packages else
                       [name for name in generator.namespaces if name == 'Global'])
         generator.name_lock = overload_names.NameLock(names=copy.deepcopy({
@@ -400,7 +479,35 @@ def prepare_generators(records, lock, *, selective=False):
         overload_names.finalize(generator, generator.name_lock)
         part.bend, _, part.native = generator.emit()
         part.operation_end = next_operation = generator.next_id
+    family_preferences(parts, lock)
     return parts
+
+
+def family_preferences(parts, lock):
+    """Choose one partition for a callback family that several emit.
+
+    A family is named on the class that declares the virtual, but its Bend
+    result follows the first override in scope, such as QEvent.Virtual.clone
+    returning QActionEvent. Groups seeing different overrides disagree, so the
+    group matching the locked shape is kept, or else the shared group.
+    """
+    rows = {}
+    for index, part in enumerate(parts):
+        for owner, entries in part.generator.name_lock.names.items():
+            for key, value in entries.items():
+                rows.setdefault((owner, key), {})[index] = list(value)
+    lock_preferences, bend_preferences = {}, {}
+    for (owner, key), values in rows.items():
+        if len({repr(value) for value in values.values()}) < 2:
+            continue
+        if len({value[0] for value in values.values()}) > 1 or not key.startswith('virtual '):
+            raise ValueError('Native modules disagree about a public name: ' + owner + '/' + key)
+        locked = list(lock.names.get(owner, {}).get(key, ()))
+        index = next((i for i, value in sorted(values.items()) if value == locked), min(values))
+        lock_preferences[(owner, key)] = index
+        bend_preferences[owner.replace('::', '.') + '.' + values[index][0]] = index
+    for part in parts:
+        part.lock_preferences, part.bend_preferences = lock_preferences, bend_preferences
 
 
 def effects(parts):
@@ -460,7 +567,7 @@ def package(parts, abi):
     for key, value in dict(RUNTIME=header, ABI=abi, ASSEMBLY='\n'.join(assembly),
                            IMPORTS='\n'.join(imports), LIBRARIES='\n'.join(libraries), EFFECTS=effects(parts)).items():
         effect = effect.replace('// @' + key + '@', value)
-    return merge_bend([part.bend for part in parts]), effect
+    return merge_bend([part.bend for part in parts], getattr(parts[0], 'bend_preferences', None)), effect
 
 
 def selective_package(parts, abi, *, runtime=None):
@@ -507,7 +614,7 @@ def selective_package(parts, abi, *, runtime=None):
         # Root validation and marshalling helpers are shared by these bodies.
         source += '\n'.join(part.generator.effects)
         assets['qt-' + part.name + '.c'] = source
-    bend = merge_bend([part.bend for part in parts])
+    bend = merge_bend([part.bend for part in parts], getattr(parts[0], 'bend_preferences', None))
     bend += '\ndef native_Runtime_moduleHost() -> IO(Unit):\n  import "./qt.c"\n'
     if runtime:
         bend += '\n' + runtime['bundle']['bend']

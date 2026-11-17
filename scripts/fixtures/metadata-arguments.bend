@@ -161,4 +161,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_METADATA_ARGUMENTS_OK raw=1 list=1 source_release=1 epoch=1 overwrite=1 borrowed=1 self_cycle=0 answers=1 external_backing=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

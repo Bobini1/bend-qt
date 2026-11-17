@@ -71,4 +71,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_NUMBERS_OK f64_precision=1 arithmetic=1 int64=1 invalid_input=1 variant_type=1 integer_range=1 enum64=1 aliases=1 defaults=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

@@ -86,4 +86,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_GRAPHICS_BUFFERS_OK byte_upload=1 byte_readback=1 typed_output_array=1 typed_input_array=1 extent_rejection=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

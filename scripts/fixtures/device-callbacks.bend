@@ -75,4 +75,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_DEVICE_CALLBACKS_OK read=1 write=1 embedded_nul=1 bounds_rejected=1 mismatched_count_rejected=1 canaries=1 native_error=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

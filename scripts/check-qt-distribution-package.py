@@ -37,8 +37,9 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT_DISTRIBUTION_PREFIX=" ++ prefix))
     Qt.Action.lift(Unit, IO.print("QT_DISTRIBUTION_CORE_OK"))
 
+# A QtCore program constructs a QCoreApplication and retains no GUI group.
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QCoreApplication.with(Unit, Qt.QCoreApplication.new(), application => checks())))
 '''
 FAMILIES=COMMON+'''
 def ready() -> Qt.Signal:
@@ -80,7 +81,7 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT_DISTRIBUTION_FAMILIES_OK typed_signals=1 wrong_family_rejected=1 objects=0 data=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))
 '''
 
 # Exercise the QML runtime dependency closure across fourteen modules.
@@ -110,7 +111,7 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT_DISTRIBUTION_QML_IMPORTS_OK modules=14 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))
 '''.replace('@QML@',json.dumps(''.join('import '+name+'\n' for name in QML_MODULES)+'QtObject {}'))
 
 def encoded(source, declaration):

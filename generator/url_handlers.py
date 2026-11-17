@@ -19,6 +19,8 @@ def method_case(g, m):
 
 
 def cpp(g):
+    if 'QDesktopServices' not in g.ids:
+        return ''
     return (Path(__file__).parent / 'templates/url_handlers.cpp').read_text()
 
 

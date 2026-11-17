@@ -55,4 +55,4 @@ def register(+state: Chan(U32)) -> Qt.Action(Unit):
 def main() -> IO(Unit):
   do IO<Unit>:
     state: Chan(U32) <- Chan.new(U32, 2)
-    IO.try(Unit, Qt.run(Unit, register(state)))
+    IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => register(state))))

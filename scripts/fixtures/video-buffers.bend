@@ -210,4 +210,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_VIDEO_BUFFERS_OK readonly=1 plane_bounds=1 copied_epoch=1 unique_ownership=1 shared_frames=1 thread_calls=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

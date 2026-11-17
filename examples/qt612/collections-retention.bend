@@ -142,4 +142,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_COLLECTION_RETENTION_OK groups=1 move=1 bulk=1 style=1 popup=1 calendar=1 visual_parent=1 objects=0 pins=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

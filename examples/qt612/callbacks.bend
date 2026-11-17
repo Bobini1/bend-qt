@@ -112,4 +112,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_CALLBACKS_OK abstract=1 nested=1 typed_copy=1 deletion_guard=1 handler_error=1 wait_rejected=1 pure_virtual=1 base_fallback=1 registration=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

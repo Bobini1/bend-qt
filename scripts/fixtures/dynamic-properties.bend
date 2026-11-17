@@ -166,4 +166,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_DYNAMIC_PROPERTIES_OK native=1 false_return=1 raw_mutation=1 metadata=1 outgoing_copy=1 epoch=1 borrowed=1 self_cycle=0 reentrant=1 failure=1 removal=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

@@ -190,7 +190,7 @@ static bool dying_borrow() {
     delete object;return blocked&&!entry(id);
 }
 int main(int argc,char**argv) {
-    BendApplication app(argc,argv);application=&app;main_thread=QThread::currentThread();main_context.store(&app);
+    BendApplication<QApplication> app(argc,argv);application=&app;main_thread=QThread::currentThread();main_context.store(&app);
     const QByteArray mode=argc>1?argv[1]:"all";
     if((mode=="all"||mode=="plain")&&!moved(false)){std::puts("WORKER_QOBJECT_FINALIZATION_MISSING");return 70;}
     if((mode=="all"||mode=="interface")&&!moved(true)){std::puts("WORKER_INTERFACE_FINALIZATION_MISSING");return 71;}

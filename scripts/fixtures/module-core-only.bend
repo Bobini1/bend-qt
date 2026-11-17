@@ -10,7 +10,7 @@ def core() -> Qt.Action(Unit):
 
 def main() -> IO(Unit):
   do IO<Unit>:
-    IO.try(Unit, Qt.run(Unit, core()))
+    IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => core())))
     maps: String <- Qt.Runtime.loadedLibraries()
     IO.print(maps)
     IO.print("QT_MODULE_CORE_ONLY_OK")

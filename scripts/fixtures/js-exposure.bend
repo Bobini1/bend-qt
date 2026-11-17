@@ -126,4 +126,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_JS_EXPOSURE_OK global_heap=1 wrapper_released=1 context_cleared=1 recursive_variant=1 failed_prefix_unpinned=1 migration_blocked=1 engine_release=1 cycles_rejected=1 thread_affinity=1 objects=0 retentions=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

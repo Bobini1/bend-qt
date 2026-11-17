@@ -71,4 +71,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_DBUS_OK list=1 bool=1 unsigned=1 string=1 structured_error=1 void_error=1 connection_copy=1 disconnect=1 affinity=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

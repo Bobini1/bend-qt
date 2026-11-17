@@ -181,4 +181,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_CONTAINERS_OK strings=1 pairs=1 hash=1 map=1 multimap=1 multihash=1 nested_real=1 values=1 shared_input=1 invalid_element=1 rollback=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

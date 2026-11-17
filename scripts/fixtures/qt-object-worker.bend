@@ -92,4 +92,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_QT_OBJECT_WORKER_OK storage=1 getters=1 setters=1 methods=1 notify=1 metadata=1 main_thread=1 failure=73 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

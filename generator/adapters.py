@@ -5,20 +5,6 @@ The small converter inventory below describes representations, not Qt API covera
 """
 
 
-def application_initializers(modules):
-    """Qt requires these module initializers before the host application."""
-    return [namespace + '::initialize();' for module, namespace in (
-        ('QtWebEngineQuick', 'QtWebEngineQuick'), ('QtWebView', 'QtWebView')) if module in modules]
-
-
-def initialized_application_call(g, method):
-    function = method['function']
-    if function['name'] == 'initialize' and function['declaring_class'] in ('QtWebEngineQuick', 'QtWebView'):
-        if function['declaring_class'] in g.profile['qt_modules']:
-            return ['// Host startup already ran this module before QApplication.', 'if (application) return true;']
-    return []
-
-
 def runtime_type_dependencies(selected=()):
     """Registry carriers required by the common lifetime/metadata policies.
 
@@ -41,6 +27,8 @@ def runtime_type_dependencies(selected=()):
         'QModelRoleDataSpan': {'QModelRoleData'},
         # An engine enables the QML callback bridge and its list views.
         'QQmlEngine': {'QQmlListReference'},
+        # Scheduled render jobs share the runnable job registry.
+        'QQuickWindow': {'QRunnable', 'QThreadPool', 'QQmlApplicationEngine'},
         'QRhi': {'QRhiResource', 'QRhiResourceUpdateBatch', 'QRhiCommandBuffer',
                  'QRhiReadbackResult', 'QRhiBuffer'},
     }
@@ -86,6 +74,19 @@ def render_caller_owned_result(f):
     return ((f['declaring_class'], f['name']) in RENDER_CALLER_OWNED_RETURNS or
             (f['name'] == 'createShader' and f['return']['name'] == 'QSGMaterialShader'
              and f['return']['pointers'] == 1))
+
+
+# Members of these classes are emitted with another module's native group, so
+# using them retains that group and its runtime files. QQmlApplicationEngine
+# (QtQml) exists to load QtQuick windows: a QGuiApplication + engine program
+# then has QtQuick's QML runtime without loading the group by hand.
+GROUP_RETAINED_CLASSES = {'QQmlApplicationEngine': 'QtQuick'}
+
+
+def install_group_retention(classes):
+    for name, module in GROUP_RETAINED_CLASSES.items():
+        for function in classes.get(name, {}).get('functions', []):
+            function['partition_module'] = module
 
 
 def install_carriers(classes, selected):

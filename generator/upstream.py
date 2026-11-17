@@ -26,7 +26,7 @@ def prepare(source, qt, modules, work, *, limited_abi=False):
         path = directory / ("typesystem_" + directory.name[2:].lower() + ".xml")
         if path.exists():
             catalog[directory.name] = path
-    visited, active, files = set(), [], set()
+    visited, active, files, direct = set(), [], set(), {}
 
     def scan(path):
         path = path.resolve()
@@ -43,6 +43,7 @@ def prepare(source, qt, modules, work, *, limited_abi=False):
                 raise ValueError(f"Missing upstream type system: {path}: {relative}")
             module = dependency.relative_to(root).parts[0]
             if module in catalog and module != path.relative_to(root).parts[0]:
+                direct.setdefault(path.relative_to(root).parts[0], set()).add(module)
                 visit(module)
             scan(dependency)
 
@@ -126,7 +127,17 @@ def prepare(source, qt, modules, work, *, limited_abi=False):
         for tag in re.findall(r'<rejection\b[^>]*>', text):
             item = ET.fromstring(tag if tag.endswith('/>') else tag + '</rejection>')
             rejections.append({'source': str(path.relative_to(root)), **item.attrib})
+    def closure(module, seen):
+        if module not in seen:
+            seen.add(module)
+            for dependency in direct.get(module, ()):
+                closure(dependency, seen)
+        return seen
+
     manifest = {"commit": qt_target['shiboken_commit'], "qt": qt_target['qt'], "modules": active,
+                # Each module with the modules its PySide type system loads;
+                # e.g. whether its classes need a GUI application object.
+                'module_dependencies': {m: sorted(closure(m, set())) for m in active},
                 'pyside_definitions': pyside_boundary.definitions(files, root),
                 'type_adaptations': ([{'name': 'QDBusReply', 'representation': 'dependency-only value template',
                                       'reason': 'Preserve typed native replies omitted by the upstream Python helper declarations'}]

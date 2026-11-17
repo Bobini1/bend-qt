@@ -36,7 +36,7 @@ def root(value: Qt.QObject) -> Qt.Action(Unit):
 def changed_controller(+engine: Qt.QQmlEngine, +controller: Qt.QQmlIncubationController, +flag: Qt.IncubationFlag) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.IncubationFlag.store(flag, True{})
-    waiting: Chan(Result<&1, &1, U32 & String, Unit>) <- Qt.Action.lift(Chan(Result<&1, &1, U32 & String, Unit>), IO.fork(Result<&1, &1, U32 & String, Unit>, Qt.run(Unit, Qt.QQmlIncubationController.incubateWhile__IncubationFlag(controller, flag))))
+    waiting: Chan(Result<&1, &1, U32 & String, Unit>) <- Qt.Action.lift(Chan(Result<&1, &1, U32 & String, Unit>), IO.fork(Result<&1, &1, U32 & String, Unit>, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => Qt.QQmlIncubationController.incubateWhile__IncubationFlag(controller, flag)))))
     Qt.Action.lift(Unit, IO.sleep(2))
     Qt.QQmlEngine.setIncubationController(engine, Qt.QQmlIncubationController{0})
     detached: Qt.QQmlEngine <- Qt.QQmlIncubationController.engine(controller)
@@ -47,7 +47,7 @@ def changed_controller(+engine: Qt.QQmlEngine, +controller: Qt.QQmlIncubationCon
 
 def canceled(+engine: Qt.QQmlEngine, +controller: Qt.QQmlIncubationController, +incubator: Qt.QQmlIncubator, +flag: Qt.IncubationFlag) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    waiting: Chan(Result<&1, &1, U32 & String, Unit>) <- Qt.Action.lift(Chan(Result<&1, &1, U32 & String, Unit>), IO.fork(Result<&1, &1, U32 & String, Unit>, Qt.run(Unit, Qt.QQmlIncubationController.incubateWhile__IncubationFlag_Int32(controller, flag, Qt.Int32{4294967295}))))
+    waiting: Chan(Result<&1, &1, U32 & String, Unit>) <- Qt.Action.lift(Chan(Result<&1, &1, U32 & String, Unit>), IO.fork(Result<&1, &1, U32 & String, Unit>, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => Qt.QQmlIncubationController.incubateWhile__IncubationFlag_Int32(controller, flag, Qt.Int32{4294967295})))))
     Qt.Action.lift(Unit, IO.sleep(2))
     busy_engine: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QQmlEngine.destroy(engine))
     expected(16, busy_engine)
@@ -110,4 +110,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_INCUBATION_OK asynchronous=1 cancel=1 deadline=1 flag_pin=1 engine_pin=1 association=1 resume=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

@@ -203,4 +203,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT_SCENEGRAPH_MATERIAL_INSTANCES_OK shared_shader=1 instance_data=1 typed_bend_payload=1 red_and_green_pixels=1 objects=0 data=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

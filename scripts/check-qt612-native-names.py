@@ -35,7 +35,7 @@ def demo() -> Qt.Action(Unit):
     finished(U32.is_eq(objects, 0))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))
 '''
 
 

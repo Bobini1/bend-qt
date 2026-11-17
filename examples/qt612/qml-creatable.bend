@@ -60,4 +60,4 @@ def demo() -> Qt.Action(Unit):
     verify(String.eq(text, "Initialized in Bend / Attached in QML / Extended in Bend"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

@@ -244,4 +244,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_RUNTIME_ENUMS_OK enum=1 flags=1 scoped=1 signed=1 wide=1 standalone=1 immutable_metadata=1 metatype=1 property=1 signals=1 methods=1 bindings=1 qml=1 inherited=1 errors=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

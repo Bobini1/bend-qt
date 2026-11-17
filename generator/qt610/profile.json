@@ -63,6 +63,10 @@
     "QtXml"
   ],
   "native_modules": [
+    {"name": "Gui", "qt_modules": ["QtGui", "QtOpenGL", "QtSvg", "QtStateMachine"]},
+    {"name": "Widgets", "qt_modules": ["QtWidgets", "QtOpenGLWidgets", "QtPrintSupport", "QtSvgWidgets", "QtSql", "QtTest"]},
+    {"name": "Quick", "qt_modules": ["QtQuick", "QtQuickControls2"]},
+    {"name": "QuickWidgets", "qt_modules": ["QtQuickWidgets", "QtQuickTest", "QtLabsStyleKit"]},
     {"name": "WebEngine", "qt_modules": ["QtWebEngineCore", "QtWebEngineQuick", "QtWebEngineWidgets", "QtWebView"]},
     {"name": "Multimedia", "qt_modules": ["QtMultimedia", "QtMultimediaWidgets", "QtSpatialAudio", "QtTextToSpeech"]},
     {"name": "Qt3D", "qt_modules": ["Qt3DAnimation", "Qt3DCore", "Qt3DExtras", "Qt3DInput", "Qt3DLogic", "Qt3DRender"]},

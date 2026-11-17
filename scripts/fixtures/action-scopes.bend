@@ -26,10 +26,10 @@ def created_then_released(count: Nat) -> Qt.Action(Unit):
         created_then_released(rest)
 
 def task(delay: U32) -> IO(Result<&1, &1, U32 & String, Unit>):
-  Qt.run(Unit, do Qt.Action<Unit>:
+  Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => do Qt.Action<Unit>:
     +object: Qt.QObject <- Qt.QObject.new()
     Qt.Action.lift(Unit, IO.sleep(delay))
-    Qt.QObject.setObjectName(object, "still alive"))
+    Qt.QObject.setObjectName(object, "still alive")))
 
 def concurrent() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -84,12 +84,12 @@ def checks() -> Qt.Action(Unit):
 
 def main() -> IO(Unit):
   do IO<Unit>:
-    failed: Result<&1, &1, U32 & String, Unit> <- Qt.run(Unit, failure())
-    +object: Qt.QObject <- IO.try(Qt.QObject, Qt.run(Qt.QObject, detached()))
-    IO.try(Unit, Qt.run(Unit, do Qt.Action<Unit>:
+    failed: Result<&1, &1, U32 & String, Unit> <- Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => failure()))
+    +object: Qt.QObject <- IO.try(Qt.QObject, Qt.run(Qt.QObject, Qt.QApplication.with(Qt.QObject, Qt.QApplication.new(), application => detached())))
+    IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => do Qt.Action<Unit>:
       inspect_failure(failed)
       Qt.QObject.setObjectName(object, "detached across root scopes")
       Qt.QObject.destroy(object)
       objects: U32 <- Qt.Runtime.liveObjects()
       require(U32.is_eq(objects, 0), "A failed root evaluation leaked an owned QObject")
-      checks()))
+      checks())))

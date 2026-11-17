@@ -154,4 +154,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_FUNCTION_POINTER_CALLBACKS_OK easing=1 native_copy=1 views=1 more_than_ten=1 pool=application factories=1 ownership=qt failures=82_83"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

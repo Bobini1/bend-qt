@@ -47,6 +47,13 @@ def cpp(g):
                         ('QOpenGLBuffer', 'QOpenGLTexture', 'QOpenGLShader', 'QOpenGLShaderProgram', 'MemoryView')
                         if n in g.ids)
     prefix += 'static bool graphics_shareable(uint16_t type) { switch (type) { ' + shareable + ' return true; default: return false; } }\n'
+    if 'QOpenGLContext' not in g.ids:
+        # A group without QtGui, such as the Core-based shared group, owns no
+        # OpenGL resources and no scene graph.
+        return prefix + ('static bool graphics_context_ready(uint32_t) { return true; }\n'
+                         'static bool attach_graphics_context(BqtRequest *, uint32_t) { return true; }\n'
+                         'static bool check_graphics_context(BqtRequest *) { return true; }\n'
+                         'static void schedule_render_collection(uint32_t) {}\nstatic void prepare_render_shutdown() {}\n')
     prefix += '''static bool graphics_context_ready(uint32_t id) {
     auto *e = entry(id);
     @SYNC_READY@

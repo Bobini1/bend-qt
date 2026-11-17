@@ -148,4 +148,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT_SCENEGRAPH_MATERIAL_RENDER_OK bend_material=1 shader_factory=1 matrix=1 uniform_offsets=1 additive_pipeline=1 rendered_pixels=1 objects=0 data=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

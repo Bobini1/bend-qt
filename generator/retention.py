@@ -96,7 +96,10 @@ def _simple_plan(g, name, f, args, parameters):
     accessor = 'retention_' + re.sub(r'[^a-zA-Z0-9_]', '_', owner + '_' + getter['minimal_signature'])
     cast_key = (f"static_cast<{getter['arguments'][0]['type']['cpp']}>(key)" if keys else '')
     call = protected_members.expression(g, getter, [cast_key] if keys else [], receiver=f'static_cast<{owner} *>(object)')
-    call = call or f'static_cast<{owner} *>(object)->{prop}({cast_key})'
+    # QAction::menu is a template defaulting to the QtWidgets QMenu; the
+    # QObject form keeps the accessor inside QtGui, as PySide binds it.
+    native = 'menu<QObject *>' if (getter['declaring_class'], prop) == ('QAction', 'menu') else prop
+    call = call or f'static_cast<{owner} *>(object)->{native}({cast_key})'
     g.retention_accessors[accessor] = (
         f'static QObject *{accessor}(QObject *object, uint32_t key) {{\n'
         f'    return const_cast<QObject *>(static_cast<const QObject *>({call}));\n}}\n')

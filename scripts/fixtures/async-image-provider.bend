@@ -74,4 +74,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_ASYNC_IMAGE_PROVIDER_OK qml_loader=1 early_finished=1 red_pixels=1 cancel_finished=1 response_deleted=1 objects=0 data=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

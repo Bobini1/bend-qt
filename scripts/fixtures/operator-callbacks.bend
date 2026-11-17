@@ -64,4 +64,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_OPERATOR_CALLBACKS_OK function_call=1 equality=1 shared_native_value=1 thread_calls=1 native_shared_proxy=1 thread_final_release=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

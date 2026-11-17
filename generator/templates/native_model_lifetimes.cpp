@@ -8,6 +8,8 @@ static SlotTable<NativeModelObservation> native_model_observations;
 static SlotTable<uint32_t> native_observed_models;
 static SlotTable<uint32_t> native_take_tokens;
 static SlotTable<uint32_t> native_take_depth;
+#if defined(BQT_HAS_WIDGETS)
+// Widget layouts own their QLayoutItems; groups without QtWidgets have none.
 struct NativeLayoutObservation {
     uint32_t item, layout;
     QLayoutItem *pointer;
@@ -15,14 +17,17 @@ struct NativeLayoutObservation {
     bool checking;
 };
 static SlotTable<NativeLayoutObservation> native_layout_observations;
+#endif
 
 static void native_model_forget(uint32_t id)
 {
+#if defined(BQT_HAS_WIDGETS)
     auto &layout = native_layout_observations[id & 65535u];
     if (layout.item == id) {
         layout = {};
         if (auto *e = entry(id)) e->validate = nullptr;
     }
+#endif
     auto &record = native_model_observations[id & 65535u];
     if (record.item != id) return;
     delete record.index;
@@ -33,8 +38,10 @@ static void native_model_detach(uint32_t id)
 {
     for (const auto &record : native_model_observations)
         if (record.item && entry_inside(record.item, id)) native_model_forget(record.item);
+#if defined(BQT_HAS_WIDGETS)
     for (const auto &record : native_layout_observations)
         if (record.item && entry_inside(record.item, id)) native_model_forget(record.item);
+#endif
 }
 
 static bool native_model_taking(uint32_t id)
@@ -77,6 +84,7 @@ struct NativeTakeBatch {
     ~NativeTakeBatch() { for (auto *scope : scopes) delete scope; }
 };
 
+#if defined(BQT_HAS_WIDGETS)
 static bool validate_native_layout_item(BqtRequest *r, uint32_t id)
 {
     if (native_model_taking(id)) return true;
@@ -145,6 +153,9 @@ static void reconcile_native_layouts()
         validate_native_layout_item(&checked, record.item);
     }
 }
+#else
+static void reconcile_native_layouts() {}
+#endif
 
 static void native_model_removing(uint32_t model, const QModelIndex &parent,
                                   int first, int last, bool columns)

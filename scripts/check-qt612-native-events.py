@@ -99,7 +99,7 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_NATIVE_EVENTS_OK real_dispatch=1 forward=1 result=1 null_output=1 xcb_snapshot=1 expired=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))
 '''
 
 

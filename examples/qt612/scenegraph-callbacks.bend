@@ -208,4 +208,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_SCENEGRAPH_CALLBACKS_OK gui_render_loop=1 bend_node=1 red_pixels=1 old_node_reused=1 child_transfer=1 inline_geometry_guard=1 call_scoped_values=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

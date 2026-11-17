@@ -65,6 +65,7 @@ FIXTURES = [
     ('generic-variants', 'QT612_GENERIC_VARIANTS_OK', ()),
     ('value-types', 'QT612_VALUE_TYPES_OK', ()),
     ('list-models', 'QT612_LIST_MODELS_OK', ()),
+    ('application-objects', 'QT612_APPLICATION_OBJECTS_OK', ()),
     ('metadata-arguments', 'QT612_METADATA_ARGUMENTS_OK', ()),
     ('metadata-signal-arguments', 'QT612_METADATA_SIGNAL_ARGUMENTS_OK', ()),
     ('convenience-apis', 'QT612_CONVENIENCE_APIS_OK', ()),

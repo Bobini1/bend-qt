@@ -91,4 +91,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_SAMPLED_IMAGES_OK reflected_count=2 array_writeback=1 retain_until_shader=1 no_ownership_transfer=1 wrong_length_atomic=1 null_output_atomic=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

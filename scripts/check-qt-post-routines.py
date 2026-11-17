@@ -34,7 +34,7 @@ def install(mode: Bool) -> Qt.Action(Unit):
 
 def select(arguments: List<String>) -> IO(Unit):
   match arguments:
-    case program <> mode <> Nil{}: IO.try(Unit, Qt.run(Unit, install(String.eq(mode, "fail"))))
+    case program <> mode <> Nil{}: IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => install(String.eq(mode, "fail")))))
     case _: IO.die(Unit, 64, "Expected a cleanup control selector")
 
 def main() -> IO(Unit):

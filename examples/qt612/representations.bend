@@ -129,4 +129,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_REPRESENTATIONS_OK qchar=1 chrono=1 latin1=1 binary_std_string=1 copy_rvalue=1 json_object=1 matrix=1 collator=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

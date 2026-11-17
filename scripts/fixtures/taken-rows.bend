@@ -99,4 +99,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_TAKEN_ROWS_OK copied_aggregate=1 borrowed_fields=1 explicit_take=1 setter_adoption=1 native_allocation_fault=1 items=0 objects=0 retentions=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

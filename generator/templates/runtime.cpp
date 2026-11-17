@@ -19,8 +19,22 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QDeadlineTimer>
 #include <QtCore/QAbstractItemModel>
+#include <QtCore/QCoreApplication>
+// The Core-based shared group compiles without GUI modules. Every source that
+// includes a QtGui or QtWidgets header has that module's global header.
+#if !defined(BQT_HAS_GUI) && defined(QTGUIGLOBAL_H)
+#define BQT_HAS_GUI 1
+#endif
+#if !defined(BQT_HAS_WIDGETS) && defined(QTWIDGETSGLOBAL_H)
+#define BQT_HAS_WIDGETS 1
+#endif
+#if defined(BQT_HAS_WIDGETS)
 #include <QtWidgets/QApplication>
+#endif
+#if defined(BQT_HAS_GUI)
+#include <QtGui/QGuiApplication>
 #include <QtGui/QAccessible>
+#endif
 #include <cstdint>
 #include <climits>
 #include <cstdlib>
@@ -52,10 +66,12 @@
 // @ABI@
 
 namespace bendqt {
+#if defined(BQT_HAS_GUI)
 namespace NativeFunctionCallbacks {
 static uint32_t accessible_borrow(BqtRequest *, QAccessibleInterface *);
 static uint32_t accessible_borrow(BqtRequest *, const QAccessibleInterface *);
 }
+#endif
 // A native constructor sees its immutable Bend schema before its base starts.
 // The guard spans one synchronous Qt call and restores nested constructions.
 static thread_local const QMetaObject *runtime_construction_meta = nullptr;
@@ -288,7 +304,12 @@ struct Connection {
 };
 static SlotTable<Entry> entries;
 static SlotTable<Connection> connections;
-static QApplication *application;
+// The program constructs its application explicitly, as in C++, through
+// QCoreApplication.new, QGuiApplication.new or QApplication.new.
+static QCoreApplication *application;
+// Set once the first Qt effect has started the runtime, before any
+// application object exists.
+static bool runtime_started;
 static const BqtHost *bend;
 // Bend and the Qt application run here. Other threads read these to bring a
 // call to the main thread, so neither depends on `application` staying set.
@@ -313,13 +334,13 @@ struct NativeDestructionScope {
 };
 static void dynamic_properties_event(QObject *, QEvent *);
 static void dynamic_properties_forget(uint32_t);
-class BendApplication final : public QApplication {
+template<class Base> class BendApplication final : public Base {
 public:
-    using QApplication::QApplication;
+    using Base::Base;
     bool notify(QObject *receiver, QEvent *event) override {
         NativeDestructionScope notification;
         dynamic_properties_event(receiver, event);
-        return QApplication::notify(receiver, event);
+        return Base::notify(receiver, event);
     }
 };
 static std::atomic<QObject *> main_context{nullptr};
@@ -344,6 +365,9 @@ static void message_handler_shutdown();
 static void native_function_callbacks_shutdown();
 static bool post_routines_entry(const Entry &);
 static void post_routines_prepare();
+static const char *construct_application(int);
+static bool create_application(BqtRequest *, int, uint32_t);
+static bool require_application(BqtRequest *, int);
 static int post_routines_shutdown();
 static void callback_drain_released();
 static void prune_qml_list_leases();
@@ -353,6 +377,17 @@ static void prune_qml_list_leases();
 // handles a plain declarator, not a function-pointer one.
 using QmlListQueuedOwner = bool (*)(uint32_t);
 static QmlListQueuedOwner qml_list_queued_owner = nullptr;
+// Installed with the first text value guard: QObject.blockSignals and
+// QSignalBlocker, in the Core group, must still invalidate text iterators.
+using TextMutationHook = bool (*)(BqtRequest *, QObject *);
+static TextMutationHook text_mutation_hook = nullptr;
+// Set by runtime startup: connects Bend's sources to the event dispatcher that
+// the program's application object creates.
+using ApplicationHook = void (*)();
+static ApplicationHook application_constructed = nullptr;
+static bool note_object_text_mutation(BqtRequest *r, QObject *object) {
+    return !text_mutation_hook || text_mutation_hook(r, object);
+}
 static void protected_fields_reconcile();
 static void release_static_native_view(void *);
 static bool cursor_guard_cleanup_ready(BqtRequest *, uint32_t);
@@ -1115,7 +1150,8 @@ static uint32_t __attribute__((noinline)) insert(BqtRequest *r, void *value, QOb
                     else if (auto *context = main_context.load(std::memory_order_acquire)) QMetaObject::invokeMethod(context, [id] { invalidate(id); }, Qt::QueuedConnection);
                 });
                 if (auto *thread = qobject_cast<QThread *>(object))
-                    QObject::connect(thread, &QThread::finished, application, [] { schedule_collection(); }, Qt::QueuedConnection);
+                    if (auto *context = main_context.load(std::memory_order_acquire))
+                        QObject::connect(thread, &QThread::finished, context, [] { schedule_collection(); }, Qt::QueuedConnection);
             }
             if (!attach_graphics_context(r, id) || !attach_rhi_identity(r, id)) {
                 invalidate(id);
@@ -1381,9 +1417,12 @@ template<class T, class Derived> static uint32_t own_derived(BqtRequest *r, Deri
 template<class T> static uint32_t __attribute__((noinline)) borrow(BqtRequest *r, T *value, uint16_t type)
 {
     if (!value) return 0;
+#if defined(BQT_HAS_GUI)
     if constexpr (std::is_same_v<std::remove_const_t<T>, QAccessibleInterface>) {
         return NativeFunctionCallbacks::accessible_borrow(r, value);
-    } else if constexpr (std::is_base_of_v<QObject, T>) {
+    } else
+#endif
+    if constexpr (std::is_base_of_v<QObject, T>) {
         auto id = insert(r, value, value, type, native_deleter<T>(), false,
                          NativeTraits<T>::cast);
         // A mutable native return establishes writable storage. Pure Bend
@@ -1443,8 +1482,10 @@ template<class T> static uint32_t __attribute__((noinline)) register_native_borr
 template<class T> static uint32_t __attribute__((noinline)) borrow_const(BqtRequest *r, const T *value, uint16_t type)
 {
     if (!value) return 0;
+#if defined(BQT_HAS_GUI)
     if constexpr (std::is_same_v<T, QAccessibleInterface>)
         return NativeFunctionCallbacks::accessible_borrow(r, value);
+#endif
     for (uint32_t i = 1; i < capacity; ++i) {
         auto &e = entries[i];
         if (!e.value) continue;
@@ -1758,6 +1799,66 @@ static bool disconnect_signal(BqtRequest *r)
     return true;
 }
 
+static int application_argc;
+static char **application_argv;
+
+enum ApplicationKind : int { CoreApplication = 0, GuiApplication = 1, WidgetsApplication = 2 };
+
+static int application_kind() {
+    if (!application) return -1;
+    if (application->inherits("QApplication")) return WidgetsApplication;
+    if (application->inherits("QGuiApplication")) return GuiApplication;
+    return CoreApplication;
+}
+
+// Constructs the program's single application object from Bend's argv. Qt
+// keeps argc and argv for the application's lifetime and removes the options
+// it recognizes, so it gets the runtime's own copy. Returns an error or null.
+static const char *construct_application(int kind) {
+    if (application) return "The Qt application object already exists; construct it once";
+    try {
+        // Each kind is constructed by the native group that owns its class.
+        if (kind == WidgetsApplication) {
+#if defined(BQT_HAS_WIDGETS)
+            application = new BendApplication<QApplication>(application_argc, application_argv);
+#else
+            return "This native group cannot construct a QApplication";
+#endif
+        } else if (kind == GuiApplication) {
+#if defined(BQT_HAS_GUI)
+            application = new BendApplication<QGuiApplication>(application_argc, application_argv);
+#else
+            return "This native group cannot construct a QGuiApplication";
+#endif
+        } else application = new BendApplication<QCoreApplication>(application_argc, application_argv);
+        if (bend && bend->runtime_root)
+            QCoreApplication::setLibraryPaths({QString::fromUtf8(bend->runtime_root) + QStringLiteral("/plugins")});
+        if (application_constructed) application_constructed();
+    } catch (const std::bad_alloc &) {
+        return "Cannot allocate the Qt application";
+    }
+    return nullptr;
+}
+
+static bool create_application(BqtRequest *r, int kind, uint32_t type) {
+    if (application) return fail(r, EEXIST, "The Qt application object already exists; construct it once");
+    if (const char *error = construct_application(kind)) return fail(r, ENOMEM, error);
+    r->result.word = borrow(r, application, type);
+    return true;
+}
+
+// Constructors and functions of classes from modules that need a GUI
+// application call this first: Qt aborts the process instead of failing when,
+// for example, a QWidget is created before a QApplication.
+static bool require_application(BqtRequest *r, int kind) {
+    if (application_kind() >= kind) return true;
+    fail(r, ENXIO, kind == WidgetsApplication
+        ? "Construct a QApplication (Qt.QApplication.new) before using QtWidgets"
+        : "Construct a QGuiApplication or QApplication (Qt.QGuiApplication.new) before using this Qt GUI API");
+    return false;
+}
+
+
 // @DISPATCH@
 
 // While Qt waits for events, Bend's waiting computations must still wake: a
@@ -1841,19 +1942,27 @@ class BendHost final : public QObject {
 public:
     BendHost()
     {
-        auto *dispatcher = QAbstractEventDispatcher::instance();
-        connect(dispatcher, &QAbstractEventDispatcher::aboutToBlock, this, [this] { about_to_block(); });
-        connect(dispatcher, &QAbstractEventDispatcher::awake, this, [this] { awake(); });
         deadline.setSingleShot(true);
         deadline.setTimerType(Qt::PreciseTimer);
         connect(&deadline, &QTimer::timeout, this, [this] { run(); });
         since_run.start();
+        attach();
     }
+    // The event dispatcher exists once the program constructs its application.
+    void attach()
+    {
+        auto *dispatcher = QAbstractEventDispatcher::instance();
+        if (attached || !dispatcher) return;
+        attached = true;
+        connect(dispatcher, &QAbstractEventDispatcher::aboutToBlock, this, [this] { about_to_block(); });
+        connect(dispatcher, &QAbstractEventDispatcher::awake, this, [this] { awake(); });
+    }
+
+private:
+    bool attached = false;
 };
 
 static BendHost *bend_host;
-static int application_argc;
-static char **application_argv;
 
 } // namespace bendqt
 
@@ -1909,8 +2018,9 @@ extern "C" __attribute__((visibility("default"))) void bqt_abi_call(BqtRequest *
     }
 }
 
-// Creates the Qt application for the Bend program. Called once, by the first
-// Qt effect, on the main thread.
+// Starts the Qt runtime for the Bend program. Called once, by the first Qt
+// effect, on the main thread. The program then constructs its application
+// object explicitly (create_application), as a C++ main would.
 extern "C" __attribute__((visibility("default"))) const char *bqt_abi_start(const BqtHost *host)
 {
     using namespace bendqt;
@@ -1921,7 +2031,7 @@ extern "C" __attribute__((visibility("default"))) const char *bqt_abi_start(cons
             return "Cannot attach the shared Qt runtime";
         runtime_register_partition_arguments();
         runtime_register_partition_bases();
-        if (application) return nullptr;
+        if (runtime_started) return nullptr;
 #endif
 #if defined(BQT_BUNDLED_RUNTIME_NATIVE)
         if (const char *error = RuntimePaths::configure(host->runtime_root)) return error;
@@ -1934,21 +2044,19 @@ extern "C" __attribute__((visibility("default"))) const char *bqt_abi_start(cons
         for (int i = 0; i < host->argc; ++i) application_argv[i] = host->argv[i];
         bend = host;
         OpaqueData::host.store(host, std::memory_order_release);
-        application = new BendApplication(application_argc, application_argv);
-        if (host->runtime_root) {
-            const auto prefix = QString::fromUtf8(host->runtime_root);
-            if (QLibraryInfo::path(QLibraryInfo::PrefixPath) != prefix)
-                return "The Qt path configuration does not match the selected runtime";
-            QCoreApplication::setLibraryPaths({prefix + QStringLiteral("/plugins")});
-        }
-        main_thread = application->thread();
+        if (host->runtime_root &&
+                QLibraryInfo::path(QLibraryInfo::PrefixPath) != QString::fromUtf8(host->runtime_root))
+            return "The Qt path configuration does not match the selected runtime";
+        main_thread = QThread::currentThread();
         bend_host = new BendHost;
         main_context.store(bend_host, std::memory_order_release);
+        application_constructed = [] { if (bend_host) bend_host->attach(); };
+        runtime_started = true;
         return nullptr;
     } catch (const std::bad_alloc &) {
-        return "Cannot allocate the Qt application";
+        return "Cannot allocate the Qt runtime";
     } catch (...) {
-        return "Qt application startup raised an exception";
+        return "Qt runtime startup raised an exception";
     }
 }
 
@@ -1958,7 +2066,7 @@ extern "C" __attribute__((visibility("default"))) int bqt_abi_stop(void)
 {
     using namespace bendqt;
     struct DataStop { ~DataStop() { OpaqueData::shutdown(); } } data_stop;
-    if (!application) return 0;
+    if (!runtime_started) return 0;
     post_routines_prepare();
     native_function_callbacks_shutdown();
     // Ordinary handlers stop here. Explicit post routines use the still-live
@@ -1970,7 +2078,7 @@ extern "C" __attribute__((visibility("default"))) int bqt_abi_stop(void)
     delete bend_host;
     bend_host = nullptr;
     try {
-        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        if (application) QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
         reconcile_parents();
         reconcile_retentions();
         for (auto &c : connections)
@@ -1987,7 +2095,7 @@ extern "C" __attribute__((visibility("default"))) int bqt_abi_stop(void)
     // Objects Qt owns may outlive this point until the application destroys
     // them. Their destruction observers must not post to a dying application.
     application = nullptr;
-    { NativeDestructionScope destruction; delete app; }
+    if (app) { NativeDestructionScope destruction; delete app; }
     int post_error = post_routines_shutdown();
     collect_pending();
     // Maintainer-only diagnostic: deliberate external cycles can keep resources

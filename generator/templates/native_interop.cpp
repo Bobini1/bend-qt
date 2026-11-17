@@ -15,11 +15,13 @@ static bool native_function_ready(BqtRequest *r, const NativeFunction &value)
     if (!value.value) return true;
     if (auto *library = qobject_cast<QLibrary *>(owner->object); library && !library->isLoaded())
         return fail(r, ESTALE, "Native function library was unloaded"), false;
+#if defined(BQT_HAS_GUI)
     if (auto *context = qobject_cast<QOpenGLContext *>(owner->object)) {
         auto *current = QOpenGLContext::currentContext();
         if (!context->isValid() || !current || (current != context && !QOpenGLContext::areSharing(current, context)))
             return fail(r, EXDEV, "Native OpenGL function requires its current or sharing context"), false;
     }
+#endif
     return true;
 }
 

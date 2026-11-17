@@ -147,4 +147,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_METATYPE_GADGET_OK alignment64=1 default_construct=1 read=1 write=1 reset=1 invoke=1 typed_storage=1 retained_copy=1 destructor=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

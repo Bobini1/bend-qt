@@ -118,4 +118,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_PERSISTENT_STORAGE_OK resource_snapshot=1 unregister_reader=1 malformed=1 translator=1 logging=1 context_fields=1 logger=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

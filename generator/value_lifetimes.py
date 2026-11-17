@@ -10,13 +10,13 @@ def before_call(g, m):
     prefix = []
     name = f['name']
     if owner == 'QObject' and name == 'blockSignals':
-        prefix += ['if (!note_text_mutation(r, qobject_cast<QTextDocument *>(self))) return true;']
+        prefix += ['if (!note_object_text_mutation(r, self)) return true;']
     if owner == 'QSignalBlocker' and f['constructor'] and m['args'] and m['args'][0].get('name') == 'QObject':
-        prefix += ['if (!note_text_mutation(r, qobject_cast<QTextDocument *>(a0))) return true;']
+        prefix += ['if (!note_object_text_mutation(r, a0)) return true;']
     if owner == 'QSignalBlocker' and name in ('reblock', 'unblock'):
         prefix += ['for (const auto &edge : retentions) if (edge.owner == r->self) {',
                    '    auto *target = entry(edge.target);',
-                   '    if (target && target->object && !note_text_mutation(r, qobject_cast<QTextDocument *>(target->object))) return true;', '}']
+                   '    if (target && target->object && !note_object_text_mutation(r, target->object)) return true;', '}']
     if not f['constructor'] and not f['static'] and not f['const']:
         document = None
         if owner == 'QTextDocument':
@@ -86,6 +86,11 @@ def after_call(g, m):
 
 
 def cpp(g):
+    if not any(name in g.ids for name in TYPES):
+        # A group without QtGui text or QtWidgets tree values, such as the
+        # Core-based shared group, guards none.
+        return ('static void value_guard_forget(uint32_t) {}\n'
+                'static uint32_t finish_value_ownership(BqtRequest *, uint32_t id) { return id; }\n')
     source = (Path(__file__).parent / 'templates/value_lifetimes.cpp').read_text()
     source = source.replace('@VALUE_LIFETIME_CASES@', ' '.join(
         f'case {g.ids[name]}:' for name in sorted(TYPES) if name in g.ids))

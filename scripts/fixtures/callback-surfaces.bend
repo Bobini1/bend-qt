@@ -147,4 +147,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_CALLBACK_SURFACES_OK timers=1 lookup=1 permissions=1 rest=1 body_retention=1 temporary_reply=1 cancellation=1 errors=94_96"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

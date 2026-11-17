@@ -48,4 +48,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_EDITOR_FACTORY_CALLBACKS_OK ownership=1 idempotent=1 multiple_keys=1 replacement_deletion=1 native_creation=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

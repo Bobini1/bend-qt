@@ -48,4 +48,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_PROTECTED_DESTRUCTORS_OK ordinary_constructor=1 dependency=1 derived_delete=1 native_delete_observed=1 nonvirtual_owned=1 base_move=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

@@ -94,4 +94,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_RESTORED_NATIVE_OK accessible_outputs=1 native_boundaries=1 static_strings=1 numeric_overloads=1 typed_collections=1 retained_event_setters=1 objects=0 retentions=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

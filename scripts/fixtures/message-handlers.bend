@@ -79,4 +79,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_MESSAGE_HANDLERS_OK native_install=1 gui=1 other_thread_previous=1 copied_context=1 unicode=1 format=1 error_fallback=1 scoped_restore=1 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

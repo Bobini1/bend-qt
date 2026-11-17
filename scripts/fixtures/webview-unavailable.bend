@@ -19,5 +19,11 @@ def checks() -> Qt.Action(Unit):
     rejected(result)
     Qt.Action.lift(Unit, IO.print("QT612_WEBVIEW_UNAVAILABLE_OK checked_error=95 native_abort=0"))
 
+# Qt web modules are set up before the application object, as in C++.
+def web_application() -> Qt.Action(Qt.QApplication):
+  do Qt.Action<Qt.QApplication>:
+    Qt.QtWebView.initialize()
+    Qt.QApplication.new()
+
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, web_application(), application => checks())))

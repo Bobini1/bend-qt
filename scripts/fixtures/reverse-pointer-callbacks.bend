@@ -121,5 +121,11 @@ def run() -> Qt.Action(Unit):
     require(U32.is_eq(live, 0), "Reverse pointer callback resources leaked")
     Qt.Action.lift(Unit, IO.print("QT612_REVERSE_POINTER_CALLBACKS_OK cstrings=1 margins=1 arrays=1 worker=1 enum_outputs=1 prompt=1 cleanup=1"))
 
+# Qt web modules are set up before the application object, as in C++.
+def web_application() -> Qt.Action(Qt.QApplication):
+  do Qt.Action<Qt.QApplication>:
+    Qt.QCoreApplication.setAttribute__Qt_ApplicationAttribute(Qt.Qt.ApplicationAttribute.AA_ShareOpenGLContexts())
+    Qt.QApplication.new()
+
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, run()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, web_application(), application => run())))

@@ -61,4 +61,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_CANVAS_GRAB_CALLBACKS_OK native_null_rhi=1 image_snapshot=1 detached=1 failure=95"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, Qt.scoped(Unit, checks())))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => Qt.scoped(Unit, checks()))))

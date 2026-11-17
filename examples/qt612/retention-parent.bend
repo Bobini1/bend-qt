@@ -259,4 +259,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_RETENTION_PARENT_OK validator=1 menu=1 native_adoption=1 take=1 indirect_retarget=1 nonparent_mime=1 noncreating_observers=1 default_resets=1 document_reset=1 failure=1 objects=0 connections=0 retentions=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

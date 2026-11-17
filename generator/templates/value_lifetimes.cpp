@@ -111,6 +111,11 @@ static bool note_text_mutation(BqtRequest *r, const QTextDocument *document, int
     return true;
 }
 
+static bool note_object_document_mutation(BqtRequest *r, QObject *object)
+{
+    return note_text_mutation(r, qobject_cast<QTextDocument *>(object));
+}
+
 static uint32_t value_source(BqtRequest *r)
 { return native_call_scope && native_call_scope->value_origin ? native_call_scope->value_origin : r->self; }
 
@@ -126,6 +131,7 @@ static ValueGuard *source_value_guard(BqtRequest *r, uint16_t type)
 
 static bool reset_value_guard(BqtRequest *r, uint32_t id)
 {
+    text_mutation_hook = note_object_document_mutation;
     auto *e = entry(id);
     if (!e) return false;
     switch (e->type) {
@@ -160,6 +166,7 @@ static bool reset_value_guard(BqtRequest *r, uint32_t id)
                     guard->block_begin = block->begin();
                 }
             }
+#if defined(BQT_HAS_WIDGETS)
         } else if (e->type == @QTreeWidgetItemIterator@ && !guard->tree) {
             if (auto *source = entry(value_source(r))) {
                 QTreeWidget *tree = source->object ? qobject_cast<QTreeWidget *>(source->object) : nullptr;
@@ -169,6 +176,7 @@ static bool reset_value_guard(BqtRequest *r, uint32_t id)
                 if (tree) guard->tree = borrow(r, tree, @QTreeWidget@);
             }
             if (!guard->tree) { fail(r, ENOTSUP, "Tree iterator has no observed widget origin"); return false; }
+#endif
         }
         uint32_t owner = guard->document ? guard->document : guard->tree;
         {

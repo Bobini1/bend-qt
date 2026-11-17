@@ -226,7 +226,7 @@ static bool static_modal_tail(){
     ++completed_cases;return child_dependency_lived;
 }
 int main(int argc,char **argv){
-    BendApplication app(argc,argv);application=&app;main_thread=QThread::currentThread();
+    BendApplication<QApplication> app(argc,argv);application=&app;main_thread=QThread::currentThread();
     if(!native_parent(false)||!native_parent(true)||!qobject_parent()){
         puts("NATIVE_PARENT_DEPENDENCY_RELEASED_BEFORE_CHILD_DESTRUCTION");return 42;
     }

@@ -150,4 +150,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_STATE_CLEANUP_OK clear=1 reset=1 destroy=1 moves=1 replace=1 rollback=1 other_thread=1 foreign=1 failure=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

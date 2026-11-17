@@ -176,4 +176,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_GENERIC_VARIANTS_OK scalars=1 nativeEnums=1 runtimeEnums=1 containers=1 objects=1 values=1 opaque=1 metadata=1 snapshots=1 convert=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

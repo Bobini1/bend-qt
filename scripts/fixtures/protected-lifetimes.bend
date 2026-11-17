@@ -183,4 +183,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_PROTECTED_LIFETIMES_OK mime_copy=1 wizard_identity=1 document_child=1 printer_replacement=1 printer_reset=1 virtual_observer=1 engine_views=1 stale=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

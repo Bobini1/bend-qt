@@ -303,4 +303,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_CONVENIENCE_APIS_OK directory=1 fontTags=1 singleton=1 script=1 http=1 flat=1 table=1 nativeEditing=1 qmlEditing=1 cellReplacement=1 staleIsolation=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

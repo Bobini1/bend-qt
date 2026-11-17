@@ -139,7 +139,8 @@ interpreter and Qt has its answer before the native call returns.
 The native payload exports three functions, declared in `templates/abi.h` and
 `templates/effects.c`:
 
-- `bqt_abi_start(const BqtHost *)` creates the QApplication from Bend's argv.
+- `bqt_abi_start(const BqtHost *)` starts the runtime; the program then constructs
+  its application object (`QCoreApplication.new` and the GUI kinds).
   The first Qt effect calls it. It returns an error string or NULL.
 - `bqt_abi_call(BqtRequest *)` runs one generated operation to completion.
   `BqtRequest` carries the operation, receiver handle, arguments, result,
@@ -589,7 +590,8 @@ units, and rejects deliberate duplicated-state and invalid-compilation cases.
 These are native integration checks, outside the Bend law/proof guarantee.
 
 The first Qt effect loads Qt, rejects any version other than 6.12.0,
-resolves all required symbols and creates the application.
+resolves all required symbols and starts the runtime; the program constructs
+the application object.
 `BEND_QT_LIBRARY` overrides the path of the Qt Widgets library it opens. The
 effect renames Bend's generated `main` with a macro and calls it from its own
 `main`, which then runs `bqt_abi_stop`, so Qt is torn down before the C

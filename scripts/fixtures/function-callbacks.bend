@@ -79,5 +79,11 @@ def checks() -> Qt.Action(Unit):
     require(U32.is_eq(objects, 0), "Function handlers leaked native handles")
     Qt.Action.lift(Unit, IO.print("QT612_FUNCTION_CALLBACKS_OK javascript=1 html=1 native_remote_filter=1 string_view_copy=1 handler_error=1 objects=0"))
 
+# Qt web modules are set up before the application object, as in C++.
+def web_application() -> Qt.Action(Qt.QApplication):
+  do Qt.Action<Qt.QApplication>:
+    Qt.QCoreApplication.setAttribute__Qt_ApplicationAttribute(Qt.Qt.ApplicationAttribute.AA_ShareOpenGLContexts())
+    Qt.QApplication.new()
+
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, web_application(), application => checks())))

@@ -408,7 +408,7 @@ def demo() -> Qt.Action(Unit):
     check(U32.is_eq(objects, 0))
     Qt.Action.lift(Unit, IO.print("QT612_EXTENSION_OK QtXml.QDomDocument=1 scopes=1 objects=0"))
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))
 '''
         receipt = check_package(package, [("extension", source, "QT612_EXTENSION_OK")],
                                 env, [qt], OUT / "extension")

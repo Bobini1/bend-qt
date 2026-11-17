@@ -133,4 +133,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_BORROWED_VALUES_OK gradient_snapshot=1 cursor_view=1 cursor_expiry=1 event_point_view=1 null_string=1 objects=0 pins=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

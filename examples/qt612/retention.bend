@@ -294,4 +294,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_RETENTION_OK shared=1 unexpired=1 replace=1 failure=1 ancestor=1 cycles=1 cascade=1 keyed=1 selection=1 capacity=1 objects=0 connections=0 retentions=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

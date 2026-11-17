@@ -58,4 +58,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_PRIMITIVE_STORAGE_OK mutable_alias=1 readonly=1 borrowed_destruction=1 retention=1 typed_constructor=1 null_data=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

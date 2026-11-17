@@ -65,4 +65,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_FILE_MAPPINGS_OK map=1 write=1 closed_file=1 unmap=1 scoped_unmap=1 storage_guard=1 byte_view=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

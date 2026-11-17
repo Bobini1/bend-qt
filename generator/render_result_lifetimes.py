@@ -7,7 +7,9 @@ CANVAS_DEPENDENCY_SLOT = 0xffa10001
 
 
 def cpp(g):
-    if 'QQuickWindow' not in g.ids:
+    # A group that only refers to QQuickWindow, such as QuickWidgets, has no
+    # scene-graph factories.
+    if 'QQuickWindow' not in g.ids or 'QSGNode' not in g.ids:
         return '''static void render_factory_mark(uint32_t) {}
 static bool render_factory_consumable(uint32_t) { return false; }
 static uint32_t render_factory_retention_owner(uint32_t id) { return id; }

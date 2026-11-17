@@ -16,6 +16,7 @@ import output_files
 from backend import command, compile_backend, validate_backend
 from upstream import prepare, select_classes
 import adapters
+import application_objects
 from adapters import install_carriers, prepare_adapters, emit_adapters, method_policy, owns_result, transfers_argument, native_member_parameters, native_header_support
 from conversions import Conversions
 from lifetime import evaluate_tables, cpp_tables
@@ -217,11 +218,13 @@ class Generator:
                 for field, identity in (('functions', 'minimal_signature'), ('enums', 'name')):
                     merged[field] = list({x[identity]: x for x in previous[field] + c[field]}.values())
                 merged['generate'] = previous['generate'] or c['generate']
+                merged['packages'] = sorted({*previous.get('packages', [previous.get('package')]), c.get('package')} - {None})
                 self.classes[c['name']] = merged
             else:
                 self.classes[c['name']] = c
         self.selected, self.excluded_classes = select_classes(api)
         install_carriers(self.classes, self.selected)
+        adapters.install_group_retention(self.classes)
         native_objects.install(self.classes, self.selected, self.excluded_classes)
         child_lookup.install(self.classes, self.selected)
         convenience_apis.install(self.classes, self.selected)
@@ -544,7 +547,8 @@ class Generator:
             from module_partitions import exports_class
             # A group also emits members declared by its own modules for a
             # class owned elsewhere (module_partitions.member_assignments).
-            assigned = None if exports_class(self, name) else self.classes[name].get('partition_members')
+            from module_partitions import partition_assigned
+            assigned = None if exports_class(self, name) else partition_assigned(self, name)
             if not exports_class(self, name) and not assigned:
                 continue
             if name in ("QString", "QStringView", "QAnyStringView"):
@@ -554,6 +558,9 @@ class Generator:
             methods = self.inherited(name)
             if assigned:
                 methods = [f for f in methods if f['minimal_signature'] in assigned]
+            elif getattr(self, 'partition_export_packages', None):
+                methods = [f for f in methods if not f.get('partition_module')
+                           or 'PySide6.' + f['partition_module'] in self.partition_export_packages]
             signal_counts = Counter(f["name"] for f in methods)
             for f in methods:
                 f = protected_members.callable_contract(self, name, f)
@@ -941,7 +948,6 @@ class Generator:
         lines += event_loops.before_call(self, m)
         lines += thread_affinity.before_call(self, m)
         lines += convenience_apis.before_call(self, m)
-        lines += adapters.initialized_application_call(self, m)
         lines += value_pointer_inputs.before_call(self, m)
         lines += engine_lifetimes.before_call(self, m)
         lines += core_pointer_results.before_call(self, m)
@@ -1198,6 +1204,7 @@ class Generator:
         self.emit_effect("Runtime.liveObjects", [], word, 3)
         self.emit_effect("Runtime.liveConnections", [], word, 4)
         self.emit_effect("Runtime.liveRetentions", [], word, 5)
+        application_objects.emit(self)
         abi_cohorts.emit(self)
         emit_adapters(self)
         data_streams.emit(self)
@@ -1231,7 +1238,9 @@ class Generator:
                 self.next_id += 1
                 native_methods[key] = m
             m["operation"] = operation
-            if not previous: self.method_case(m, operation)
+            if not previous:
+                self.method_case(m, operation)
+                application_objects.guard(self, m, operation)
             has_self = not (f["constructor"] or f["static"])
             params = [(f"arg{i}", t) for i, t in enumerate(m["args"])]
             if has_self:
@@ -1253,6 +1262,11 @@ class Generator:
         core_pointer_results.annotate(self)
         native_function_callbacks.annotate(self)
         proxies = callbacks.cpp(self)
+        # Protected members and engine hooks can check native children in a
+        # group where no other emitter registered the shared helpers.
+        if any('native_children_idle(' in case for case in self.cases):
+            import native_lifetimes
+            native_lifetimes.prepare(self)
         native = ((HERE / 'templates/native_snapshots.cpp').read_text() + (HERE / 'templates/callbacks.cpp').read_text() + child_lookup.cpp(self) + rhi_lifetimes.cpp(self) + rhi_native_handles.cpp(self) + borrowed_values.cpp(self) + value_lifetimes.cpp(self) + moves.cpp(self) + resource_swaps.cpp(self) + (HERE / 'templates/native_model_lifetimes.cpp').read_text()
                   + (HERE / 'templates/retention_extra.cpp').read_text()
                   + retention_module.cpp(self) + metadata_lifetimes.cpp(self) + role_data.cpp(self) + model_indices.cpp(self) + qml_list_lifetimes.cpp(self) + dbus_replies.cpp(self) + persistent_storage.cpp(self) + rendering.cpp(self) + gl_raw_mappings.declarations(self) + memory_views.cpp(self) + gl_raw_mappings.cpp(self) + gl_retained.cpp(self) + gl_pointers.cpp(self) + byte_iterators.cpp(self) + volume_data.cpp(self) + typed_views.cpp(self) + buffers.gl_buffers.cpp(self)
@@ -1353,7 +1367,8 @@ class Generator:
     case 0: return destroy_object(r);
     case 2: return disconnect_signal(r);
     case 3:
-        for (const auto &e : entries) if (e.value) ++r->result.word;
+        // The application object is runtime-owned, not a leakable handle.
+        for (const auto &e : entries) if (e.value && !(e.object && e.object == application)) ++r->result.word;
         return true;
     case 4:
         for (const auto &c : connections) if (c.active) ++r->result.word;
@@ -1454,14 +1469,14 @@ def native_source(generator, api, headers, qt_prefix, work, abi, lifetime_policy
     qml_prefix, qml_suffix = callbacks.qml_sources(generator, qt_prefix, work)
     version = api['qt_headers']
     runtime = (HERE / 'templates/runtime.cpp').read_text()
-    initializers = adapters.application_initializers(generator.profile['qt_modules'])
-    if initializers:
-        application = '        application = new BendApplication(application_argc, application_argv);'
-        runtime = runtime.replace(application, '\n'.join('        ' + call for call in initializers) + '\n' + application)
+    # A native group without GUI modules, such as the Core-based shared group,
+    # compiles the runtime without their parts.
+    gui = ''.join(f'#define BQT_HAS_{module[2:].upper()} 1\n' for module in ('QtGui', 'QtWidgets')
+                  if module in generator.profile['qt_modules'])
     cpp = (headers.read_text() + native_header_support(generator.profile['qt_modules']) + aliases + qml_prefix
            + '\n#if QT_VERSION != QT_VERSION_CHECK(' + ', '.join(version.split('.'))
            + ')\n#error "Generate with Qt ' + version + ' headers"\n#endif\n'
-           + '#define BQT_BUNDLED_RUNTIME_NATIVE 1\n'
+           + gui + '#define BQT_BUNDLED_RUNTIME_NATIVE 1\n'
            + (HERE / 'templates/runtime_paths.cpp').read_text()
            + runtime + qml_suffix)
     return cpp.replace('// @ABI@', abi).replace('// @LIFETIME@', cpp_tables(lifetime_policy)).replace(

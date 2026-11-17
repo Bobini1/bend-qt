@@ -137,4 +137,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_THREAD_POOL_OK pool_handler=1 main_thread_effect=1 main_wait=1 auto_delete=1 reusable=1 reserved=1 running_try_take=1 busy_try_start=1 duplicate=1 try_take=1 pinned=1 clear=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

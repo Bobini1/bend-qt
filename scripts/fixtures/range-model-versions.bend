@@ -142,4 +142,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT_RANGE_MODEL_BEND_OK nativeEditing=1 qmlEditing=1 table=1 subclass=1 qobjectRetention=1 staleIsolation=1 cleanup=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

@@ -243,4 +243,4 @@ def demo() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_MODEL_INDICES_OK shift=1 reset=1 persistent=1 range=1 destruction=1 signal_arguments=1 variant=1 native_variant=1 opaque_data=1 cleanup=1 connections=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, demo()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

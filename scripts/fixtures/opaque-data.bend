@@ -140,4 +140,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_OPAQUE_DATA_OK typed=1 generic_types=1 wrong_type_rejected=1 signals=1 properties=1 methods=1 maps=1 qml_roundtrip=1 queued=1 worker_destruction=1 churn=5000 live_data=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

@@ -87,4 +87,4 @@ def checks() -> Qt.Action(Unit):
     Qt.Action.lift(Unit, IO.print("QT612_RHI_CLEANUP_OK keyed_replace=1 keyed_remove=1 unkeyed=1 native_resource_phase=1 handler_error=1 hits=5 objects=0"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

@@ -41,4 +41,4 @@ def checks() -> Qt.Action(Unit):
         object => connected(object, probe, button))))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

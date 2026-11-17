@@ -93,6 +93,8 @@ def emit(g):
 
 
 def cpp(g):
+    if 'QImage' not in g.ids:
+        return ''
     return '''
 static void release_image_buffer(void *data) noexcept {
     delete static_cast<std::shared_ptr<std::vector<uint64_t>> *>(data);
