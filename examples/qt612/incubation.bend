@@ -36,7 +36,7 @@ def root(value: Qt.QObject) -> Qt.Action(Unit):
 def changed_controller(+engine: Qt.QQmlEngine, +controller: Qt.QQmlIncubationController, +flag: Qt.IncubationFlag) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.IncubationFlag.store(flag, True{})
-    waiting: Chan(Result<&1, &1, U32 & String, Unit>) <- Qt.Action.lift(Chan(Result<&1, &1, U32 & String, Unit>), IO.fork(Result<&1, &1, U32 & String, Unit>, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => Qt.QQmlIncubationController.incubateWhile__IncubationFlag(controller, flag)))))
+    waiting: Chan(Result<&1, &1, U32 & String, Unit>) <- Qt.Action.lift(Chan(Result<&1, &1, U32 & String, Unit>), IO.fork(Result<&1, &1, U32 & String, Unit>, Qt.run(Unit, Qt.QQmlIncubationController.incubateWhile__IncubationFlag(controller, flag))))
     Qt.Action.lift(Unit, IO.sleep(2))
     Qt.QQmlEngine.setIncubationController(engine, Qt.QQmlIncubationController{0})
     detached: Qt.QQmlEngine <- Qt.QQmlIncubationController.engine(controller)
@@ -47,7 +47,7 @@ def changed_controller(+engine: Qt.QQmlEngine, +controller: Qt.QQmlIncubationCon
 
 def canceled(+engine: Qt.QQmlEngine, +controller: Qt.QQmlIncubationController, +incubator: Qt.QQmlIncubator, +flag: Qt.IncubationFlag) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    waiting: Chan(Result<&1, &1, U32 & String, Unit>) <- Qt.Action.lift(Chan(Result<&1, &1, U32 & String, Unit>), IO.fork(Result<&1, &1, U32 & String, Unit>, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => Qt.QQmlIncubationController.incubateWhile__IncubationFlag_Int32(controller, flag, Qt.Int32{4294967295})))))
+    waiting: Chan(Result<&1, &1, U32 & String, Unit>) <- Qt.Action.lift(Chan(Result<&1, &1, U32 & String, Unit>), IO.fork(Result<&1, &1, U32 & String, Unit>, Qt.run(Unit, Qt.QQmlIncubationController.incubateWhile__IncubationFlag_Int32(controller, flag, Qt.Int32{4294967295}))))
     Qt.Action.lift(Unit, IO.sleep(2))
     busy_engine: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QQmlEngine.destroy(engine))
     expected(16, busy_engine)
@@ -103,6 +103,8 @@ def engine(+engine: Qt.QQmlEngine) -> Qt.Action(Unit):
 
 def demo() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
+    # The QML imports QtQuick with a plain QQmlEngine, so it loads that group.
+    Qt.Modules.Quick.load()
     Qt.QQmlEngine.with(Unit, Qt.QQmlEngine.new(), value => engine(value))
     objects: U32 <- Qt.Runtime.liveObjects()
     pins: U32 <- Qt.Runtime.liveRetentions()

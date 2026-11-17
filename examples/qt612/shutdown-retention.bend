@@ -37,7 +37,8 @@ def demo() -> Qt.Action(Unit):
     edges: U32 <- Qt.Runtime.liveRetentions()
     objects: U32 <- Qt.Runtime.liveObjects()
     connections: U32 <- Qt.Runtime.liveConnections()
-    require(U32.is_eq(edges, 2) && U32.is_eq(objects, 5) && U32.is_eq(connections, 0), "Unexpected shutdown fixture registry state")
+    # The runtime-owned application handle is not counted.
+    require(U32.is_eq(edges, 2) && U32.is_eq(objects, 4) && U32.is_eq(connections, 0), "Unexpected shutdown fixture registry state")
     # The harness enables BEND_QT_CHECK_SHUTDOWN and requires its native
     # QT612_SHUTDOWN_OK marker, emitted only after QApplication destruction.
     Qt.Action.lift(Unit, IO.print("QT612_SHUTDOWN_RETENTION_READY pending_targets=2 qt_owned_retainers=2"))

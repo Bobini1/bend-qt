@@ -36,7 +36,8 @@ def demo() -> Qt.Action(Unit):
     connections: U32 <- Qt.Runtime.liveConnections()
     # The binding owns this application until process exit. Its borrowed
     # identity remains registered; the user-created parent has been destroyed.
-    require(U32.is_eq(objects, 1) && U32.is_eq(connections, 0), "Unexpected resources after application guard checks")
+    # The runtime-owned application is not a leakable handle.
+    require(U32.is_eq(objects, 0) && U32.is_eq(connections, 0), "Unexpected resources after application guard checks")
     Qt.Action.lift(Unit, IO.print("QT612_HOST_LIFETIME_OK reparent_rejected=1 destroy_rejected=1 release_safe=1 borrowed_host=1 connections=0"))
 
 def main() -> IO(Unit):

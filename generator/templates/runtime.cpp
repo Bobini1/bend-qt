@@ -138,6 +138,10 @@ static bool runtime_argument_assign(BqtRequest *, int, void *, const void *);
 #if defined(BQT_NATIVE_PARTITIONS)
 static void runtime_register_partition_arguments();
 static void runtime_register_partition_bases();
+// Every native group's check for its own compiled metaobjects.
+using MetaObjectCheck = bool (*)(const QMetaObject *);
+static std::vector<MetaObjectCheck> compiled_metaobject_checks;
+static bool local_immutable_metaobject(const QMetaObject *);
 #endif
 // Immutable native names can be retained by Qt plugins and QML registrations.
 // Set nodes keep their string addresses through further insertions. This pool
@@ -2031,6 +2035,7 @@ extern "C" __attribute__((visibility("default"))) const char *bqt_abi_start(cons
             return "Cannot attach the shared Qt runtime";
         runtime_register_partition_arguments();
         runtime_register_partition_bases();
+        compiled_metaobject_checks.push_back(local_immutable_metaobject);
         if (runtime_started) return nullptr;
 #endif
 #if defined(BQT_BUNDLED_RUNTIME_NATIVE)

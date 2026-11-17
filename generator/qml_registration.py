@@ -44,10 +44,20 @@ template<class T> static bool is_static_metaobject(const QMetaObject *meta) {
     if constexpr (HasStaticMetaObject<T>::value) return meta == &T::staticMetaObject;
     return false;
 }
-static bool immutable_metaobject(const QMetaObject *meta) {
+// This group's compiled metaobjects. Each native group registers its own
+// check, so QFileDialog's metaobject, compiled in the Widgets group, is
+// recognised by QML registration in the shared group.
+static bool local_immutable_metaobject(const QMetaObject *meta) {
     if (runtime_enum_metadata(meta) || native_metadata_is_immutable(meta)) return true;
     if (meta == &Qt::staticMetaObject) return true;
 ''' + '\n'.join(checks) + '''
+    return false;
+}
+static bool immutable_metaobject(const QMetaObject *meta) {
+    if (local_immutable_metaobject(meta)) return true;
+#if defined(BQT_NATIVE_PARTITIONS)
+    for (auto check : compiled_metaobject_checks) if (check(meta)) return true;
+#endif
     return false;
 }
 struct QmlMetaRegistration { QByteArray uri, name; };
