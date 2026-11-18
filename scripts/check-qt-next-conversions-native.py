@@ -42,7 +42,7 @@ def generate(work,qt,*,rhi=False,api_transform=None,extra_headers=()):
     qio_pipe.restore(api,work)
     if api_transform:api_transform(api)
     if extra_headers:headers.write_text(headers.read_text()+'\n'+'\n'.join('#include <'+name+'>' for name in extra_headers)+'\n')
-    traits=json.loads((ROOT/'build/qt612/native-traits.json').read_text())
+    traits=native_objects.saved_traits(ROOT/'build/qt612')
     packages={'PySide6.'+x for x in modules}
     api['classes']=[c for c in api['classes'] if (c['package'] in packages or c['name'] in FAMILIES or rhi and '/rhi/' in c.get('source_file','')) and (rhi or '/rhi/' not in c.get('source_file',''))]
     api['global_functions']=[f for f in api.get('global_functions',[]) if f.get('package','PySide6.QtCore') in packages]

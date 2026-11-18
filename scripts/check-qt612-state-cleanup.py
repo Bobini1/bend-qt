@@ -31,7 +31,7 @@ def main():
     parser.add_argument('--qt-root', type=Path, default=cache / 'Qt/6.12.0/gcc_64')
     parser.add_argument('--work', type=Path, default=ROOT / 'build/state-cleanup')
     parser.add_argument('--model-work', type=Path, default=ROOT / 'build/qt612',
-                        help='Maintainer extraction directory containing api.json and native-traits.json')
+                        help='Maintainer extraction directory containing api.json and its saved native traits')
     parser.add_argument('--runtime-only', action='store_true')
     parser.add_argument('--syntax-only', action='store_true')
     parser.add_argument('--emit-only', action='store_true')
@@ -51,7 +51,7 @@ def main():
         # Namespace-level enums belong to modules too; keep only the selected ones.
         api['enums'] = [e for e in api.get('enums', []) if e.get('package', '').removeprefix('PySide6.') in modules]
         api['global_functions'] = []
-        traits = json.loads((args.model_work / 'native-traits.json').read_text())
+        traits = native_objects.saved_traits(args.model_work)
         for c in api['classes']:
             if c['name'] in traits:
                 c.update(traits[c['name']]); c['native_copyable'] = traits[c['name']]['copyable']; c['native_movable'] = traits[c['name']]['movable']

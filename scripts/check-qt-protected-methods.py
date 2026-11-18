@@ -12,6 +12,7 @@ from types import SimpleNamespace
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'generator'))
 import protected_members
+from native_objects import saved_traits
 
 
 def main():
@@ -22,7 +23,7 @@ def main():
     args = parser.parse_args()
     args.work.mkdir(parents=True, exist_ok=True)
     api = json.loads((args.source_work / 'api.json').read_text())
-    traits = json.loads((args.source_work / 'native-traits.json').read_text())
+    traits = saved_traits(args.source_work)
     classes = {c['name']: dict(c, **traits.get(c['name'], {})) for c in api['classes']}
     targets = {'QEvent': 'operator=', 'QCanvasGradient': 'operator=',
                'QStringConverterBase': 'operator=', 'QSqlResult': 'boundValues',

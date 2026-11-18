@@ -7,14 +7,15 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'generator'))
 from generate import Generator
 import callbacks,coverage_inventory,public_fields
+from native_objects import saved_traits
 work=ROOT/'build/qt612'
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--baseline',type=Path,default=work/'current-gap-audit/inventory.json')
 parser.add_argument('--model-work',type=Path,default=work,
-                    help='Coherent extraction directory containing api.json and native-traits.json')
+                    help='Coherent extraction directory containing api.json and its saved native traits')
 args=parser.parse_args()
 baseline=args.baseline
-api=json.loads((args.model_work/'api.json').read_text());traits=json.loads((args.model_work/'native-traits.json').read_text())
+api=json.loads((args.model_work/'api.json').read_text());traits=saved_traits(args.model_work)
 if sys.platform=='win32':
     # Read-only Python collection can use host RAM while WSL's full compiler is
     # near its memory limit. Native evidence still comes from the installed kit.
@@ -56,8 +57,8 @@ for row in old['native_coverage']['unique_exclusions']:
         elif current['category']!='binding_gap':reclassified.append(current)
         else:remaining.append(current)
 report=dict(baseline_sha256=hashlib.sha256(baseline.read_bytes()).hexdigest(),
- model_inputs={name:hashlib.sha256((args.model_work/name).read_bytes()).hexdigest()
-               for name in ('api.json','native-traits.json')},
+ model_inputs={'api.json':hashlib.sha256((args.model_work/'api.json').read_bytes()).hexdigest(),
+               'native_traits':hashlib.sha256(json.dumps(traits,sort_keys=True).encode()).hexdigest()},
  baseline_entries=old['generated_entries'],entries=len(g.methods),
  baseline_selected=old['selected_count'],selected=len(g.selected),
  closed_binding_gaps=closed,remaining_binding_gaps=remaining,

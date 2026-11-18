@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'generator'))
 from generate import Generator
 import callbacks
+from native_objects import saved_traits
 import coverage_inventory
 
 
@@ -22,9 +23,8 @@ def main():
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     source = args.work / 'api.json'
-    trait_path = args.work / 'native-traits.json'
     api = json.loads(source.read_text())
-    traits = json.loads(trait_path.read_text())
+    traits = saved_traits(args.work)
     profile = json.loads(args.profile.read_text())
     upstream = json.loads((args.work / 'upstream.json').read_text())
     profile['qt_modules'] = upstream['modules']
@@ -54,7 +54,7 @@ def main():
                 omissions.append(dict(log=str(path.relative_to(args.work)), category=category, detail=line.strip()))
     artifact = dict(generated_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         api=str(source), api_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
-        traits=str(trait_path), traits_sha256=hashlib.sha256(trait_path.read_bytes()).hexdigest(),
+        traits=str(args.work), traits_sha256=hashlib.sha256(json.dumps(traits, sort_keys=True).encode()).hexdigest(),
         modules=profile['qt_modules'], selected_classes=len(generator.selected),
         method_entries=len(generator.methods), unique_public_native_gaps=len(gaps),
         reasons=dict(Counter(item['reason'] for item in gaps).most_common()), gaps=gaps,

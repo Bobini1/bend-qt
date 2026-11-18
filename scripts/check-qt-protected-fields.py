@@ -15,6 +15,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'generator'))
 import protected_fields
+from native_objects import saved_traits
 
 
 def main():
@@ -28,10 +29,12 @@ def main():
     api_path = args.source_work / 'api.json'
     api = json.loads(api_path.read_text())
     classes = {c['name']: c for c in api['classes']}
-    traits_path = args.source_work / 'native-traits.json'
-    if traits_path.exists():
-        for name, flags in json.loads(traits_path.read_text()).items():
-            if name in classes: classes[name].update(flags)
+    try:
+        traits = saved_traits(args.source_work)
+    except FileNotFoundError:
+        traits = {}
+    for name, flags in traits.items():
+        if name in classes: classes[name].update(flags)
     # Test cases, not a production class allowlist. These include every pinned
     # bitfield owner and representative addressable/member-view contracts.
     selected = ['QPaintDevice', 'QPaintEngine', 'QPaintEngineState', 'QLayoutItem',
