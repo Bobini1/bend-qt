@@ -25,7 +25,7 @@ dependency metadata.
 [native build](https://github.com/bendlang/bend/blob/v2.0.40/bend2/main.ts#L491),
 [foreign imports](https://github.com/bendlang/bend/blob/v2.0.40/bend2/bend.ts#L2548).
 
-The package therefore consists of `qt.bend` and one C effect, `qt.c`. Loading
+The package therefore consists of `qt.bend` and C effects. Loading
 native libraries at run time is an established pattern for Hub packages. On
 9 November 2026 a fresh consumer imported
 `bend-kit-sqlite@0.1.0.1/sqlite.bend` (snapshot
@@ -42,34 +42,49 @@ and bend-smtp (OpenSSL, loaded at run time) follow the same approach.
 [native dependencies](https://github.com/paymog/bend-kit#native-libraries),
 [SMTP implementation](https://github.com/kbrianps/bend-smtp/blob/main/net.c).
 
-## The packaged C effect
+## The packaged C effects
 
-`qt.c` is self-contained. It holds the Bend effect adapter, the request layout
-shared with the C++ side (`generator/templates/abi.h`) and the compiled C++
-wrappers as an embedded payload. It refuses to compile for anything other than
+`qt.c` holds the Bend effect adapter, the request layout shared with the C++
+side (`generator/templates/abi.h`) and the base group's compiled C++ wrappers
+as an embedded payload. Each other native group has its own `qt-<Group>.c`
+with its payload, and the bundled runtime's files are spread over
+`qt-runtime-NNNN.c` pieces. Bend compiles only the files that the program's
+reachable definitions import. The C refuses to compile for anything other than
 a native Linux x86-64 CPU build.
 
-The maintainer generator compiles the C++ wrappers against Qt 6.12.0 and links
-them into a shared library. Packaging strips it and rejects text relocations,
-library search paths, unplanned `NEEDED` entries, exports other than
-`bqt_abi_call`, `bqt_abi_start` and `bqt_abi_stop`, and relocation families it
-does not recognise. The library is then compressed and embedded in `qt.c` as
-base64 text. Two payloads are embedded: one built for exactly Qt 6.12.0, which
-includes version-bound RHI operations, and one that uses only Qt's public ABI.
+The maintainer generator compiles each group's C++ wrappers against Qt 6.12.0
+and links them into a shared library. Packaging strips it and rejects text
+relocations, library search paths, unplanned `NEEDED` entries, exports other
+than `bqt_abi_call`, `bqt_abi_start` and `bqt_abi_stop`, and relocation
+families it does not recognise. The library is then compressed and embedded
+as base64 text.
 
 When Qt is first needed, the effect:
 
-1. dlopens `libQt6Widgets.so.6`, or the path in `BEND_QT_LIBRARY`;
-2. reads `qVersion()` and rejects versions other than 6.12.0;
-3. dlopens the other Qt module libraries the profile selected;
-4. selects the complete payload built for that Qt runtime;
-5. inflates it with `uncompress` from the already required `libz.so.1`, loaded
-   with dlopen, into a sealed memfd;
-6. dlopens the payload from `/proc/self/fd` and resolves its three entry
-   points.
+1. extracts the bundled runtime into its cache directory, unless
+   `BEND_QT_RUNTIME` names a replacement, and points Qt's plugin and QML
+   search paths into it;
+2. dlopens the runtime's Qt libraries and rejects versions other than 6.12.0
+   reported by `qVersion()`;
+3. loads the base group's payload and resolves its three entry points.
 
-The descriptor and library stay loaded for the life of the process. The
-consumer executable has no link-time Qt or C++ dependency.
+Another group's payload loads when the program first uses that group, or on
+`Modules.<Group>.load()`. A package generated without a bundled runtime instead
+dlopens the installed `libQt6Widgets.so.6`, or the path in `BEND_QT_LIBRARY`.
+
+Each payload is cached as a file. Its directory under `$XDG_CACHE_HOME/bend-qt`
+or `~/.cache/bend-qt` is named by the payload's content, next to the runtime
+directories. The first start inflates the payload with `uncompress` from the
+already required `libz.so.1`, loaded with dlopen. It writes the library under a
+temporary name, renames it into place and records a stamp of its inode, size,
+mode and modification time. A later start that reproduces the stamp dlopens the
+file directly, without decoding it, and shares its pages with other running
+programs. A file that no longer matches its stamp is decoded and written again.
+As with the runtime, running programs hold the directory, and directories
+unused for a week are removed.
+
+The library stays loaded for the life of the process. The consumer executable
+has no link-time Qt or C++ dependency.
 
 ## Startup
 

@@ -706,9 +706,11 @@ content-addressed cache, `$XDG_CACHE_HOME/bend-qt/<id>` or
 the native groups the program uses. Files are checked by SHA-256 when they are
 written. Later starts compare a stamp of every file's inode, size, mode and
 modification time; any difference makes that start check and repair the
-directory by content again. A running program holds its directory, and a
-starting program removes, at most once a day, runtime directories that no
-program has used for a week. Library, plugin, QML and WebEngine paths point
+directory by content again. Each native group's library is decoded once into a
+directory of its own there, named by its content, and later starts load it
+without decoding while it matches its stamp. A running program holds its
+directories, and a starting program removes, at most once a day, directories
+that no program has used for a week. Library, plugin, QML and WebEngine paths point
 into that runtime. A system Qt update cannot replace
 these bundled libraries, and there is no automatic system-Qt fallback.
 
@@ -727,8 +729,9 @@ Another Qt version can coexist on the system while the application continues
 to use its bundled 6.12.0 runtime.
 
 The package embeds separate compressed native ELF payloads in its C effects.
-Each effect loads its payload through a sealed Linux memory file; consumers do not compile C++ or
-install a companion library. C++ exceptions are translated into Action errors.
+The first start decodes each payload into the per-user Qt cache, and later
+starts load it from there; consumers do not compile C++ or install a companion
+library. C++ exceptions are translated into Action errors.
 RTTI is enabled for Qt code that dynamically inspects generated native
 subclasses. The package supports one Qt package and one Bend runtime per
 process. GPU execution of Bend, other architectures and reusable runtime

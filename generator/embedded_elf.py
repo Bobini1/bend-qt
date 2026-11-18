@@ -93,6 +93,7 @@ def package(obj, qt, work, cxx, modules, command, objects=None):
                link_inputs=[str(path.resolve()) for path in inputs],
                compiler=command([cxx, '--version']).stdout, linker=linker['identity'], qt_libraries=libraries,
                packager=_digest(Path(__file__)), loader=_digest(Path(__file__).parent / 'templates/embedded_elf.c'),
+               cache=_digest(Path(__file__).parent / 'templates/native_cache.c'),
                tools={tool: command([tool, '--version']).stdout
                       for tool in ('llvm-strip-19', 'readelf', 'nm', 'llvm-readobj-19')},
                search_directories=_search_directories(cxx, qt, command),
@@ -172,13 +173,18 @@ def _build_package(inputs, qt, work, cxx, modules, command, linker, dependency_f
     raw = native.read_bytes()
     compressed = zlib.compress(raw, level=9)
     encoded = base64.b64encode(compressed).decode('ascii')
-    template = (Path(__file__).parent / 'templates/embedded_elf.c').read_text()
+    templates = Path(__file__).parent / 'templates'
+    # Programs cache the decoded module in a directory named by its content.
+    cache_entry = hashlib.sha256(b'bend-qt native module\0' + raw).hexdigest()
+    template = (templates / 'embedded_elf.c').read_text()
+    template = template.replace('// @CACHE@', (templates / 'native_cache.c').read_text())
     template = template.replace('// @PAYLOAD@', '\n'.join(json.dumps(encoded[i:i+120])
         for i in range(0, len(encoded), 120)))
-    template = template.replace('@COMPRESSED_SIZE@', str(len(compressed))).replace('@ELF_SIZE@', str(len(raw)))
+    template = (template.replace('@COMPRESSED_SIZE@', str(len(compressed))).replace('@ELF_SIZE@', str(len(raw)))
+                .replace('@CACHE_ID@', cache_entry))
     return template, '    const char *payload_error = bqt_load_payload();\n    if (payload_error) return payload_error;', {
         'format': 'embedded-zlib-elf64-x86-64', 'elf_bytes': len(raw),
         'compressed_bytes': len(compressed), 'embedded_c_bytes': len(template.encode()),
         'elf_sha256': hashlib.sha256(raw).hexdigest(), 'dependencies': needed,
-        'relocations': relocations, 'process_lifetime_memfd': True,
+        'relocations': relocations, 'cache_entry': cache_entry,
         'consumer_cpp_toolchain': False}

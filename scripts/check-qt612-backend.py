@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Maintainer checks for the embedded ELF and dependency-aware compile cache."""
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 
@@ -78,6 +80,15 @@ int main(void) {
 '''
 
 
+def cached(cache):
+    """The environment of a program whose module cache is the given directory."""
+    return dict(os.environ, XDG_CACHE_HOME=str(cache))
+
+
+# The cache must be private, which a mounted Windows workspace cannot express.
+CACHES = Path.home() / '.cache/bend-qt-generator/backend-test'
+
+
 def check_consumer(work, payload, expected):
     source = work / 'consumer.c'
     source.write_text(CONSUMER.replace('@PAYLOAD@', payload).replace('@EXPECTED@', str(expected)))
@@ -86,10 +97,47 @@ def check_consumer(work, payload, expected):
     dependencies = run(['ldd', binary])
     if any(name in dependencies for name in ('libQt', 'libstdc++', 'libz.so')):
         raise RuntimeError('Consumer gained a native payload link dependency')
-    output = run([binary])
+    cache = CACHES / 'cache'
+    shutil.rmtree(cache, ignore_errors=True)
+    CACHES.mkdir(parents=True, exist_ok=True)
+    output = run([binary], env=cached(cache))
     if 'QT612_EMBEDDED_ELF_OK' not in output:
         raise RuntimeError(output)
-    return dependencies
+    return binary, cache, dependencies
+
+
+def check_module_cache(binary, cache):
+    """The decoded module is cached once, trusted by stat stamp and repaired by rewriting."""
+    [entry] = [path for path in (cache / 'bend-qt').iterdir() if not path.name.startswith('.')]
+    module, stamp = entry / 'native.so', entry / '.ready'
+    assert module.stat().st_mode & 0o777 == 0o500 and (entry / '.use').stat().st_size
+    before = module.stat(), stamp.stat()
+    run([binary], env=cached(cache))
+    after = module.stat(), stamp.stat()
+    assert [(s.st_ino, s.st_mtime_ns) for s in before] == [(s.st_ino, s.st_mtime_ns) for s in after], (
+        'A warm start rewrote the cached module')
+    # A changed module, a changed mode and a substituted link are each rewritten.
+    module.chmod(0o700); module.write_bytes(bytes(module.stat().st_size)); module.chmod(0o500)
+    run([binary], env=cached(cache))
+    assert module.stat().st_ino != before[0].st_ino and stamp.stat().st_ino != before[1].st_ino
+    module.chmod(0o700)
+    run([binary], env=cached(cache))
+    assert module.stat().st_mode & 0o777 == 0o500
+    module.unlink(); module.symlink_to('/etc/passwd')
+    run([binary], env=cached(cache))
+    assert module.is_file() and not module.is_symlink()
+    # Concurrent first starts decode the module once and share it.
+    fresh = cache.parent / 'concurrent-cache'
+    shutil.rmtree(fresh, ignore_errors=True)
+    outputs = list(ThreadPoolExecutor(max_workers=8).map(lambda _: run([binary], env=cached(fresh)), range(16)))
+    assert all('QT612_EMBEDDED_ELF_OK' in output for output in outputs)
+    names = sorted(path.name for path in (fresh / 'bend-qt' / entry.name).iterdir())
+    assert names == ['.lock', '.ready', '.use', 'native.so'], names
+    shutil.rmtree(fresh)
+    # The cache needs a home; it does not fall back to the working directory.
+    homeless = {key: value for key, value in os.environ.items() if key not in ('HOME', 'XDG_CACHE_HOME')}
+    result = subprocess.run([str(binary)], env=homeless, text=True, capture_output=True)
+    assert result.returncode == 125 and 'HOME' in result.stdout, result.stdout
 
 
 def main():
@@ -104,7 +152,8 @@ def main():
     source.write_text(NATIVE)
     header.write_text('#define CACHE_VALUE 19\n')
     first, _, first_receipt = compile_backend(source, args.qt_root, work, 'clang++-19', ['QtCore'])
-    dependencies = check_consumer(work, first, 19)
+    binary, cache, dependencies = check_consumer(work, first, 19)
+    check_module_cache(binary, cache)
     second, _, second_receipt = compile_backend(source, args.qt_root, work, 'clang++-19', ['QtCore'])
     if not second_receipt['compile_cache_hit'] or first != second:
         raise RuntimeError('An unchanged native input did not reproduce its cached payload')
@@ -114,11 +163,13 @@ def main():
         raise RuntimeError('A changed transitive header reused stale native code')
     check_consumer(work, changed, 20)
     # The zlib checksum must reject corrupted package bytes before dlopen.
+    # The module is decoded only when its cache entry is absent.
     corrupted = changed.replace('static const char bqt_payload[] =\n"', 'static const char bqt_payload[] =\n"A', 1)
     consumer = work / 'corrupt.c'
     consumer.write_text(CONSUMER.replace('@PAYLOAD@', corrupted).replace('@EXPECTED@', '20'))
     run(['clang', consumer, '-o', work / 'corrupt', '-ldl', '-pthread'])
-    rejected = subprocess.run([str(work / 'corrupt')], text=True, capture_output=True)
+    shutil.rmtree(cache)
+    rejected = subprocess.run([str(work / 'corrupt')], env=cached(cache), text=True, capture_output=True)
     if rejected.returncode != 125 or 'payload' not in rejected.stdout:
         raise RuntimeError('Corrupt native payload was not rejected cleanly')
     missing = work / 'missing'
@@ -133,12 +184,17 @@ def main():
             raise
     else:
         raise RuntimeError('Native undefined symbol was not rejected')
+    if any((path / 'native.so').exists() for path in (cache / 'bend-qt').iterdir()):
+        raise RuntimeError('A corrupt payload left a cached module')
+    shutil.rmtree(CACHES)
     receipt = dict(first=first_receipt['payload'], consumer_dependencies=dependencies,
-        unchanged_cache_hit=True, changed_header_invalidates=True,
+        unchanged_cache_hit=True, changed_header_invalidates=True, module_cache=dict(
+            stat_stamp=True, rewritten=['content', 'mode', 'symlink'], concurrent_first_starts=16, needs_home=True),
         corruption_rejected=True, missing_symbol_rejected=True,
         constructors=True, exceptions=True, rtti=True, thread_local_storage=True)
     (work / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
-    print('PASS embedded ELF: static initialization, exceptions, RTTI, per-thread TLS, cache invalidation and negative controls')
+    print('PASS embedded ELF: static initialization, exceptions, RTTI, per-thread TLS, cache invalidation, '
+          'module cache and negative controls')
 
 
 if __name__ == '__main__':

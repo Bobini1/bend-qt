@@ -132,7 +132,8 @@ def embed(files, *, aliases=None, context=None, block_size=512 * 1024,
     alias_table = '\n'.join('    {' + json.dumps(alias) + ', ' + str(indices[target]) + '},'
                             for alias, target in aliases.items()) or '    {NULL, 0},'
     loader = (HERE / 'templates/runtime_bundle.c').read_text()
-    for key, value in dict(TYPES=declarations, ID=identity, FILES=file_table, ALIASES=alias_table,
+    for key, value in dict(TYPES=declarations, CACHE=(HERE / 'templates/native_cache.c').read_text(),
+                           ID=identity, FILES=file_table, ALIASES=alias_table,
                            FILE_COUNT=str(len(rows)), ALIAS_COUNT=str(len(aliases)),
                            BLOCK_COUNT=str(len(blocks)), REFERENCES='\n'.join(references),
                            MODULE_COUNT=str(len(modules)), MODULE_NAMES=', '.join(map(json.dumps, modules)),

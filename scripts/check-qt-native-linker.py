@@ -87,10 +87,17 @@ int main(int argc,char **argv) {
     changed,hit=package(); assert not hit; consumer(changed[0],55)
     clone=work/'private-packager'; (clone/'templates').mkdir(parents=True,exist_ok=True)
     shutil.copyfile(ROOT/'generator/embedded_elf.py',clone/'embedded_elf.py')
+    shutil.copyfile(ROOT/'generator/templates/native_cache.c',clone/'templates/native_cache.c')
     template=clone/'templates/embedded_elf.c'
     template.write_text((ROOT/'generator/templates/embedded_elf.c').read_text()+'\n// loader-cache-control\n')
     cloned=load('private_embedded_elf',clone/'embedded_elf.py')
     changed,hit=package(cloned); assert not hit and 'loader-cache-control' in changed[0]
+    consumer(changed[0],55)
+    same,hit=package(cloned); assert hit and same==changed
+    # The module cache helpers are part of the loader too.
+    helpers=clone/'templates/native_cache.c'
+    helpers.write_text(helpers.read_text()+'\n// helper-cache-control\n')
+    changed,hit=package(cloned); assert not hit and 'helper-cache-control' in changed[0]
     consumer(changed[0],55)
     same,hit=package(cloned); assert hit and same==changed
     (folder/'native-payload.c').write_text('corrupted cached payload')
@@ -128,7 +135,7 @@ int main(int argc,char **argv) {
     assert (shards/'proxy-traits.bin').read_bytes()==bytes([1,0,1])
     receipt=dict(passed=True,lld_selected=True,embedded_consumers_passed=True,
         unchanged_payload_reused=True,library_content_invalidates=True,symlink_target_invalidates=True,
-        loader_invalidates=True,corrupt_artifacts_rebuilt=True,failed_link_preserves_checked_cache=True,
+        loader_invalidates=True,cache_helpers_invalidate=True,corrupt_artifacts_rebuilt=True,failed_link_preserves_checked_cache=True,
         phony_and_escaped_dependency_rules=True,linker_switch_preserves_compilation=True,
         compact_object_inventory_matches_symbol_dump=True,
         boundary='Real ELF link/dependency and embedded consumer controls; a tiny test library uses an allowed Qt SONAME. Actual Qt behavior is covered by the native integration gates.')

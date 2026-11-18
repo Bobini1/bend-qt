@@ -556,11 +556,12 @@ functions. It rejects unplanned dependencies, maintainer library paths, text
 relocations and unknown relocation families. The stripped ELF is compressed
 and embedded as data inside `qt.c`.
 
-The C effect decodes the payload into a sealed Linux memory file and loads it
-with `dlopen`. There is no separate consumer library file, installation step,
-SDK or C++ compilation. Linux's dynamic loader handles constructors, exception
-unwinding, RTTI and thread-local storage. The memory file and loaded libraries
-remain alive until process exit so handlers Qt holds and native finalizers
+The C effect decodes the payload into a file in the per-user Qt cache, named by
+the payload's content, and loads it with `dlopen`. Later starts reuse the file
+while it matches its stat stamp. There is no consumer installation step, SDK or
+C++ compilation. Linux's dynamic loader handles constructors, exception
+unwinding, RTTI and thread-local storage. The cache entry and loaded libraries
+remain held until process exit so handlers Qt holds and native finalizers
 remain valid.
 Dispatch translates allocation failure to ENOMEM and other native exceptions
 to EFAULT; partial conversions use RAII rollback. This backend supports Linux

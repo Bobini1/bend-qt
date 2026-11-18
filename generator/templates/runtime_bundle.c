@@ -1,5 +1,6 @@
 // Matching Qt runtime assets, carried by ordinary foreign C imports.
 // @TYPES@
+// @CACHE@
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <sys/syscall.h>
@@ -138,19 +139,12 @@ static int bqt_bundle_parent(int root, const char *path, char name[NAME_MAX+1]) 
     if(strlen(cursor)>NAME_MAX){close(parent);errno=ENAMETOOLONG;return -1;}
     strcpy(name,cursor);return parent;
 }
-static int bqt_bundle_private_dir(const char *path) {
-    if(mkdir(path,0700)&&errno!=EEXIST)return -1;
-    int fd=open(path,O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(fd<0)return -1;
-    struct stat st;
-    if(fstat(fd,&st)||st.st_uid!=getuid()||(st.st_mode&077)){close(fd);errno=EACCES;return -1;}
-    return fd;
-}
 static int bqt_bundle_digit(unsigned char c) {
     if(c>='A'&&c<='Z')return c-'A';if(c>='a'&&c<='z')return c-'a'+26;
     if(c>='0'&&c<='9')return c-'0'+52;if(c=='+')return 62;if(c=='/')return 63;return -1;
 }
 
-// A verified runtime directory records .ready: a digest of every selected
+// A verified runtime directory's .ready stamp is a digest of every selected
 // file's path, inode, size, mode and modification time. A start whose stat
 // results reproduce it skips hashing the content. Writing a file, changing
 // its mode or replacing it changes the digest, and the next start verifies
@@ -161,7 +155,7 @@ static void bqt_bundle_stat_update(BqtSha256 *s, const char *path, const struct 
     bqt_sha_update(s,(const unsigned char*)path,strlen(path)+1);
     bqt_sha_update(s,(const unsigned char*)fields,sizeof fields);
 }
-static int bqt_bundle_signature(int root, const char *identity, char out[65]) {
+static int bqt_bundle_signature(int root, const char *identity, char out[66]) {
     BqtSha256 s;bqt_sha_init(&s);bqt_sha_update(&s,(const unsigned char*)identity,64);
     for(size_t i=0;i<@FILE_COUNT@;i++) {
         const BqtBundleFile *file=&bqt_bundle_files[i];struct stat st;
@@ -177,91 +171,10 @@ static int bqt_bundle_signature(int root, const char *identity, char out[65]) {
            ||!S_ISREG(a.st_mode)||a.st_dev!=b.st_dev||a.st_ino!=b.st_ino)return 0;
         bqt_bundle_stat_update(&s,bqt_bundle_aliases[i].path,&a);
     }
-    bqt_sha_finish(&s,out);return 1;
+    bqt_sha_finish(&s,out);out[64]='\n';out[65]=0;return 1;
 }
-static int bqt_bundle_ready(int root, const char *identity) {
-    char expected[65],recorded[66]={0};
-    if(!bqt_bundle_signature(root,identity,expected))return 0;
-    int fd=openat(root,".ready",O_RDONLY|O_CLOEXEC|O_NOFOLLOW);if(fd<0)return 0;
-    ssize_t n=read(fd,recorded,sizeof recorded-1);close(fd);
-    return n==65&&recorded[64]=='\n'&&!memcmp(recorded,expected,64);
-}
-static const char *bqt_bundle_mark_ready(int root, const char *identity) {
-    char digest[66],temp[64];
-    if(!bqt_bundle_signature(root,identity,digest))return "Bundled Qt files changed during extraction";
-    digest[64]='\n';
-    // Content reaches the disk before the stamp that vouches for it.
-    if(syscall(SYS_syncfs,root))return bqt_bundle_fail("runtime sync",bqt_bundle_root);
-    snprintf(temp,sizeof temp,".ready-%ld",(long)getpid());unlinkat(root,temp,0);
-    int fd=openat(root,temp,O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);
-    if(fd<0)return bqt_bundle_fail("runtime stamp",bqt_bundle_root);
-    int failed=write(fd,digest,65)!=65;close(fd);
-    if(failed||renameat(root,temp,root,".ready")){unlinkat(root,temp,0);return bqt_bundle_fail("runtime stamp",bqt_bundle_root);}
-    return NULL;
-}
-
-// Each program holds a shared lock on its runtime directory's .use file for
-// its lifetime and refreshes the file's time when it starts. At most once a
-// day a starting program removes the other runtime directories that have not
-// been used for a week and that no running program holds.
-#define BQT_BUNDLE_UNUSED_SECONDS (7*24*3600)
-#define BQT_BUNDLE_COLLECT_SECONDS (24*3600)
+// The shared lock on the runtime's .use file lasts for the process lifetime.
 static int bqt_bundle_use=-1;
-static void bqt_bundle_remove_tree(int parent, const char *name, int depth) {
-    for(int pass=0;pass<2&&depth<64;pass++) {
-        int fd=openat(parent,name,O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(fd<0)break;
-        DIR *entries=fdopendir(fd);if(!entries){close(fd);break;}
-        struct dirent *entry;
-        while((entry=readdir(entries))) {
-            if(!strcmp(entry->d_name,".")||!strcmp(entry->d_name,".."))continue;
-            if(unlinkat(dirfd(entries),entry->d_name,0)&&(errno==EISDIR||errno==EPERM))
-                bqt_bundle_remove_tree(dirfd(entries),entry->d_name,depth+1);
-        }
-        closedir(entries);
-        if(!unlinkat(parent,name,AT_REMOVEDIR)||errno!=ENOTEMPTY)break;
-    }
-}
-static int bqt_bundle_hex_name(const char *name) {
-    if(strlen(name)!=64)return 0;
-    for(const char *p=name;*p;p++)if(!((*p>='0'&&*p<='9')||(*p>='a'&&*p<='f')))return 0;
-    return 1;
-}
-static void bqt_bundle_collect(const char *base, const char *own) {
-    int dir=open(base,O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(dir<0)return;
-    int stamp=openat(dir,".collected",O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600);
-    struct stat st;time_t now=time(NULL);
-    // An empty stamp has never recorded a collection.
-    if(stamp<0||fstat(stamp,&st)||!S_ISREG(st.st_mode)||flock(stamp,LOCK_EX|LOCK_NB)
-       ||(st.st_size>0&&now-st.st_mtime<BQT_BUNDLE_COLLECT_SECONDS)) {
-        if(stamp>=0)close(stamp);close(dir);return;
-    }
-    if(st.st_size==0&&write(stamp,"\n",1)!=1){close(stamp);close(dir);return;}
-    futimens(stamp,NULL);
-    int listing=dup(dir);DIR *entries=listing<0?NULL:fdopendir(listing);
-    if(!entries){if(listing>=0)close(listing);close(stamp);close(dir);return;}
-    struct dirent *entry;
-    while((entry=readdir(entries))) {
-        const char *name=entry->d_name;
-        if(!strncmp(name,".trash-",7)){bqt_bundle_remove_tree(dir,name,0);continue;}
-        if(!bqt_bundle_hex_name(name)||!strcmp(name,own))continue;
-        int child=openat(dir,name,O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(child<0)continue;
-        // Read the directory's time before .use might be created in it.
-        struct stat cs,us;int use=-1;
-        int keep=fstat(child,&cs)||cs.st_uid!=getuid()
-                 ||(use=openat(child,".use",O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600))<0
-                 ||fstat(use,&us)||!S_ISREG(us.st_mode)
-                 ||now-(us.st_size?us.st_mtime:cs.st_mtime)<BQT_BUNDLE_UNUSED_SECONDS
-                 ||flock(use,LOCK_EX|LOCK_NB);
-        if(!keep) {
-            // Renaming first lets a program that is starting on this directory
-            // notice and start over on a fresh one.
-            char trash[NAME_MAX+1];snprintf(trash,sizeof trash,".trash-%.20s-%ld",name,(long)getpid());
-            if(!renameat(dir,name,dir,trash)){close(use);use=-1;bqt_bundle_remove_tree(dir,trash,0);}
-        }
-        if(use>=0)close(use);close(child);
-    }
-    closedir(entries);close(stamp);close(dir);
-}
 
 // Writes every selected file that does not already match its content. Each
 // decoded file is hashed as it is written and committed by rename.
@@ -333,10 +246,6 @@ static const char *bqt_bundle_extract(int root) {
     dlclose(zlib);return error;
 }
 
-static int bqt_bundle_regular(int fd) {
-    struct stat st;return fd>=0&&!fstat(fd,&st)&&S_ISREG(st.st_mode)&&st.st_uid==getuid();
-}
-
 static const char *bqt_bundle_materialize(void) {
     const char *override=getenv("BEND_QT_RUNTIME");
     if(override&&*override) {
@@ -358,48 +267,21 @@ static const char *bqt_bundle_materialize(void) {
         bqt_sha_update(&digest,(const unsigned char*)bqt_bundle_module_names[i],strlen(bqt_bundle_module_names[i])+1);
     bqt_sha_finish(&digest,identity);
 #endif
-    const char *cache=getenv("XDG_CACHE_HOME"),*home=getenv("HOME");char base[PATH_MAX];
-    if(cache&&*cache&&cache[0]=='/') {
-        if(snprintf(base,sizeof base,"%s",cache)>=(int)sizeof base)return "Qt cache path is too long";
-    } else {
-        if(!home||home[0]!='/')return "Bundled Qt needs HOME or an absolute XDG_CACHE_HOME";
-        if(snprintf(base,sizeof base,"%s/.cache",home)>=(int)sizeof base)return "Qt cache path is too long";
-    }
-    if(mkdir(base,0700)&&errno!=EEXIST)return bqt_bundle_fail("cache directory",base);
-    size_t n=strlen(base);
-    if(n+sizeof "/bend-qt" > sizeof base)return "Qt cache path is too long";
-    strcpy(base+n,"/bend-qt");int parent=bqt_bundle_private_dir(base);
-    if(parent<0)return bqt_bundle_fail("private cache",base);close(parent);
-    if(snprintf(bqt_bundle_root,sizeof bqt_bundle_root,"%s/%s",base,identity)>=(int)sizeof bqt_bundle_root)return "Qt cache path is too long";
+    char base[PATH_MAX],stamp[66];
+    const char *error=bqt_cache_base(base);
     int root=-1,use=-1;
-    for(int attempt=0;attempt<8;attempt++) {
-        root=bqt_bundle_private_dir(bqt_bundle_root);if(root<0)return bqt_bundle_fail("runtime directory",bqt_bundle_root);
-        use=openat(root,".use",O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600);
-        if(!bqt_bundle_regular(use)||flock(use,LOCK_SH)) {
-            if(use>=0)close(use);close(root);return bqt_bundle_fail("runtime use lock",bqt_bundle_root);
-        }
-        // Collection renames an unused directory before removing it. A program
-        // that waited for it starts over on a fresh directory.
-        struct stat held,named;
-        if(!fstat(root,&held)&&!lstat(bqt_bundle_root,&named)&&held.st_dev==named.st_dev&&held.st_ino==named.st_ino)break;
-        close(use);close(root);root=use=-1;
-    }
-    if(root<0)return "The bundled Qt runtime directory kept moving during startup";
-    // The .use file's time records the last start; a non-empty file has one.
-    struct stat used;
-    if(!fstat(use,&used)&&used.st_size==0&&write(use,"\n",1)!=1){close(use);close(root);return bqt_bundle_fail("runtime use",bqt_bundle_root);}
-    futimens(use,NULL);
-    const char *error=NULL;
-    if(!bqt_bundle_ready(root,identity)) {
-        int lock=openat(root,".lock",O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600);
-        if(!bqt_bundle_regular(lock)||flock(lock,LOCK_EX)) {
-            if(lock>=0)close(lock);close(use);close(root);return bqt_bundle_fail("runtime lock",bqt_bundle_root);
-        }
+    if(!error)error=bqt_cache_hold(base,identity,bqt_bundle_root,&root,&use);
+    if(error)return error;
+    int ready=bqt_bundle_signature(root,identity,stamp)&&bqt_cache_ready(root,stamp);
+    if(!ready) {
+        int lock=bqt_cache_lock(root);
+        if(lock<0){close(use);close(root);return bqt_bundle_fail("runtime lock",bqt_bundle_root);}
         // Another program may have completed the directory while this one waited.
-        if(!bqt_bundle_ready(root,identity)) {
+        if(!bqt_bundle_signature(root,identity,stamp)||!bqt_cache_ready(root,stamp)) {
             unlinkat(root,".ready",0);
             error=bqt_bundle_extract(root);
-            if(!error)error=bqt_bundle_mark_ready(root,identity);
+            if(!error&&!bqt_bundle_signature(root,identity,stamp))error="Bundled Qt files changed during extraction";
+            if(!error)error=bqt_cache_mark(root,stamp,bqt_bundle_root);
         }
         flock(lock,LOCK_UN);close(lock);
     }
@@ -407,6 +289,6 @@ static const char *bqt_bundle_materialize(void) {
     if(error){close(use);return error;}
     // The shared lock lasts for the process lifetime: collection skips this directory.
     bqt_bundle_use=use;
-    bqt_bundle_collect(base,identity);
+    bqt_cache_collect(base);
     return NULL;
 }

@@ -122,8 +122,10 @@ imports. It is extracted into a private, content-addressed cache under
 `$XDG_CACHE_HOME/bend-qt` or `~/.cache/bend-qt` and checked by SHA-256 when
 written. Later starts trust a stamp of the files' inodes, sizes, modes and
 modification times, and repair the directory by content when it differs.
-Programs hold their directory while running; directories unused for a week
-are removed. The generated loader must use those libraries and plugins by default,
+Each native group's decoded library is cached the same way, in a directory of
+its own, and reused while it matches its stamp. Programs hold their
+directories while running; directories unused for a week are removed. The
+generated loader must use those libraries and plugins by default,
 so a system Qt update cannot replace the application's Qt libraries.
 
 The loader registers `:/qt/etc/qt.conf` before creating the Qt application,

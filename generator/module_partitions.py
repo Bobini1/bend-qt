@@ -556,8 +556,10 @@ def effects(parts):
 def rename_c(source, prefix):
     # Macro identifiers must be renamed too, but dlsym strings and compressed
     # payload bytes must remain exact. Ordinary C lexical tokens suffice here.
+    # The cache helpers are defined once per C file and shared by its modules.
     tokens = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|//[^\n]*|/\*.*?\*/|\b[A-Za-z_]\w*', re.S)
-    return tokens.sub(lambda match: prefix + match[0][4:] if match[0].startswith('bqt_') else match[0], source)
+    return tokens.sub(lambda match: prefix + match[0][4:]
+                      if match[0].startswith('bqt_') and not match[0].startswith('bqt_cache_') else match[0], source)
 
 
 def package(parts, abi):
