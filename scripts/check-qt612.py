@@ -14,6 +14,7 @@ import subprocess
 import tempfile
 import threading
 import time
+from types import SimpleNamespace
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -436,41 +437,50 @@ def main() -> IO(Unit):
         return receipt
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--qt-root", action="append", type=Path)
-    parser.add_argument("--reject-qt-root", action="append", type=Path, default=[])
-    parser.add_argument("--reject-system-qt", action="store_true")
-    parser.add_argument("--generator-checks", action="store_true")
-    parser.add_argument("--example", action="append", choices=tuple(EXAMPLES),
-                        help="Run only these native examples; defaults to all")
-    parser.add_argument('--jobs', type=int, default=2, help='Parallel fixture processes or standalone consumer builds')
-    parser.add_argument('--bundle', action='store_true',
-                        help='Build examples together, run each in a fresh process, then build standalone smoke cases')
-    parser.add_argument("--qt-prefix", type=Path, default=Path.home() / ".cache/bend-qt-generator/Qt/6.12.0/gcc_64")
-    parser.add_argument("--extractor", type=Path, default=Path.home() / ".cache/bend-qt-generator/build/bend-qt-extract")
-    parser.add_argument('--runtime-manifest', type=Path, help='Release inputs for deterministic bundled regeneration')
-    args = parser.parse_args()
-    runtimes = args.qt_root or [Path.home() / ".cache/bend-qt-generator/Qt/6.12.0/gcc_64"]
-    OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / 'receipt.json').write_text(json.dumps({'verification_complete': False,
-        'stage': 'proofs and module checking'}, indent=2) + '\n')
-    env = dict(os.environ, BENDRTS="", QT_QPA_PLATFORM="offscreen")
-    for name in ("CC", "LD_LIBRARY_PATH", "LD_PRELOAD", "BEND_QT_LIBRARY", "BEND_QT_RUNTIME", "QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH"):
-        env.pop(name, None)
-    if run([BEND, "version"], env, ROOT).stdout.strip() != "bend 2.0.40":
-        raise RuntimeError("These native effects require Bend 2.0.40")
+PARTS = ('consumers', 'runtime', 'native', 'conversions', 'callbacks', 'signals', 'regeneration', 'extension')
+
+
+def generation_digest(package=ROOT / 'packages/qt612', lock=ROOT / 'generator/qt612/names.lock.json'):
+    """Hashes of what a generation writes: the published files, coverage and the name lock."""
+    package = Path(package)
+    digest = {name: hashlib.sha256(data).hexdigest() for name, data in package_files(package).items()}
+    digest['coverage.json'] = hashlib.sha256((package / 'coverage.json').read_bytes()).hexdigest()
+    digest['names.lock.json'] = hashlib.sha256(Path(lock).read_bytes()).hexdigest()
+    return digest
+
+
+def digest_id(digest):
+    return hashlib.sha256(json.dumps(digest, sort_keys=True).encode()).hexdigest()
+
+
+def differences(first, second):
+    return sorted(name for name in first.keys() | second.keys() if first.get(name) != second.get(name))
+
+
+def checker_id():
+    """The check sources a part ran with; the parts of one receipt must share them."""
+    digest = hashlib.sha256()
+    paths = [*ROOT.glob('*.bend'), *(path for folder in ('scripts', 'examples') for path in (ROOT / folder).rglob('*'))]
+    for path in sorted(path for path in paths if path.is_file() and '__pycache__' not in path.parts):
+        digest.update(path.relative_to(ROOT).as_posix().encode() + b'\0' + hashlib.sha256(path.read_bytes()).digest())
+    return digest.hexdigest()
+
+
+def part_options(args):
+    """The options that decide what a part checks; combined parts must agree on them."""
+    return dict(bundle=args.bundle, generator_checks=args.generator_checks,
+                reject_system_qt=args.reject_system_qt,
+                reject_qt_roots=[str(root) for root in args.reject_qt_root],
+                qt_roots=[str(root) for root in args.qt_root or []],
+                examples=sorted(args.example or EXAMPLES))
+
+
+def consumers(c):
+    """Proofs, the module check, fresh Hub consumers and rejection of other Qt runtimes."""
+    args, env, package = c.args, c.env, c.package
     proved = run(["python3", ROOT / "scripts/check-qt-action-proofs.py", "--mutation-checks"], env, ROOT)
     print(proved.stdout, end="", flush=True)
     formal = json.loads((ROOT / "build/qt612/proofs/receipt.json").read_text())
-    package = ROOT / "packages/qt612"
-    coverage = json.loads((package / 'coverage.json').read_text())
-    bundled_runtime = bool(coverage.get('bundled_runtime'))
-    if bundled_runtime and args.generator_checks and args.runtime_manifest is None:
-        metadata = json.loads((ROOT / 'build/qt612/generation.json').read_text())
-        if not metadata.get('runtime_release_manifest'):
-            raise ValueError('Bundled regeneration needs its verified --runtime-manifest')
-        args.runtime_manifest = Path(metadata['runtime_release_manifest'])
     checked = run([BEND, package / "qt.bend", "--check-only"], env, ROOT, expected=1)
     (OUT / "module-check.log").write_text(checked.stdout + checked.stderr)
     # The type checker explicitly excludes foreign effects from its proof
@@ -489,18 +499,17 @@ def main():
     programs = [(name, (ROOT / f"examples/qt612/{name}.bend").read_text(), marker)
                 for name, marker in EXAMPLES.items()
                 if not args.example or name in args.example]
-    receipt = check_package(package, programs, env, runtimes, OUT, jobs=args.jobs, bundle=args.bundle)
+    receipt = check_package(package, programs, env, c.runtimes, OUT, jobs=args.jobs, bundle=args.bundle)
     if distribution_check is not None:
         receipt['distribution_package'] = distribution_check
     if args.bundle:
         smoke = [program for program in programs if program[0] in ('main', 'quick', 'actions')]
         if not smoke:
             smoke = programs[:1]
-        receipt['standalone_smoke'] = check_package(package, smoke, env, runtimes,
+        receipt['standalone_smoke'] = check_package(package, smoke, env, c.runtimes,
             OUT / 'standalone-smoke', jobs=args.jobs)
         receipt['validation_executable'] = receipt['standalone_smoke']['validation_executable']
         receipt['validation_arguments'] = receipt['standalone_smoke']['validation_arguments']
-    receipt['verification_complete'] = False
     receipt["consumer_cc_environment"] = "unset"
     receipt["consumer_compiler"] = run(["clang", "--version"], env, ROOT).stdout.splitlines()[0]
     receipt["formal_proofs"] = formal
@@ -509,8 +518,8 @@ def main():
     receipt["version_test_executable"] = executable.name
     rejections = []
     for root in ([None] if args.reject_system_qt else []) + args.reject_qt_root:
-        case_env = qt_environment(env, root, bundled_runtime=bundled_runtime)
-        if bundled_runtime and root is None:
+        case_env = qt_environment(env, root, bundled_runtime=c.bundled_runtime)
+        if c.bundled_runtime and root is None:
             # A system update must not affect a bundled application. Reject
             # an incompatible runtime only when explicitly selected or already
             # loaded, rather than expecting a failure from system search paths.
@@ -525,242 +534,385 @@ def main():
         # Qt loads on the first Qt call, which then fails with ELIBACC; the
         # program's IO.try boundary reports it on stderr and exits with it.
         result = run([executable, *validation_arguments], case_env, ROOT, expected=errno.ELIBACC)
-        markers = ('already loaded', 'does not match this package', 'cannot open shared object') if bundled_runtime else (
+        markers = ('already loaded', 'does not match this package', 'cannot open shared object') if c.bundled_runtime else (
             'requires Qt 6.12.0; install the matching Qt runtime', 'does not match this package')
         if not any(marker in result.stderr for marker in markers):
             raise RuntimeError(result.stderr)
         rejections.append({"qt_root": str(root or "system"), "diagnostic": result.stderr.strip(),
                            "exit_code": result.returncode})
     for library, marker in (("/missing/libQt6Widgets.so", "/missing/libQt6Widgets.so"), ("libm.so.6", "missing qVersion")):
-        if bundled_runtime:
+        if c.bundled_runtime:
             marker = 'BEND_QT_LIBRARY cannot replace a bundled runtime'
         result = run([executable, *validation_arguments], dict(env, BEND_QT_LIBRARY=library), ROOT,
                      expected=errno.ELIBACC)
         if marker not in result.stderr: raise RuntimeError(result.stderr)
     receipt["old_qt_rejections"] = rejections
-    (OUT / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
-    if args.generator_checks:
-        for name, script, extra in (
-                ('selective_runtime', 'check-qt-selective-runtime.py', []),
-                ('runtime_cache', 'check-qt-runtime-bundle.py', ['--work', OUT / 'runtime-bundle']),
-                ('distribution_modules', 'check-qt-distribution-modules.py', ['--qt-root', args.qt_prefix]),
-                ('source_snapshots', 'check-qt-source-snapshots.py', []),
-                ('shared_state_analysis', 'check-qt-shared-state-analysis.py', ['--work', OUT / 'shared-state-analysis']),
-                ('proxy_meta_provider', 'check-qt-proxy-meta-provider.py', ['--qt-root', args.qt_prefix,
-                    '--work', OUT / 'proxy-meta-provider']),
-                  ('range_model_versions', 'check-qt-range-model-versions.py', ['--qt-root', args.qt_prefix,
-                      '--work', OUT / 'range-model-versions']),
-                  ('protected_lvalue_getters', 'check-qt-protected-lvalue-getters.py', ['--qt-root', args.qt_prefix,
-                      '--work', OUT / 'protected-lvalue-getters']),
-                ('selective_native_modules', 'check-qt-module-partitions.py', [
-                    '--qt-root', args.qt_prefix, '--selective', '--scoped', '--bundle-runtime',
-                    '--value-metatypes', '--qml-imports', '--run', '--work', OUT / 'selective-native-modules'])):
-            case_env = dict(env, BQT_STATE_SOURCE_BYTES='0') if name == 'selective_native_modules' else env
-            result = run(['python3', ROOT / 'scripts' / script, *extra], case_env, ROOT, timeout=2400)
-            print(result.stdout, end='', flush=True)
-            receipt[name] = dict(passed=True, stdout=result.stdout.strip())
-        output_writes = run(['python3', ROOT / 'scripts/check-qt-generation-writes.py'], env, ROOT, timeout=60)
-        print(output_writes.stdout, end='', flush=True)
-        receipt['generation_output_writes'] = dict(passed=True, stdout=output_writes.stdout.strip())
-        overloads = run(["python3", ROOT / "scripts/check-overload-names.py"], env, ROOT, timeout=300)
-        print(overloads.stdout, end="", flush=True)
-        receipt['overload_names'] = json.loads((OUT / 'overload-names/receipt.json').read_text())
-        boundary = run(["python3", ROOT / "scripts/check-pyside-boundary.py",
-                        "--qt-root", args.qt_prefix], env, ROOT, timeout=600)
-        print(boundary.stdout, end="", flush=True)
-        receipt['pyside_boundary'] = json.loads(
-            (ROOT / 'build/qt612/pyside-boundary-check/receipt.json').read_text())
-        transport = run(["python3", ROOT / "scripts/check-qt612-effect-transport.py",
-                         "--qt-root", args.qt_prefix], env, ROOT, timeout=900)
-        print(transport.stdout, end="", flush=True)
-        receipt['effect_transport'] = json.loads((OUT / 'effect-transport/receipt.json').read_text())
-        publication = run(["python3", ROOT / "scripts/check-qt612-publication.py",
-                           "--package", package], env, ROOT, timeout=660)
-        print(publication.stdout, end="", flush=True)
-        receipt['local_publication_client'] = json.loads((OUT / 'publication/receipt.json').read_text())
-        native_backend = run(["python3", ROOT / "scripts/check-qt612-backend.py",
-                              "--qt-root", args.qt_prefix], env, ROOT, timeout=180)
-        print(native_backend.stdout, end="", flush=True)
-        receipt['native_payload_backend'] = json.loads((ROOT / 'build/qt612/backend-test/receipt.json').read_text())
-        native_shards = run(["python3", ROOT / "scripts/check-qt-native-shards.py",
-                             "--qt-root", args.qt_prefix,
-                             "--work", OUT / "native-shards"],
-                            dict(env, BQT_SHARD_JOBS="2"), ROOT, timeout=600)
-        print(native_shards.stdout, end="", flush=True)
-        receipt['native_compilation_units'] = json.loads((OUT / 'native-shards/receipt.json').read_text())
-        abi_cohorts = run(["python3", ROOT / "scripts/check-qt612-abi-cohorts.py",
-                           "--qt-root", args.qt_prefix], env, ROOT, timeout=180)
-        print(abi_cohorts.stdout, end="", flush=True)
-        receipt['native_abi_cohorts'] = json.loads((ROOT / 'build/qt612/abi-cohort-test/receipt.json').read_text())
-        native_events = run(["python3", ROOT / "scripts/check-qt612-native-events.py",
-                             "--qt-root", args.qt_prefix, "--extractor", args.extractor],
-                            env, ROOT, timeout=900)
-        print(native_events.stdout, end="", flush=True)
-        receipt['native_event_filters'] = json.loads((OUT / 'native-events/receipt.json').read_text())
-        native_names = run(["python3", ROOT / "scripts/check-qt612-native-names.py",
-                            "--qt-root", args.qt_prefix, "--extractor", args.extractor],
-                           env, ROOT, timeout=900)
-        print(native_names.stdout, end="", flush=True)
-        receipt['native_names'] = json.loads((OUT / 'native-names/receipt.json').read_text())
-        native_signals = run(["python3", ROOT / "scripts/check-qt612-signal-native.py",
-                              "--qt-prefix", args.qt_prefix], env, ROOT, timeout=1200)
-        print(native_signals.stdout, end="", flush=True)
-        receipt["native_signal_guards"] = json.loads((OUT / "signal-native/receipt.json").read_text())
-        native_conversions = run(["python3", ROOT / "scripts/check-qt612-conversions-native.py",
-                                  "--qt-root", args.qt_prefix, "--extractor", args.extractor],
-                                 env, ROOT, timeout=1800)
-        print(native_conversions.stdout, end="", flush=True)
-        receipt['native_conversion_guards'] = json.loads((ROOT / 'build/qt612/conversions-native-check/receipt.json').read_text())
-        explicit_copies = run(['python3', ROOT / 'scripts/check-qt-explicit-copies.py',
-                               '--qt-root', args.qt_prefix, '--work', OUT / 'explicit-copies'],
-                              env, ROOT, timeout=300)
-        print(explicit_copies.stdout, end='', flush=True)
-        receipt['explicit_copy_values'] = json.loads((OUT / 'explicit-copies/receipt.json').read_text())
-        protected_fields = run(['python3', ROOT / 'scripts/check-qt-protected-fields.py',
-                                '--qt-root', args.qt_prefix, '--source-work', ROOT / 'build/qt612',
-                                '--work', OUT / 'protected-fields'], env, ROOT, timeout=300)
-        print(protected_fields.stdout.strip())
-        receipt['protected_fields'] = json.loads((OUT / 'protected-fields/receipt.json').read_text())
-        protected_fields_sanitized = run(['python3', ROOT / 'scripts/check-qt-protected-fields.py',
-                                          '--qt-root', args.qt_prefix, '--source-work', ROOT / 'build/qt612',
-                                          '--work', OUT / 'protected-fields-sanitized', '--sanitize'], env, ROOT, timeout=300)
-        print(protected_fields_sanitized.stdout.strip())
-        receipt['protected_fields_sanitized'] = json.loads((OUT / 'protected-fields-sanitized/receipt.json').read_text())
-        protected_methods = run(['python3', ROOT / 'scripts/check-qt-protected-methods.py',
-                                  '--qt-root', args.qt_prefix, '--source-work', ROOT / 'build/qt612',
-                                  '--work', OUT / 'protected-methods'], env, ROOT, timeout=300)
-        print(protected_methods.stdout.strip())
-        receipt['protected_methods'] = json.loads((OUT / 'protected-methods/receipt.json').read_text())
-        signal_shards = run(['python3', ROOT / 'scripts/check-qt-native-signal-shards.py',
-                              '--qt-root', args.qt_prefix, '--work', OUT / 'native-signal-shards'],
-                             env, ROOT, timeout=600)
-        print(signal_shards.stdout.strip())
-        receipt['native_signal_shards'] = json.loads((OUT / 'native-signal-shards/receipt.json').read_text())
-        qobject_reference_signals = run(['python3', ROOT / 'scripts/check-qt-qobject-reference-signals.py',
-                                        '--qt-root', args.qt_prefix, '--work', OUT / 'qobject-reference-signals'],
-                                       env, ROOT, timeout=180)
-        print(qobject_reference_signals.stdout.strip())
-        receipt['qobject_reference_signals'] = json.loads((OUT / 'qobject-reference-signals/receipt.json').read_text())
-        audio_buffer_bytes = run(['python3', ROOT / 'scripts/check-qt-audio-buffer-bytes.py',
-                                  '--qt-root', args.qt_prefix, '--work', OUT / 'audio-buffer-native-bytes'],
-                                 env, ROOT, timeout=180)
-        print(audio_buffer_bytes.stdout.strip())
-        receipt['audio_buffer_native_bytes'] = json.loads((OUT / 'audio-buffer-native-bytes/receipt.json').read_text())
-        maintenance = run(['python3', ROOT / 'scripts/check-qt-maintenance-workflow.py'],
-                          env, ROOT, timeout=120)
-        count = re.search(r'Ran (\d+) tests?', maintenance.stderr)
-        if not count or int(count[1]) == 0:
-            raise RuntimeError('The maintainer workflow regression gate did not execute its tests')
-        receipt['maintenance_workflow'] = dict(passed=True, tests=int(count[1]))
-        for name, script, extra in (
-            ('native_aliases', 'check-qt-native-aliases.py', ['--mutation-checks']),
-            ('native_linker', 'check-qt-native-linker.py', []),
-            ('qt_link_dependencies', 'check-qt-link-dependencies.py', []),
-            ('linked_runtime_preloads', 'check-qt-linked-preloads.py', []),
-            ('callback_cpp_spellings', 'check-qt-callback-spellings.py', []),
-            ('native_workspace', 'check-qt-native-workspace.py', ['--backend']),
-            ('proxy_constructor_shards', 'check-qt-proxy-constructor-shards.py', []),
-            ('runtime_dispatch_shards', 'check-qt-runtime-dispatch-shards.py', []),
-            ('proxy_virtual_shards', 'check-qt-proxy-virtual-shards.py', []),
-        ):
-            checked = run(['python3', ROOT / 'scripts' / script, '--qt-root', args.qt_prefix,
-                           '--work', OUT / name, *extra], env, ROOT, timeout=600)
-            print(checked.stdout.strip())
-            receipt[name] = json.loads((OUT / name / 'receipt.json').read_text())
-        for name, script, extra in (
-            ('render_factories', 'check-qt-render-factories.py', []),
-            ('native_destruction', 'check-qt-native-destruction.py', []),
-            ('native_worker_destruction', 'check-qt-native-worker-destruction.py', []),
-            ('io_pipe', 'check-qt-io-pipe.py', []),
-            ('mutex_lockers', 'check-qt-mutex-lockers.py', []),
-            ('cursor_guards', 'check-qt-mutex-lockers.py', ['--cursor-guards']),
-            ('dynamic_properties', 'check-qt-dynamic-properties.py', []),
-        ):
-            for sanitized in (False, True):
-                key = name + ('_sanitized' if sanitized else '')
-                directory = OUT / key.replace('_', '-')
-                command = ['python3', ROOT / 'scripts' / script, '--qt-root', args.qt_prefix,
-                           '--work', directory, *extra]
-                if sanitized:
-                    command.append('--sanitize')
-                    if script not in ('check-qt-mutex-lockers.py', 'check-qt-dynamic-properties.py'):
-                        command += ['--cxx', 'g++']
-                checked = run(command, env, ROOT, timeout=600)
-                print(checked.stdout.strip())
-                receipt[key] = json.loads((directory / 'receipt.json').read_text())
-        native_value_lifetimes = run(["python3", ROOT / "scripts/check-qt612-value-lifetimes-native.py",
-                                      "--qt-root", args.qt_prefix, "--extractor", args.extractor],
-                                     env, ROOT, timeout=900)
-        print(native_value_lifetimes.stdout, end="", flush=True)
-        receipt['native_value_lifetime_guards'] = json.loads((OUT / 'value-lifetimes-native/receipt.json').read_text())
-        metatypes = run(["python3", ROOT / "scripts/check-qt612-metatypes-native.py",
-                        "--qt-root", args.qt_prefix, "--extractor", args.extractor],
+    receipt["executable_sha256"] = hashlib.sha256(executable.read_bytes()).hexdigest()
+    return receipt
+
+
+def runtime(c):
+    """Runtime bundles and module partitions, naming, effect transport and the native build layout."""
+    args, env, package = c.args, c.env, c.package
+    receipt = {}
+    for name, script, extra in (
+            ('selective_runtime', 'check-qt-selective-runtime.py', []),
+            ('runtime_cache', 'check-qt-runtime-bundle.py', ['--work', OUT / 'runtime-bundle']),
+            ('distribution_modules', 'check-qt-distribution-modules.py', ['--qt-root', args.qt_prefix]),
+            ('source_snapshots', 'check-qt-source-snapshots.py', []),
+            ('shared_state_analysis', 'check-qt-shared-state-analysis.py', ['--work', OUT / 'shared-state-analysis']),
+            ('proxy_meta_provider', 'check-qt-proxy-meta-provider.py', ['--qt-root', args.qt_prefix,
+                '--work', OUT / 'proxy-meta-provider']),
+            ('range_model_versions', 'check-qt-range-model-versions.py', ['--qt-root', args.qt_prefix,
+                '--work', OUT / 'range-model-versions']),
+            ('protected_lvalue_getters', 'check-qt-protected-lvalue-getters.py', ['--qt-root', args.qt_prefix,
+                '--work', OUT / 'protected-lvalue-getters']),
+            ('selective_native_modules', 'check-qt-module-partitions.py', [
+                '--qt-root', args.qt_prefix, '--selective', '--scoped', '--bundle-runtime',
+                '--value-metatypes', '--qml-imports', '--run', '--work', OUT / 'selective-native-modules'])):
+        case_env = dict(env, BQT_STATE_SOURCE_BYTES='0') if name == 'selective_native_modules' else env
+        result = run(['python3', ROOT / 'scripts' / script, *extra], case_env, ROOT, timeout=2400)
+        print(result.stdout, end='', flush=True)
+        receipt[name] = dict(passed=True, stdout=result.stdout.strip())
+    output_writes = run(['python3', ROOT / 'scripts/check-qt-generation-writes.py'], env, ROOT, timeout=60)
+    print(output_writes.stdout, end='', flush=True)
+    receipt['generation_output_writes'] = dict(passed=True, stdout=output_writes.stdout.strip())
+    overloads = run(["python3", ROOT / "scripts/check-overload-names.py"], env, ROOT, timeout=300)
+    print(overloads.stdout, end="", flush=True)
+    receipt['overload_names'] = json.loads((OUT / 'overload-names/receipt.json').read_text())
+    boundary = run(["python3", ROOT / "scripts/check-pyside-boundary.py",
+                    "--qt-root", args.qt_prefix], env, ROOT, timeout=600)
+    print(boundary.stdout, end="", flush=True)
+    receipt['pyside_boundary'] = json.loads(
+        (ROOT / 'build/qt612/pyside-boundary-check/receipt.json').read_text())
+    transport = run(["python3", ROOT / "scripts/check-qt612-effect-transport.py",
+                     "--qt-root", args.qt_prefix], env, ROOT, timeout=900)
+    print(transport.stdout, end="", flush=True)
+    receipt['effect_transport'] = json.loads((OUT / 'effect-transport/receipt.json').read_text())
+    publication = run(["python3", ROOT / "scripts/check-qt612-publication.py",
+                       "--package", package], env, ROOT, timeout=660)
+    print(publication.stdout, end="", flush=True)
+    receipt['local_publication_client'] = json.loads((OUT / 'publication/receipt.json').read_text())
+    native_backend = run(["python3", ROOT / "scripts/check-qt612-backend.py",
+                          "--qt-root", args.qt_prefix], env, ROOT, timeout=180)
+    print(native_backend.stdout, end="", flush=True)
+    receipt['native_payload_backend'] = json.loads((ROOT / 'build/qt612/backend-test/receipt.json').read_text())
+    native_shards = run(["python3", ROOT / "scripts/check-qt-native-shards.py",
+                         "--qt-root", args.qt_prefix,
+                         "--work", OUT / "native-shards"],
+                        dict(env, BQT_SHARD_JOBS="2"), ROOT, timeout=600)
+    print(native_shards.stdout, end="", flush=True)
+    receipt['native_compilation_units'] = json.loads((OUT / 'native-shards/receipt.json').read_text())
+    abi_cohorts = run(["python3", ROOT / "scripts/check-qt612-abi-cohorts.py",
+                       "--qt-root", args.qt_prefix], env, ROOT, timeout=180)
+    print(abi_cohorts.stdout, end="", flush=True)
+    receipt['native_abi_cohorts'] = json.loads((ROOT / 'build/qt612/abi-cohort-test/receipt.json').read_text())
+    native_events = run(["python3", ROOT / "scripts/check-qt612-native-events.py",
+                         "--qt-root", args.qt_prefix, "--extractor", args.extractor],
                         env, ROOT, timeout=900)
-        print(metatypes.stdout, end="", flush=True)
-        receipt['native_metatype_storage'] = json.loads((OUT / 'metatypes-native/receipt.json').read_text())
-        resource_bounds = run(["python3", ROOT / "scripts/check-qt612-resource-bounds.py",
-                               "--qt-root", args.qt_prefix], env, ROOT, timeout=180)
-        print(resource_bounds.stdout, end="", flush=True)
-        receipt['native_resource_bounds'] = json.loads((OUT / 'resource-bounds/receipt.json').read_text())
-        restoration = run(["python3", ROOT / "scripts/check-qt612-restoration.py",
-                           "--qt-root", args.qt_prefix], env, ROOT, timeout=1200)
-        print(restoration.stdout, end="", flush=True)
-        receipt['restored_native_api'] = json.loads((OUT / 'restoration/receipt.json').read_text())
-        aggregate_fields = run(["python3", ROOT / "scripts/check-qt612-dependent-fields.py",
-                                "--qt-root", args.qt_prefix, "--records",
-                                "--work", OUT / "dependent-fields"], env, ROOT, timeout=1200)
-        print(aggregate_fields.stdout, end="", flush=True)
-        receipt['native_dependent_fields'] = json.loads((OUT / 'dependent-fields/receipt.json').read_text())
-        cleanup_state = run(["python3", ROOT / "scripts/check-qt612-state-cleanup.py",
-                             "--qt-root", args.qt_prefix,
-                             "--work", OUT / "state-cleanup"], env, ROOT, timeout=1200)
-        print(cleanup_state.stdout, end="", flush=True)
-        receipt['native_converter_cleanup'] = json.loads((OUT / 'state-cleanup/receipt.json').read_text())
-        for name, script, directory in (
-            ('native_output_and_array_conversions', 'check-qt-next-conversions-native.py', 'next-conversions-check'),
-            ('native_rhi_buffer_access', 'check-qt-next-rhi-buffers.py', 'next-rhi-buffers'),
-        ):
-            checked = run(['python3', ROOT / 'scripts' / script, '--qt-root', args.qt_prefix],
-                          env, ROOT, timeout=1800)
-            print(checked.stdout, end='', flush=True)
-            receipt[name] = json.loads((ROOT / 'build/qt612' / directory / 'receipt.json').read_text())
-        paired_arrays = run(['python3', ROOT / 'scripts/check-qt-next-conversion-proofs.py'],
-                            env, ROOT, timeout=600)
-        print(paired_arrays.stdout, end='', flush=True)
-        receipt['paired_array_proofs'] = json.loads(
-            (ROOT / 'build/qt612/next-conversion-proofs/receipt.json').read_text())
-        native_callbacks = run(["python3", ROOT / "scripts/check-qt-callbacks.py",
-                                "--qt-root", args.qt_prefix, "--jobs", str(args.jobs), "--all-features"],
-                               env, ROOT, timeout=14400)
-        print(native_callbacks.stdout, end="", flush=True)
-        receipt["native_callback_guards"] = json.loads((ROOT / "build/qt612/callbacks/receipt.json").read_text())
-        custom_signals = run(['python3', ROOT / 'scripts/check-qt-custom-signals.py', '--qt-root', args.qt_prefix],
-                             env, ROOT, timeout=14400)
-        print(custom_signals.stdout, end='', flush=True)
-        receipt['custom_signals'] = json.loads(
-            (ROOT / 'build/qt612/custom-signals-check/custom-signals-receipt.json').read_text())
-        lock = ROOT / "generator/qt612/names.lock.json"
-        before = {name: hashlib.sha256(data).hexdigest() for name, data in package_files(package).items()}
-        before['coverage.json'] = hashlib.sha256((package / 'coverage.json').read_bytes()).hexdigest()
-        before_lock = lock.read_bytes()
-        regenerate = ["python3", ROOT / "generator/generate.py", "--qt-prefix", args.qt_prefix, "--extractor", args.extractor]
-        if args.runtime_manifest:
-            regenerate += ['--runtime-manifest', args.runtime_manifest]
-        run(regenerate, env, ROOT, timeout=14400)
-        after = {name: hashlib.sha256(data).hexdigest() for name, data in package_files(package).items()}
-        after['coverage.json'] = hashlib.sha256((package / 'coverage.json').read_bytes()).hexdigest()
-        changed = [name for name in before.keys() | after.keys() if before.get(name) != after.get(name)]
-        if lock.read_bytes() != before_lock:
-            changed.append("names.lock.json")
-        if changed:
-            raise RuntimeError("Generation was not deterministic: " + ', '.join(changed))
-        receipt["deterministic_regeneration"] = True
-        receipt["extension"] = extension_check(env, args.qt_prefix, args.extractor)
+    print(native_events.stdout, end="", flush=True)
+    receipt['native_event_filters'] = json.loads((OUT / 'native-events/receipt.json').read_text())
+    native_names = run(["python3", ROOT / "scripts/check-qt612-native-names.py",
+                        "--qt-root", args.qt_prefix, "--extractor", args.extractor],
+                       env, ROOT, timeout=900)
+    print(native_names.stdout, end="", flush=True)
+    receipt['native_names'] = json.loads((OUT / 'native-names/receipt.json').read_text())
+    return receipt
+
+
+def native(c):
+    """Native signal, conversion, protected member, destruction and storage guards."""
+    args, env = c.args, c.env
+    receipt = {}
+    native_signals = run(["python3", ROOT / "scripts/check-qt612-signal-native.py",
+                          "--qt-prefix", args.qt_prefix], env, ROOT, timeout=1200)
+    print(native_signals.stdout, end="", flush=True)
+    receipt["native_signal_guards"] = json.loads((OUT / "signal-native/receipt.json").read_text())
+    native_conversions = run(["python3", ROOT / "scripts/check-qt612-conversions-native.py",
+                              "--qt-root", args.qt_prefix, "--extractor", args.extractor],
+                             env, ROOT, timeout=1800)
+    print(native_conversions.stdout, end="", flush=True)
+    receipt['native_conversion_guards'] = json.loads((ROOT / 'build/qt612/conversions-native-check/receipt.json').read_text())
+    explicit_copies = run(['python3', ROOT / 'scripts/check-qt-explicit-copies.py',
+                           '--qt-root', args.qt_prefix, '--work', OUT / 'explicit-copies'],
+                          env, ROOT, timeout=300)
+    print(explicit_copies.stdout, end='', flush=True)
+    receipt['explicit_copy_values'] = json.loads((OUT / 'explicit-copies/receipt.json').read_text())
+    protected_fields = run(['python3', ROOT / 'scripts/check-qt-protected-fields.py',
+                            '--qt-root', args.qt_prefix, '--source-work', ROOT / 'build/qt612',
+                            '--work', OUT / 'protected-fields'], env, ROOT, timeout=300)
+    print(protected_fields.stdout.strip())
+    receipt['protected_fields'] = json.loads((OUT / 'protected-fields/receipt.json').read_text())
+    protected_fields_sanitized = run(['python3', ROOT / 'scripts/check-qt-protected-fields.py',
+                                      '--qt-root', args.qt_prefix, '--source-work', ROOT / 'build/qt612',
+                                      '--work', OUT / 'protected-fields-sanitized', '--sanitize'], env, ROOT, timeout=300)
+    print(protected_fields_sanitized.stdout.strip())
+    receipt['protected_fields_sanitized'] = json.loads((OUT / 'protected-fields-sanitized/receipt.json').read_text())
+    protected_methods = run(['python3', ROOT / 'scripts/check-qt-protected-methods.py',
+                              '--qt-root', args.qt_prefix, '--source-work', ROOT / 'build/qt612',
+                              '--work', OUT / 'protected-methods'], env, ROOT, timeout=300)
+    print(protected_methods.stdout.strip())
+    receipt['protected_methods'] = json.loads((OUT / 'protected-methods/receipt.json').read_text())
+    signal_shards = run(['python3', ROOT / 'scripts/check-qt-native-signal-shards.py',
+                          '--qt-root', args.qt_prefix, '--work', OUT / 'native-signal-shards'],
+                         env, ROOT, timeout=600)
+    print(signal_shards.stdout.strip())
+    receipt['native_signal_shards'] = json.loads((OUT / 'native-signal-shards/receipt.json').read_text())
+    qobject_reference_signals = run(['python3', ROOT / 'scripts/check-qt-qobject-reference-signals.py',
+                                    '--qt-root', args.qt_prefix, '--work', OUT / 'qobject-reference-signals'],
+                                   env, ROOT, timeout=180)
+    print(qobject_reference_signals.stdout.strip())
+    receipt['qobject_reference_signals'] = json.loads((OUT / 'qobject-reference-signals/receipt.json').read_text())
+    audio_buffer_bytes = run(['python3', ROOT / 'scripts/check-qt-audio-buffer-bytes.py',
+                              '--qt-root', args.qt_prefix, '--work', OUT / 'audio-buffer-native-bytes'],
+                             env, ROOT, timeout=180)
+    print(audio_buffer_bytes.stdout.strip())
+    receipt['audio_buffer_native_bytes'] = json.loads((OUT / 'audio-buffer-native-bytes/receipt.json').read_text())
+    maintenance = run(['python3', ROOT / 'scripts/check-qt-maintenance-workflow.py'],
+                      env, ROOT, timeout=120)
+    count = re.search(r'Ran (\d+) tests?', maintenance.stderr)
+    if not count or int(count[1]) == 0:
+        raise RuntimeError('The maintainer workflow regression gate did not execute its tests')
+    receipt['maintenance_workflow'] = dict(passed=True, tests=int(count[1]))
+    for name, script, extra in (
+        ('native_aliases', 'check-qt-native-aliases.py', ['--mutation-checks']),
+        ('native_linker', 'check-qt-native-linker.py', []),
+        ('qt_link_dependencies', 'check-qt-link-dependencies.py', []),
+        ('linked_runtime_preloads', 'check-qt-linked-preloads.py', []),
+        ('callback_cpp_spellings', 'check-qt-callback-spellings.py', []),
+        ('native_workspace', 'check-qt-native-workspace.py', ['--backend']),
+        ('proxy_constructor_shards', 'check-qt-proxy-constructor-shards.py', []),
+        ('runtime_dispatch_shards', 'check-qt-runtime-dispatch-shards.py', []),
+        ('proxy_virtual_shards', 'check-qt-proxy-virtual-shards.py', []),
+    ):
+        checked = run(['python3', ROOT / 'scripts' / script, '--qt-root', args.qt_prefix,
+                       '--work', OUT / name, *extra], env, ROOT, timeout=600)
+        print(checked.stdout.strip())
+        receipt[name] = json.loads((OUT / name / 'receipt.json').read_text())
+    for name, script, extra in (
+        ('render_factories', 'check-qt-render-factories.py', []),
+        ('native_destruction', 'check-qt-native-destruction.py', []),
+        ('native_worker_destruction', 'check-qt-native-worker-destruction.py', []),
+        ('io_pipe', 'check-qt-io-pipe.py', []),
+        ('mutex_lockers', 'check-qt-mutex-lockers.py', []),
+        ('cursor_guards', 'check-qt-mutex-lockers.py', ['--cursor-guards']),
+        ('dynamic_properties', 'check-qt-dynamic-properties.py', []),
+    ):
+        for sanitized in (False, True):
+            key = name + ('_sanitized' if sanitized else '')
+            directory = OUT / key.replace('_', '-')
+            command = ['python3', ROOT / 'scripts' / script, '--qt-root', args.qt_prefix,
+                       '--work', directory, *extra]
+            if sanitized:
+                command.append('--sanitize')
+                if script not in ('check-qt-mutex-lockers.py', 'check-qt-dynamic-properties.py'):
+                    command += ['--cxx', 'g++']
+            checked = run(command, env, ROOT, timeout=600)
+            print(checked.stdout.strip())
+            receipt[key] = json.loads((directory / 'receipt.json').read_text())
+    native_value_lifetimes = run(["python3", ROOT / "scripts/check-qt612-value-lifetimes-native.py",
+                                  "--qt-root", args.qt_prefix, "--extractor", args.extractor],
+                                 env, ROOT, timeout=900)
+    print(native_value_lifetimes.stdout, end="", flush=True)
+    receipt['native_value_lifetime_guards'] = json.loads((OUT / 'value-lifetimes-native/receipt.json').read_text())
+    metatypes = run(["python3", ROOT / "scripts/check-qt612-metatypes-native.py",
+                    "--qt-root", args.qt_prefix, "--extractor", args.extractor],
+                    env, ROOT, timeout=900)
+    print(metatypes.stdout, end="", flush=True)
+    receipt['native_metatype_storage'] = json.loads((OUT / 'metatypes-native/receipt.json').read_text())
+    resource_bounds = run(["python3", ROOT / "scripts/check-qt612-resource-bounds.py",
+                           "--qt-root", args.qt_prefix], env, ROOT, timeout=180)
+    print(resource_bounds.stdout, end="", flush=True)
+    receipt['native_resource_bounds'] = json.loads((OUT / 'resource-bounds/receipt.json').read_text())
+    return receipt
+
+
+def conversions(c):
+    """Restored API, dependent fields, converter cleanup and output/array conversions."""
+    args, env = c.args, c.env
+    receipt = {}
+    restoration = run(["python3", ROOT / "scripts/check-qt612-restoration.py",
+                       "--qt-root", args.qt_prefix], env, ROOT, timeout=1200)
+    print(restoration.stdout, end="", flush=True)
+    receipt['restored_native_api'] = json.loads((OUT / 'restoration/receipt.json').read_text())
+    aggregate_fields = run(["python3", ROOT / "scripts/check-qt612-dependent-fields.py",
+                            "--qt-root", args.qt_prefix, "--records",
+                            "--work", OUT / "dependent-fields"], env, ROOT, timeout=1200)
+    print(aggregate_fields.stdout, end="", flush=True)
+    receipt['native_dependent_fields'] = json.loads((OUT / 'dependent-fields/receipt.json').read_text())
+    cleanup_state = run(["python3", ROOT / "scripts/check-qt612-state-cleanup.py",
+                         "--qt-root", args.qt_prefix,
+                         "--work", OUT / "state-cleanup"], env, ROOT, timeout=1200)
+    print(cleanup_state.stdout, end="", flush=True)
+    receipt['native_converter_cleanup'] = json.loads((OUT / 'state-cleanup/receipt.json').read_text())
+    for name, script, directory in (
+        ('native_output_and_array_conversions', 'check-qt-next-conversions-native.py', 'next-conversions-check'),
+        ('native_rhi_buffer_access', 'check-qt-next-rhi-buffers.py', 'next-rhi-buffers'),
+    ):
+        checked = run(['python3', ROOT / 'scripts' / script, '--qt-root', args.qt_prefix],
+                      env, ROOT, timeout=1800)
+        print(checked.stdout, end='', flush=True)
+        receipt[name] = json.loads((ROOT / 'build/qt612' / directory / 'receipt.json').read_text())
+    # The paired-array proofs read the wrappers the conversion check generated.
+    paired_arrays = run(['python3', ROOT / 'scripts/check-qt-next-conversion-proofs.py'],
+                        env, ROOT, timeout=600)
+    print(paired_arrays.stdout, end='', flush=True)
+    receipt['paired_array_proofs'] = json.loads(
+        (ROOT / 'build/qt612/next-conversion-proofs/receipt.json').read_text())
+    return receipt
+
+
+def callbacks(c):
+    """Callback guards for every feature."""
+    native_callbacks = run(["python3", ROOT / "scripts/check-qt-callbacks.py",
+                            "--qt-root", c.args.qt_prefix, "--jobs", str(c.args.jobs), "--all-features"],
+                           c.env, ROOT, timeout=14400)
+    print(native_callbacks.stdout, end="", flush=True)
+    return {"native_callback_guards": json.loads((ROOT / "build/qt612/callbacks/receipt.json").read_text())}
+
+
+def signals(c):
+    """Authored custom signals."""
+    custom_signals = run(['python3', ROOT / 'scripts/check-qt-custom-signals.py', '--qt-root', c.args.qt_prefix],
+                         c.env, ROOT, timeout=14400)
+    print(custom_signals.stdout, end='', flush=True)
+    return {'custom_signals': json.loads(
+        (ROOT / 'build/qt612/custom-signals-check/custom-signals-receipt.json').read_text())}
+
+
+def extension(c):
+    """Automatic extraction of a module added to a profile."""
+    return {"extension": extension_check(c.env, c.args.qt_prefix, c.args.extractor)}
+
+
+def regeneration(c):
+    """Regenerating from the same inputs must reproduce the package and its name lock."""
+    args = c.args
+    before = generation_digest(c.package)
+    regenerate = ["python3", ROOT / "generator/generate.py", "--qt-prefix", args.qt_prefix, "--extractor", args.extractor]
+    if args.runtime_manifest:
+        regenerate += ['--runtime-manifest', args.runtime_manifest]
+    run(regenerate, c.env, ROOT, timeout=14400)
+    changed = differences(before, generation_digest(c.package))
+    if changed:
+        raise RuntimeError("Generation was not deterministic: " + ', '.join(changed))
+    return {"deterministic_regeneration": True}
+
+
+PART_CHECKS = dict(consumers=consumers, runtime=runtime, native=native, conversions=conversions,
+                   callbacks=callbacks, signals=signals, regeneration=regeneration, extension=extension)
+assert tuple(PART_CHECKS) == PARTS
+
+
+def finish(receipt):
     receipt["public_hub_publication"] = False
     receipt['verification_complete'] = True
-    receipt["executable_sha256"] = hashlib.sha256(executable.read_bytes()).hexdigest()
     (OUT / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print("PASS clean Hub imports, native builds, Action/scoped cleanup, lifetime checks and old/missing Qt rejection")
+
+
+def combine(args, package, required):
+    """Merge part receipts recorded for this generation, checker and options.
+
+    A separately produced generation of the same inputs may stand in for the
+    regeneration part, provided its digest matches this package exactly."""
+    generation = generation_digest(package)
+    expected = dict(generation=digest_id(generation), checker=checker_id(), options=part_options(args))
+    receipt, combined = {}, []
+    for name in required:
+        if name == 'regeneration' and args.independent_generation:
+            continue
+        path = OUT / 'parts' / f'{name}.json'
+        if not path.is_file():
+            raise RuntimeError('A required part was not recorded: ' + name)
+        part = json.loads(path.read_text())
+        mismatched = [key for key, value in expected.items() if part.get(key) != value]
+        if part.get('part') != name or part.get('passed') is not True or mismatched:
+            raise RuntimeError(f'Part {name} was not recorded for this generation, checker and options: '
+                               + ', '.join(mismatched or ['passed']))
+        receipt.update(part['receipt'])
+        combined.append(name)
+    if args.independent_generation:
+        for path in args.independent_generation:
+            changed = differences(generation, json.loads(path.read_text()))
+            if changed:
+                raise RuntimeError("Generation was not deterministic: " + ', '.join(changed))
+        receipt['deterministic_regeneration'] = True
+        receipt['independent_generations'] = len(args.independent_generation)
+    receipt['combined_parts'] = combined
+    finish(receipt)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--qt-root", action="append", type=Path)
+    parser.add_argument("--reject-qt-root", action="append", type=Path, default=[])
+    parser.add_argument("--reject-system-qt", action="store_true")
+    parser.add_argument("--generator-checks", action="store_true")
+    parser.add_argument("--example", action="append", choices=tuple(EXAMPLES),
+                        help="Run only these native examples; defaults to all")
+    parser.add_argument('--jobs', type=int, default=2, help='Parallel fixture processes or standalone consumer builds')
+    parser.add_argument('--bundle', action='store_true',
+                        help='Build examples together, run each in a fresh process, then build standalone smoke cases')
+    parser.add_argument("--qt-prefix", type=Path, default=Path.home() / ".cache/bend-qt-generator/Qt/6.12.0/gcc_64")
+    parser.add_argument("--extractor", type=Path, default=Path.home() / ".cache/bend-qt-generator/build/bend-qt-extract")
+    parser.add_argument('--runtime-manifest', type=Path, help='Release inputs for deterministic bundled regeneration')
+    parser.add_argument('--part', action='append', choices=PARTS,
+                        help='Run only these parts, recording each in check/parts for --combine')
+    parser.add_argument('--combine', action='store_true',
+                        help='Merge the recorded parts of this generation into the complete receipt')
+    parser.add_argument('--independent-generation', action='append', type=Path, default=[],
+                        help='With --combine, the generation digest from a separate run, in place of the regeneration part')
+    args = parser.parse_args()
+    required = list(PARTS if args.generator_checks else PARTS[:1])
+    selected = [name for name in required if name in (args.part or required)]
+    if args.part and len(selected) < len(set(args.part)):
+        parser.error('Only the consumers part runs without --generator-checks')
+    if args.combine and args.part:
+        parser.error('--combine merges recorded parts and runs none')
+    if args.independent_generation and not (args.combine and args.generator_checks):
+        parser.error('--independent-generation stands in for the regeneration part of a --combine')
+    runtimes = args.qt_root or [Path.home() / ".cache/bend-qt-generator/Qt/6.12.0/gcc_64"]
+    package = ROOT / "packages/qt612"
+    OUT.mkdir(parents=True, exist_ok=True)
+    if args.combine:
+        combine(args, package, required)
+        return
+    # Parts record the sources they started with; checks may write build outputs.
+    recorded = dict(checker=checker_id(), options=part_options(args)) if args.part else None
+    if not args.part:
+        (OUT / 'receipt.json').write_text(json.dumps({'verification_complete': False,
+            'stage': 'proofs and module checking'}, indent=2) + '\n')
+    env = dict(os.environ, BENDRTS="", QT_QPA_PLATFORM="offscreen")
+    for name in ("CC", "LD_LIBRARY_PATH", "LD_PRELOAD", "BEND_QT_LIBRARY", "BEND_QT_RUNTIME", "QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH"):
+        env.pop(name, None)
+    if run([BEND, "version"], env, ROOT).stdout.strip() != "bend 2.0.40":
+        raise RuntimeError("These native effects require Bend 2.0.40")
+    coverage = json.loads((package / 'coverage.json').read_text())
+    bundled_runtime = bool(coverage.get('bundled_runtime'))
+    if bundled_runtime and 'regeneration' in selected and args.runtime_manifest is None:
+        metadata = json.loads((ROOT / 'build/qt612/generation.json').read_text())
+        if not metadata.get('runtime_release_manifest'):
+            raise ValueError('Bundled regeneration needs its verified --runtime-manifest')
+        args.runtime_manifest = Path(metadata['runtime_release_manifest'])
+    context = SimpleNamespace(args=args, env=env, package=package, runtimes=runtimes, bundled_runtime=bundled_runtime)
+    generation = digest_id(generation_digest(package))
+    receipt = {}
+    for index, name in enumerate(selected):
+        if args.part:
+            (OUT / 'parts' / f'{name}.json').unlink(missing_ok=True)
+        record = PART_CHECKS[name](context)
+        receipt.update(record)
+        if args.part:
+            (OUT / 'parts').mkdir(exist_ok=True)
+            (OUT / 'parts' / f'{name}.json').write_text(json.dumps(dict(part=name, passed=True,
+                generation=generation, **recorded, receipt=record), indent=2) + '\n')
+            print(f'PASS part {name}: {PART_CHECKS[name].__doc__.splitlines()[0]}', flush=True)
+        else:
+            (OUT / 'receipt.json').write_text(json.dumps(dict(receipt, verification_complete=False,
+                completed_parts=selected[:index + 1]), indent=2) + '\n')
+    if not args.part:
+        finish(receipt)
 
 
 if __name__ == "__main__":

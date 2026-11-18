@@ -1,0 +1,44 @@
+name: Pinned Qt toolchain
+description: Install test packages, pinned Bend and Lean, and the pinned Qt SDK and extractor
+inputs:
+  qt-version:
+    description: A Qt version from generator/qt_targets.json
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Name the package cache week
+      id: week
+      shell: bash
+      run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+    - name: Restore downloaded system packages
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/apt-archives
+        key: apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/ci-apt-install.sh') }}-${{ steps.week.outputs.week }}
+        restore-keys: apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/ci-apt-install.sh') }}-
+    - name: Install maintainer and headless test dependencies
+      shell: bash
+      run: bash scripts/ci-apt-install.sh
+    - name: Install pinned Bend and Lean
+      shell: bash
+      run: bash scripts/install-ci-tools.sh
+    - name: Restore pinned Qt, sources and extractor
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.cache/bend-qt-generator/Qt
+          ~/.cache/bend-qt-generator/venv
+          ~/.cache/bend-qt-generator/pyside-setup*
+          ~/.cache/bend-qt-generator/build*
+          ~/.cache/bend-qt-generator/corresponding-sources
+          ~/.cache/bend-qt-webview-*
+        key: qt-sdk-${{ runner.os }}-${{ runner.arch }}-${{ inputs.qt-version }}-llvm19-${{ hashFiles('generator/qt_targets.json', 'generator/CMakeLists.txt', 'scripts/setup-qt*.sh') }}
+    - name: Prepare pinned Qt SDK and extractor
+      shell: bash
+      env:
+        QT_VERSION: ${{ inputs.qt-version }}
+      run: bash scripts/setup-qt-generator.sh --qt-version "$QT_VERSION"
+    - name: Guard the runner and record memory use
+      shell: bash
+      run: bash scripts/ci-runner-guard.sh

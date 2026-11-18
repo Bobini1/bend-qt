@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Prepare, generate and validate one pinned Qt distribution without publishing."""
 import argparse
+import importlib.util
 import json
 from pathlib import Path
 import shlex
@@ -10,6 +11,17 @@ import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGETS = json.loads((ROOT / 'generator/qt_targets.json').read_text())
+# The Qt 6.12 gate is too large for one hosted runner. Its generation moves
+# between jobs through this directory, and a second runner generates it again.
+STATE = ROOT / 'build/ci-state'
+CANONICAL = '6.12.0'
+
+
+def checker():
+    spec = importlib.util.spec_from_file_location('qt612_checks', ROOT / 'scripts/check-qt612.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def configuration(version):
@@ -28,7 +40,7 @@ def configuration(version):
         release=ROOT / 'build' / ('runtime-release-' + version))
 
 
-def commands(c, stage):
+def commands(c, stage, parts=()):
     release = c['release']
     sources = release / 'sources.json'
     notices = release / 'notices/notices.json'
@@ -61,10 +73,17 @@ def commands(c, stage):
                  '--qt-prefix', c['qt'], '--extractor', c['extractor'],
                  '--pyside-source', c['source'], '--work', c['work'],
                  '--output', c['package'], '--runtime-manifest', manifest]]
+    canonical = [py, 'scripts/check-qt612.py', '--bundle', '--generator-checks',
+                 '--reject-system-qt', '--runtime-manifest', manifest]
+    if stage == 'verdict':
+        if c['version'] != CANONICAL:
+            raise ValueError('Only the canonical gate is checked in parts')
+        return [[*canonical, '--combine', '--independent-generation', STATE / 'independent/generation.json']]
     if stage == 'verify':
-        if c['version'] == '6.12.0':
-            return [[py, 'scripts/check-qt612.py', '--bundle', '--generator-checks',
-                     '--reject-system-qt', '--runtime-manifest', manifest]]
+        if c['version'] == CANONICAL:
+            return [[*canonical, *(argument for part in parts for argument in ('--part', part))]]
+        if parts:
+            raise ValueError('Only the canonical gate is checked in parts')
         return [[py, 'scripts/check-qt-distribution-package.py', '--package', c['package'],
                  '--profile', profile, *common, '--work', c['work'] / 'distribution-package-check'],
                 *[[py, 'scripts/' + name + '.py', *common,
@@ -78,22 +97,57 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--qt-version', required=True, choices=tuple(TARGETS))
     parser.add_argument('--dry-run', action='store_true')
-    parser.add_argument('stage', choices=('prepare', 'generate', 'verify', 'artifact', 'diagnostics'))
+    parser.add_argument('--part', action='append', default=[],
+                        help='verify: run only this part of the canonical gate')
+    parser.add_argument('--role', choices=('tested', 'independent'),
+                        help='state: keep the whole generation for the checks, or only its digest')
+    parser.add_argument('stage', choices=('prepare', 'generate', 'state', 'restore', 'verify', 'verdict',
+                                          'artifact', 'diagnostics'))
     args = parser.parse_args()
     config = configuration(args.qt_version)
-    if args.stage in ('prepare', 'generate', 'verify'):
-        for command in commands(config, args.stage):
+    if args.part and args.stage != 'verify':
+        parser.error('--part selects checks of the verify stage')
+    if (args.role is None) != (args.stage != 'state'):
+        parser.error('The state stage needs --role, and only it takes one')
+    if args.stage in ('state', 'restore'):
+        if args.dry_run:
+            raise ValueError('Use dry-run with a command stage')
+        if args.qt_version != CANONICAL:
+            raise ValueError('Only the canonical generation moves between jobs')
+        package, lock = config['package'], config['profile'] / 'names.lock.json'
+        archives = {STATE / 'package.tar.zst': [package, lock],
+                    STATE / 'work.tar.zst': [config['work'], config['release']]}
+        if args.stage == 'state':
+            STATE.mkdir(parents=True, exist_ok=True)
+            digest = checker().generation_digest(package, lock)
+            (STATE / 'generation.json').write_text(json.dumps(digest, indent=2, sort_keys=True) + '\n')
+            if args.role == 'tested':
+                for archive, paths in archives.items():
+                    # Precompiled headers are analysis intermediates that no check reads.
+                    subprocess.run(['tar', '-I', 'zstd -T0', '--exclude=*.pch', '-cf', str(archive),
+                                    '-C', str(ROOT), *(str(path.relative_to(ROOT)) for path in paths)], check=True)
+        else:
+            for archive in archives:
+                if archive.is_file():
+                    subprocess.run(['tar', '-I', 'zstd', '-xf', str(archive), '-C', str(ROOT)], check=True)
+            if checker().generation_digest(package, lock) != json.loads((STATE / 'generation.json').read_text()):
+                raise ValueError('The restored generation does not match its digest')
+    elif args.stage in ('prepare', 'generate', 'verify', 'verdict'):
+        for command in commands(config, args.stage, args.part):
             command = list(map(str, command))
             print(shlex.join(command), flush=True)
             if not args.dry_run:
                 subprocess.run(command, cwd=ROOT, check=True)
-        if args.stage == 'verify' and not args.dry_run:
+        if args.stage in ('verify', 'verdict') and not args.part and not args.dry_run:
+            canonical = args.qt_version == CANONICAL
+            config['work'].mkdir(parents=True, exist_ok=True)
             receipt = config['work'] / 'ci-verification.json'
             receipt.write_text(json.dumps(dict(qt=args.qt_version,
                 verification_complete=True,
-                canonical_612=args.qt_version == '6.12.0',
-                boundary=('Complete Qt 6.12 canonical validation' if args.qt_version == '6.12.0'
+                canonical_612=canonical,
+                boundary=('Complete Qt 6.12 canonical validation' if canonical
                           else 'Fresh full-package consumers and targeted version compatibility checks'),
+                checked_in_parts=args.stage == 'verdict',
                 public_hub_publication=False), indent=2) + '\n')
     else:
         if args.dry_run:
@@ -109,7 +163,7 @@ def main():
                             str((config['work'] / 'ci-verification.json').relative_to(ROOT))], check=True)
         else:
             with tarfile.open(output / ('diagnostics-' + args.qt_version + '.tar.gz'), 'w:gz') as archive:
-                for folder in (config['work'], config['release']):
+                for folder in (config['work'], config['release'], ROOT / 'build/ci-monitor'):
                     if not folder.is_dir():
                         continue
                     for path in sorted(folder.rglob('*')):

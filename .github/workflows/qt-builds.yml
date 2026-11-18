@@ -11,6 +11,12 @@ permissions:
 concurrency:
   group: qt-builds-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+env:
+  BEND_NO_TELEMETRY: '1'
+  PYTHONUNBUFFERED: '1'
+  BQT_SHARD_JOBS: '2'
+  BQT_STATE_JOBS: '2'
+  LIBGL_ALWAYS_SOFTWARE: '1'
 jobs:
   build:
     name: Qt ${{ matrix.qt }}
@@ -18,62 +24,231 @@ jobs:
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      max-parallel: 3
       matrix:
-        qt: ['6.10.3', '6.11.3', '6.12.0']
+        qt: ['6.10.3', '6.11.3']
     env:
       QT_VERSION: ${{ matrix.qt }}
-      BEND_NO_TELEMETRY: '1'
-      PYTHONUNBUFFERED: '1'
-      BQT_SHARD_JOBS: '2'
-      BQT_STATE_JOBS: '2'
-      LIBGL_ALWAYS_SOFTWARE: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install maintainer and headless test dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            clang-19 libclang-19-dev llvm-19-dev lld-19 cmake ninja-build git \
-            python3-venv curl elan zstd qt6-base-dev qt6-declarative-dev \
-            libx11-dev libasound2-dev libxkbcommon-dev libxkbcommon-x11-0 \
-            libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
-            libxcb-render-util0 libxcb-xinerama0 libxcb-xkb1 \
-            xvfb xauth x11-xkb-utils libgl1-mesa-dri libegl1 libopengl0 \
-            libpulse0 libnss3 libnspr4 libxcomposite1 libxdamage1 libxrandr2 \
-            libxtst6 libfontconfig1 libdbus-1-3 libatk1.0-0t64 \
-            libatk-bridge2.0-0t64 libcups2t64 libdrm2 libgbm1 libpango-1.0-0 \
-            libpcsclite1 libxkbfile1 libwayland-client0 libwayland-cursor0 \
-            libx11-xcb1 libxcb-util1 libxcb-shape0 libxcb-randr0 libxcb-sync1 \
-            libxcb-xfixes0 libxcb-shm0 libxcb-dri3-0 libgssapi-krb5-2 \
-            libglx-mesa0
-      - name: Install pinned Bend and Lean
-        run: bash scripts/install-ci-tools.sh
-      - name: Restore pinned Qt, sources and extractor
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - uses: ./.github/actions/qt-toolchain
         with:
-          path: |
-            ~/.cache/bend-qt-generator/Qt
-            ~/.cache/bend-qt-generator/venv
-            ~/.cache/bend-qt-generator/pyside-setup*
-            ~/.cache/bend-qt-generator/build*
-            ~/.cache/bend-qt-generator/corresponding-sources
-            ~/.cache/bend-qt-webview-*
-          key: qt-sdk-${{ runner.os }}-${{ runner.arch }}-${{ matrix.qt }}-llvm19-${{ hashFiles('generator/qt_targets.json', 'generator/CMakeLists.txt', 'scripts/setup-qt*.sh') }}
-      - name: Prepare pinned Qt SDK and extractor
-        run: bash scripts/setup-qt-generator.sh --qt-version "$QT_VERSION"
+          qt-version: ${{ matrix.qt }}
       - name: Prepare corresponding sources, notices and runtime manifest
         run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" prepare
       - name: Generate and compile complete distribution
-        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" generate
+        run: nice -n 10 python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" generate
       - name: Validate fresh native consumers
         # Qt's offscreen platform creates OpenGL contexts through GLX, so the
         # GL and scene graph fixtures need an X server even when headless.
         run: >-
           xvfb-run -a -s '-screen 0 1280x1024x24'
-          python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" verify
+          nice -n 10 python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" verify
+      - name: Package validated build
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" artifact
+      - name: Collect diagnostics
+        if: always()
+        run: |
+          sudo dmesg --ctime | tail -n 300 > build/ci-monitor/kernel.log || true
+          python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" diagnostics
+      - name: Upload package and diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bend-qt-${{ matrix.qt }}-${{ github.run_attempt }}
+          path: build/ci-artifacts/*
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+
+  # The complete Qt 6.12 gate needs more memory and time than one standard
+  # runner has. One runner generates the package that the checks below test in
+  # parallel; another generates the same inputs to check determinism.
+  generate-612:
+    name: Qt 6.12.0 generation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      QT_VERSION: '6.12.0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/qt-toolchain
+        with:
+          qt-version: '6.12.0'
+      - name: Prepare corresponding sources, notices and runtime manifest
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" prepare
+      - name: Generate and compile complete distribution
+        run: nice -n 10 python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" generate
+      - name: Record the generation for the checks
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" --role tested state
+      - name: Upload generated package
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: qt-6.12.0-package
+          path: |
+            build/ci-state/package.tar.zst
+            build/ci-state/generation.json
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+          overwrite: true
+      - name: Upload generation work
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: qt-6.12.0-work
+          path: build/ci-state/work.tar.zst
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+          overwrite: true
+      - name: Collect diagnostics
+        if: failure()
+        run: |
+          sudo dmesg --ctime | tail -n 300 > build/ci-monitor/kernel.log || true
+          python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" diagnostics
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: diagnostics-6.12.0-generation-${{ github.run_attempt }}
+          path: build/ci-artifacts/*
+          retention-days: 7
+          compression-level: 0
+
+  regenerate-612:
+    name: Qt 6.12.0 independent generation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      QT_VERSION: '6.12.0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/qt-toolchain
+        with:
+          qt-version: '6.12.0'
+      - name: Prepare corresponding sources, notices and runtime manifest
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" prepare
+      - name: Generate and compile complete distribution
+        run: nice -n 10 python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" generate
+      - name: Record the generation digest
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" --role independent state
+      - name: Upload generation digest
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: qt-6.12.0-independent-generation
+          path: build/ci-state/generation.json
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+      - name: Collect diagnostics
+        if: failure()
+        run: |
+          sudo dmesg --ctime | tail -n 300 > build/ci-monitor/kernel.log || true
+          python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" diagnostics
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: diagnostics-6.12.0-independent-generation-${{ github.run_attempt }}
+          path: build/ci-artifacts/*
+          retention-days: 7
+          compression-level: 0
+
+  check-612:
+    name: Qt 6.12.0 ${{ matrix.part }}
+    needs: generate-612
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        # Every part of scripts/check-qt612.py except regeneration, which the
+        # independent generation replaces.
+        part: [consumers, runtime, native, conversions, callbacks, signals, extension]
+    env:
+      QT_VERSION: '6.12.0'
+      PART: ${{ matrix.part }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/qt-toolchain
+        with:
+          qt-version: '6.12.0'
+      - name: Download generated package
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: qt-6.12.0-package
+          path: build/ci-state
+      - name: Download generation work
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: qt-6.12.0-work
+          path: build/ci-state
+      - name: Restore the generation
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" restore
+      - name: Check
+        run: >-
+          xvfb-run -a -s '-screen 0 1280x1024x24'
+          nice -n 10 python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" verify --part "$PART"
+      - name: Upload part receipt
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: qt-6.12.0-part-${{ matrix.part }}
+          path: build/qt612/check/parts/${{ matrix.part }}.json
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+      - name: Collect diagnostics
+        if: always()
+        run: |
+          sudo dmesg --ctime | tail -n 300 > build/ci-monitor/kernel.log || true
+          python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" diagnostics
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: diagnostics-6.12.0-${{ matrix.part }}-${{ github.run_attempt }}
+          path: build/ci-artifacts/*
+          retention-days: 7
+          compression-level: 0
+
+  verdict-612:
+    name: Qt 6.12.0
+    needs: [check-612, regenerate-612]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      QT_VERSION: '6.12.0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download generated package
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: qt-6.12.0-package
+          path: build/ci-state
+      - name: Download independent generation digest
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: qt-6.12.0-independent-generation
+          path: build/ci-state/independent
+      - name: Download part receipts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: qt-6.12.0-part-*
+          path: build/qt612/check/parts
+          merge-multiple: true
+      - name: Restore the generated package
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" restore
+      - name: Combine the canonical gate
+        run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" verdict
       - name: Package validated build
         run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" artifact
       - name: Collect diagnostics
@@ -83,7 +258,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: bend-qt-${{ matrix.qt }}-${{ github.run_attempt }}
+          name: bend-qt-6.12.0-${{ github.run_attempt }}
           path: build/ci-artifacts/*
           if-no-files-found: error
           retention-days: 7

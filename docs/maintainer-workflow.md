@@ -88,6 +88,13 @@ deterministic regeneration is retained. Custom Qt/extractor paths are forwarded
 through the checker's supported arguments; the canonical checker still uses
 `clang++-19` and its default pinned PySide checkout.
 
+The same command with `--part NAME` runs one part and records it in
+`build/qt612/check/parts`. The parts are `consumers`, `runtime`, `native`,
+`conversions`, `callbacks`, `signals`, `regeneration` and `extension`.
+Adding `--combine` instead writes the complete receipt from recorded parts. It
+requires every part for the current package bytes, check sources and options.
+CI uses this to run the parts on separate machines; see [CI](ci.md).
+
 Licensed distribution builds require the verified runtime manifest described in
 [release inputs](distributions.md#release-inputs). The workflow passes it to
 generation and canonical regeneration, and includes its runtime/source input
