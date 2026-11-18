@@ -2,6 +2,7 @@
 // @TYPES@
 #include <sys/stat.h>
 #include <sys/file.h>
+#include <sys/syscall.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
@@ -9,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
+#include <time.h>
 #include <dlfcn.h>
 
 typedef struct BqtBundleFile {
@@ -146,6 +149,194 @@ static int bqt_bundle_digit(unsigned char c) {
     if(c>='A'&&c<='Z')return c-'A';if(c>='a'&&c<='z')return c-'a'+26;
     if(c>='0'&&c<='9')return c-'0'+52;if(c=='+')return 62;if(c=='/')return 63;return -1;
 }
+
+// A verified runtime directory records .ready: a digest of every selected
+// file's path, inode, size, mode and modification time. A start whose stat
+// results reproduce it skips hashing the content. Writing a file, changing
+// its mode or replacing it changes the digest, and the next start verifies
+// and repairs the directory by content again.
+static void bqt_bundle_stat_update(BqtSha256 *s, const char *path, const struct stat *st) {
+    uint64_t fields[6]={(uint64_t)st->st_dev,(uint64_t)st->st_ino,(uint64_t)st->st_size,(uint64_t)st->st_mode,
+                        (uint64_t)st->st_mtim.tv_sec,(uint64_t)st->st_mtim.tv_nsec};
+    bqt_sha_update(s,(const unsigned char*)path,strlen(path)+1);
+    bqt_sha_update(s,(const unsigned char*)fields,sizeof fields);
+}
+static int bqt_bundle_signature(int root, const char *identity, char out[65]) {
+    BqtSha256 s;bqt_sha_init(&s);bqt_sha_update(&s,(const unsigned char*)identity,64);
+    for(size_t i=0;i<@FILE_COUNT@;i++) {
+        const BqtBundleFile *file=&bqt_bundle_files[i];struct stat st;
+        if(!bqt_bundle_selected(file))continue;
+        if(fstatat(root,file->path,&st,AT_SYMLINK_NOFOLLOW)||!S_ISREG(st.st_mode)
+           ||(uint64_t)st.st_size!=file->size||(st.st_mode&0777)!=file->mode)return 0;
+        bqt_bundle_stat_update(&s,file->path,&st);
+    }
+    for(size_t i=0;i<@ALIAS_COUNT@;i++) {
+        const BqtBundleFile *file=&bqt_bundle_files[bqt_bundle_aliases[i].target];struct stat a,b;
+        if(!bqt_bundle_selected(file))continue;
+        if(fstatat(root,bqt_bundle_aliases[i].path,&a,AT_SYMLINK_NOFOLLOW)||fstatat(root,file->path,&b,AT_SYMLINK_NOFOLLOW)
+           ||!S_ISREG(a.st_mode)||a.st_dev!=b.st_dev||a.st_ino!=b.st_ino)return 0;
+        bqt_bundle_stat_update(&s,bqt_bundle_aliases[i].path,&a);
+    }
+    bqt_sha_finish(&s,out);return 1;
+}
+static int bqt_bundle_ready(int root, const char *identity) {
+    char expected[65],recorded[66]={0};
+    if(!bqt_bundle_signature(root,identity,expected))return 0;
+    int fd=openat(root,".ready",O_RDONLY|O_CLOEXEC|O_NOFOLLOW);if(fd<0)return 0;
+    ssize_t n=read(fd,recorded,sizeof recorded-1);close(fd);
+    return n==65&&recorded[64]=='\n'&&!memcmp(recorded,expected,64);
+}
+static const char *bqt_bundle_mark_ready(int root, const char *identity) {
+    char digest[66],temp[64];
+    if(!bqt_bundle_signature(root,identity,digest))return "Bundled Qt files changed during extraction";
+    digest[64]='\n';
+    // Content reaches the disk before the stamp that vouches for it.
+    if(syscall(SYS_syncfs,root))return bqt_bundle_fail("runtime sync",bqt_bundle_root);
+    snprintf(temp,sizeof temp,".ready-%ld",(long)getpid());unlinkat(root,temp,0);
+    int fd=openat(root,temp,O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);
+    if(fd<0)return bqt_bundle_fail("runtime stamp",bqt_bundle_root);
+    int failed=write(fd,digest,65)!=65;close(fd);
+    if(failed||renameat(root,temp,root,".ready")){unlinkat(root,temp,0);return bqt_bundle_fail("runtime stamp",bqt_bundle_root);}
+    return NULL;
+}
+
+// Each program holds a shared lock on its runtime directory's .use file for
+// its lifetime and refreshes the file's time when it starts. At most once a
+// day a starting program removes the other runtime directories that have not
+// been used for a week and that no running program holds.
+#define BQT_BUNDLE_UNUSED_SECONDS (7*24*3600)
+#define BQT_BUNDLE_COLLECT_SECONDS (24*3600)
+static int bqt_bundle_use=-1;
+static void bqt_bundle_remove_tree(int parent, const char *name, int depth) {
+    for(int pass=0;pass<2&&depth<64;pass++) {
+        int fd=openat(parent,name,O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(fd<0)break;
+        DIR *entries=fdopendir(fd);if(!entries){close(fd);break;}
+        struct dirent *entry;
+        while((entry=readdir(entries))) {
+            if(!strcmp(entry->d_name,".")||!strcmp(entry->d_name,".."))continue;
+            if(unlinkat(dirfd(entries),entry->d_name,0)&&(errno==EISDIR||errno==EPERM))
+                bqt_bundle_remove_tree(dirfd(entries),entry->d_name,depth+1);
+        }
+        closedir(entries);
+        if(!unlinkat(parent,name,AT_REMOVEDIR)||errno!=ENOTEMPTY)break;
+    }
+}
+static int bqt_bundle_hex_name(const char *name) {
+    if(strlen(name)!=64)return 0;
+    for(const char *p=name;*p;p++)if(!((*p>='0'&&*p<='9')||(*p>='a'&&*p<='f')))return 0;
+    return 1;
+}
+static void bqt_bundle_collect(const char *base, const char *own) {
+    int dir=open(base,O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(dir<0)return;
+    int stamp=openat(dir,".collected",O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600);
+    struct stat st;time_t now=time(NULL);
+    // An empty stamp has never recorded a collection.
+    if(stamp<0||fstat(stamp,&st)||!S_ISREG(st.st_mode)||flock(stamp,LOCK_EX|LOCK_NB)
+       ||(st.st_size>0&&now-st.st_mtime<BQT_BUNDLE_COLLECT_SECONDS)) {
+        if(stamp>=0)close(stamp);close(dir);return;
+    }
+    if(st.st_size==0&&write(stamp,"\n",1)!=1){close(stamp);close(dir);return;}
+    futimens(stamp,NULL);
+    int listing=dup(dir);DIR *entries=listing<0?NULL:fdopendir(listing);
+    if(!entries){if(listing>=0)close(listing);close(stamp);close(dir);return;}
+    struct dirent *entry;
+    while((entry=readdir(entries))) {
+        const char *name=entry->d_name;
+        if(!strncmp(name,".trash-",7)){bqt_bundle_remove_tree(dir,name,0);continue;}
+        if(!bqt_bundle_hex_name(name)||!strcmp(name,own))continue;
+        int child=openat(dir,name,O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);if(child<0)continue;
+        // Read the directory's time before .use might be created in it.
+        struct stat cs,us;int use=-1;
+        int keep=fstat(child,&cs)||cs.st_uid!=getuid()
+                 ||(use=openat(child,".use",O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600))<0
+                 ||fstat(use,&us)||!S_ISREG(us.st_mode)
+                 ||now-(us.st_size?us.st_mtime:cs.st_mtime)<BQT_BUNDLE_UNUSED_SECONDS
+                 ||flock(use,LOCK_EX|LOCK_NB);
+        if(!keep) {
+            // Renaming first lets a program that is starting on this directory
+            // notice and start over on a fresh one.
+            char trash[NAME_MAX+1];snprintf(trash,sizeof trash,".trash-%.20s-%ld",name,(long)getpid());
+            if(!renameat(dir,name,dir,trash)){close(use);use=-1;bqt_bundle_remove_tree(dir,trash,0);}
+        }
+        if(use>=0)close(use);close(child);
+    }
+    closedir(entries);close(stamp);close(dir);
+}
+
+// Writes every selected file that does not already match its content. Each
+// decoded file is hashed as it is written and committed by rename.
+static const char *bqt_bundle_extract(int root) {
+    const char *error=NULL;void *zlib=dlopen("libz.so.1",RTLD_NOW|RTLD_LOCAL);
+    int (*unpack)(unsigned char*,unsigned long*,const unsigned char*,unsigned long)=NULL;
+    if(zlib){void *p=dlsym(zlib,"uncompress");memcpy(&unpack,&p,sizeof p);}
+    if(!unpack){if(zlib)dlclose(zlib);return "Bundled Qt needs the system zlib runtime (libz.so.1)";}
+    for(size_t i=0;i<@FILE_COUNT@&&!error;i++) {
+        const BqtBundleFile *file=&bqt_bundle_files[i];char name[NAME_MAX+1];
+        if(!bqt_bundle_selected(file))continue;
+        int dir=bqt_bundle_parent(root,file->path,name);if(dir<0){error=bqt_bundle_fail("file directory",file->path);break;}
+        int old=openat(dir,name,O_RDONLY|O_CLOEXEC|O_NOFOLLOW);
+        int valid=old>=0&&bqt_bundle_matches(old,file);if(old>=0)close(old);
+        if(valid){close(dir);continue;}
+        char temp[64];snprintf(temp,sizeof temp,".bqt-%ld-%zu",(long)getpid(),i);
+        // A previous crashed extraction may have left this process-id name.
+        unlinkat(dir,temp,0);
+        int fd=openat(dir,temp,O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);
+        if(fd<0){error=bqt_bundle_fail("temporary runtime file",file->path);close(dir);break;}
+        BqtSha256 sha;bqt_sha_init(&sha);
+        for(size_t j=0;j<file->count&&!error;j++) {
+            const BqtBundleBlock *block=bqt_bundle_blocks[file->first+j];
+            unsigned char *packed=malloc(block->packed?block->packed:1),*plain=malloc(block->plain?block->plain:1);
+            if(!packed||!plain){free(packed);free(plain);error="Cannot allocate the bundled Qt decoder";break;}
+            unsigned accumulator=0,bits=0;size_t bytes=0;int invalid=0;
+            for(const unsigned char *p=(const unsigned char*)block->encoded;*p&&*p!='=';p++) {
+                int digit=bqt_bundle_digit(*p);if(digit<0){invalid=1;break;}
+                accumulator=accumulator<<6|(unsigned)digit;bits+=6;
+                if(bits>=8){bits-=8;if(bytes>=block->packed){invalid=1;break;}packed[bytes++]=(unsigned char)(accumulator>>bits);}
+            }
+            unsigned long length=block->plain;
+            if(invalid||bytes!=block->packed||unpack(plain,&length,packed,bytes)||length!=block->plain)error="Corrupt bundled Qt data";
+            else {
+                bqt_sha_update(&sha,plain,length);
+                for(size_t offset=0;offset<length;) {
+                    ssize_t wrote=write(fd,plain+offset,length-offset);
+                    if(wrote<0&&errno==EINTR)continue;
+                    if(wrote<=0){error=bqt_bundle_fail("runtime file write",file->path);break;}offset+=(size_t)wrote;
+                }
+            }
+            free(packed);free(plain);
+        }
+        char digest[65];
+        if(!error){bqt_sha_finish(&sha,digest);if(strcmp(digest,file->sha256))error="Bundled Qt file failed its content check";}
+        if(!error&&fchmod(fd,file->mode))error=bqt_bundle_fail("runtime file mode",file->path);
+        close(fd);
+        if(!error&&renameat(dir,temp,dir,name))error=bqt_bundle_fail("runtime file commit",file->path);
+        if(error)unlinkat(dir,temp,0);close(dir);
+    }
+    for(size_t i=0;i<@ALIAS_COUNT@&&!error;i++) {
+        if(!bqt_bundle_selected(&bqt_bundle_files[bqt_bundle_aliases[i].target]))continue;
+        char name[NAME_MAX+1],target_name[NAME_MAX+1];
+        int dir=bqt_bundle_parent(root,bqt_bundle_aliases[i].path,name);
+        const BqtBundleFile *file=&bqt_bundle_files[bqt_bundle_aliases[i].target];
+        int target=bqt_bundle_parent(root,file->path,target_name);
+        if(dir<0||target<0)error=bqt_bundle_fail("runtime alias directory",bqt_bundle_aliases[i].path);
+        else {
+            struct stat a,b;
+            int same=!fstatat(dir,name,&a,AT_SYMLINK_NOFOLLOW)&&!fstatat(target,target_name,&b,AT_SYMLINK_NOFOLLOW)
+                     &&S_ISREG(a.st_mode)&&a.st_dev==b.st_dev&&a.st_ino==b.st_ino;
+            if(!same) {
+                if(unlinkat(dir,name,0)&&errno!=ENOENT)error=bqt_bundle_fail("runtime alias removal",bqt_bundle_aliases[i].path);
+                if(!error&&linkat(target,target_name,dir,name,0))error=bqt_bundle_fail("runtime alias",bqt_bundle_aliases[i].path);
+            }
+        }
+        if(dir>=0)close(dir);if(target>=0)close(target);
+    }
+    dlclose(zlib);return error;
+}
+
+static int bqt_bundle_regular(int fd) {
+    struct stat st;return fd>=0&&!fstat(fd,&st)&&S_ISREG(st.st_mode)&&st.st_uid==getuid();
+}
+
 static const char *bqt_bundle_materialize(void) {
     const char *override=getenv("BEND_QT_RUNTIME");
     if(override&&*override) {
@@ -180,70 +371,42 @@ static const char *bqt_bundle_materialize(void) {
     strcpy(base+n,"/bend-qt");int parent=bqt_bundle_private_dir(base);
     if(parent<0)return bqt_bundle_fail("private cache",base);close(parent);
     if(snprintf(bqt_bundle_root,sizeof bqt_bundle_root,"%s/%s",base,identity)>=(int)sizeof bqt_bundle_root)return "Qt cache path is too long";
-    int root=bqt_bundle_private_dir(bqt_bundle_root);if(root<0)return bqt_bundle_fail("runtime directory",bqt_bundle_root);
-    int lock=openat(root,".lock",O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600);
-    struct stat lock_stat;
-    if(lock<0||fstat(lock,&lock_stat)||!S_ISREG(lock_stat.st_mode)||lock_stat.st_uid!=getuid()||flock(lock,LOCK_EX)) {
-        if(lock>=0)close(lock);close(root);return bqt_bundle_fail("runtime lock",bqt_bundle_root);
-    }
-    const char *error=NULL;void *zlib=dlopen("libz.so.1",RTLD_NOW|RTLD_LOCAL);
-    int (*unpack)(unsigned char*,unsigned long*,const unsigned char*,unsigned long)=NULL;
-    if(zlib){void *p=dlsym(zlib,"uncompress");memcpy(&unpack,&p,sizeof p);}
-    if(!unpack){error="Bundled Qt needs the system zlib runtime (libz.so.1)";goto done;}
-    for(size_t i=0;i<@FILE_COUNT@&&!error;i++) {
-        const BqtBundleFile *file=&bqt_bundle_files[i];char name[NAME_MAX+1];
-        if(!bqt_bundle_selected(file))continue;
-        int dir=bqt_bundle_parent(root,file->path,name);if(dir<0){error=bqt_bundle_fail("file directory",file->path);break;}
-        int old=openat(dir,name,O_RDONLY|O_CLOEXEC|O_NOFOLLOW);
-        int valid=old>=0&&bqt_bundle_matches(old,file);if(old>=0)close(old);
-        if(valid){close(dir);continue;}
-        char temp[64];snprintf(temp,sizeof temp,".bqt-%ld-%zu",(long)getpid(),i);
-        // A previous crashed extraction may have left this process-id name.
-        unlinkat(dir,temp,0);
-        int fd=openat(dir,temp,O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);
-        if(fd<0){error=bqt_bundle_fail("temporary runtime file",file->path);close(dir);break;}
-        for(size_t j=0;j<file->count&&!error;j++) {
-            const BqtBundleBlock *block=bqt_bundle_blocks[file->first+j];
-            unsigned char *packed=malloc(block->packed?block->packed:1),*plain=malloc(block->plain?block->plain:1);
-            if(!packed||!plain){free(packed);free(plain);error="Cannot allocate the bundled Qt decoder";break;}
-            unsigned accumulator=0,bits=0;size_t bytes=0;int invalid=0;
-            for(const unsigned char *p=(const unsigned char*)block->encoded;*p&&*p!='=';p++) {
-                int digit=bqt_bundle_digit(*p);if(digit<0){invalid=1;break;}
-                accumulator=accumulator<<6|(unsigned)digit;bits+=6;
-                if(bits>=8){bits-=8;if(bytes>=block->packed){invalid=1;break;}packed[bytes++]=(unsigned char)(accumulator>>bits);}
-            }
-            unsigned long length=block->plain;
-            if(invalid||bytes!=block->packed||unpack(plain,&length,packed,bytes)||length!=block->plain)error="Corrupt bundled Qt data";
-            else for(size_t offset=0;offset<length;) {
-                ssize_t wrote=write(fd,plain+offset,length-offset);
-                if(wrote<0&&errno==EINTR)continue;
-                if(wrote<=0){error=bqt_bundle_fail("runtime file write",file->path);break;}offset+=(size_t)wrote;
-            }
-            free(packed);free(plain);
+    int root=-1,use=-1;
+    for(int attempt=0;attempt<8;attempt++) {
+        root=bqt_bundle_private_dir(bqt_bundle_root);if(root<0)return bqt_bundle_fail("runtime directory",bqt_bundle_root);
+        use=openat(root,".use",O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600);
+        if(!bqt_bundle_regular(use)||flock(use,LOCK_SH)) {
+            if(use>=0)close(use);close(root);return bqt_bundle_fail("runtime use lock",bqt_bundle_root);
         }
-        if(!error&&(fchmod(fd,file->mode)||!bqt_bundle_matches(fd,file)||fsync(fd)))error="Bundled Qt file failed its content or mode check";
-        close(fd);
-        if(!error&&renameat(dir,temp,dir,name))error=bqt_bundle_fail("runtime file commit",file->path);
-        if(error)unlinkat(dir,temp,0);close(dir);
+        // Collection renames an unused directory before removing it. A program
+        // that waited for it starts over on a fresh directory.
+        struct stat held,named;
+        if(!fstat(root,&held)&&!lstat(bqt_bundle_root,&named)&&held.st_dev==named.st_dev&&held.st_ino==named.st_ino)break;
+        close(use);close(root);root=use=-1;
     }
-    for(size_t i=0;i<@ALIAS_COUNT@&&!error;i++) {
-        if(!bqt_bundle_selected(&bqt_bundle_files[bqt_bundle_aliases[i].target]))continue;
-        char name[NAME_MAX+1],target_name[NAME_MAX+1];
-        int dir=bqt_bundle_parent(root,bqt_bundle_aliases[i].path,name);
-        const BqtBundleFile *file=&bqt_bundle_files[bqt_bundle_aliases[i].target];
-        int target=bqt_bundle_parent(root,file->path,target_name);
-        if(dir<0||target<0)error=bqt_bundle_fail("runtime alias directory",bqt_bundle_aliases[i].path);
-        else {
-            struct stat a,b;
-            int same=!fstatat(dir,name,&a,AT_SYMLINK_NOFOLLOW)&&!fstatat(target,target_name,&b,AT_SYMLINK_NOFOLLOW)
-                     &&S_ISREG(a.st_mode)&&a.st_dev==b.st_dev&&a.st_ino==b.st_ino;
-            if(!same) {
-                if(unlinkat(dir,name,0)&&errno!=ENOENT)error=bqt_bundle_fail("runtime alias removal",bqt_bundle_aliases[i].path);
-                if(!error&&linkat(target,target_name,dir,name,0))error=bqt_bundle_fail("runtime alias",bqt_bundle_aliases[i].path);
-            }
+    if(root<0)return "The bundled Qt runtime directory kept moving during startup";
+    // The .use file's time records the last start; a non-empty file has one.
+    struct stat used;
+    if(!fstat(use,&used)&&used.st_size==0&&write(use,"\n",1)!=1){close(use);close(root);return bqt_bundle_fail("runtime use",bqt_bundle_root);}
+    futimens(use,NULL);
+    const char *error=NULL;
+    if(!bqt_bundle_ready(root,identity)) {
+        int lock=openat(root,".lock",O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600);
+        if(!bqt_bundle_regular(lock)||flock(lock,LOCK_EX)) {
+            if(lock>=0)close(lock);close(use);close(root);return bqt_bundle_fail("runtime lock",bqt_bundle_root);
         }
-        if(dir>=0)close(dir);if(target>=0)close(target);
+        // Another program may have completed the directory while this one waited.
+        if(!bqt_bundle_ready(root,identity)) {
+            unlinkat(root,".ready",0);
+            error=bqt_bundle_extract(root);
+            if(!error)error=bqt_bundle_mark_ready(root,identity);
+        }
+        flock(lock,LOCK_UN);close(lock);
     }
-done:
-    if(zlib)dlclose(zlib);flock(lock,LOCK_UN);close(lock);close(root);return error;
+    close(root);
+    if(error){close(use);return error;}
+    // The shared lock lasts for the process lifetime: collection skips this directory.
+    bqt_bundle_use=use;
+    bqt_bundle_collect(base,identity);
+    return NULL;
 }

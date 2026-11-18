@@ -542,6 +542,7 @@ def main():
     if args.generator_checks:
         for name, script, extra in (
                 ('selective_runtime', 'check-qt-selective-runtime.py', []),
+                ('runtime_cache', 'check-qt-runtime-bundle.py', ['--work', OUT / 'runtime-bundle']),
                 ('distribution_modules', 'check-qt-distribution-modules.py', ['--qt-root', args.qt_prefix]),
                 ('source_snapshots', 'check-qt-source-snapshots.py', []),
                 ('shared_state_analysis', 'check-qt-shared-state-analysis.py', ['--work', OUT / 'shared-state-analysis']),

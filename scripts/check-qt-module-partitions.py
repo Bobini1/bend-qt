@@ -388,7 +388,7 @@ def check_runtime_retention(bundle, work):
         expected = {row['path'] for row in bundle['manifest']['files'] if selected.intersection(row['modules'])}
         expected.update(alias for alias, target in bundle['manifest']['aliases'].items() if target in expected)
         actual = {path.relative_to(runtime).as_posix() for path in runtime.rglob('*') if path.is_file()}
-        if actual != expected | {'.lock'}:
+        if actual != expected | {'.lock', '.use', '.ready'}:
             raise RuntimeError('The selected Qt cache contains the wrong module files: ' + consumer)
         results.append(dict(consumer=consumer, selected_modules=sorted(selected),
                             runtime=str(runtime), retained_asset_pieces=retained, extracted_files=sorted(actual)))

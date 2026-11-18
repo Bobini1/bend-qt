@@ -701,8 +701,15 @@ through an inaccessible base destructor.
 ## Bundled Qt and native payloads
 
 The default runtime comes from this package. It is extracted into a private,
-content-addressed cache and checked by SHA-256. Library, plugin, QML and
-WebEngine paths point into that runtime. A system Qt update cannot replace
+content-addressed cache, `$XDG_CACHE_HOME/bend-qt/<id>` or
+`~/.cache/bend-qt/<id>`, where `<id>` covers the package's runtime files and
+the native groups the program uses. Files are checked by SHA-256 when they are
+written. Later starts compare a stamp of every file's inode, size, mode and
+modification time; any difference makes that start check and repair the
+directory by content again. A running program holds its directory, and a
+starting program removes, at most once a day, runtime directories that no
+program has used for a week. Library, plugin, QML and WebEngine paths point
+into that runtime. A system Qt update cannot replace
 these bundled libraries, and there is no automatic system-Qt fallback.
 
 `BEND_QT_RUNTIME` selects an explicit complete replacement installation with

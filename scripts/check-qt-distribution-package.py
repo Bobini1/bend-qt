@@ -177,7 +177,7 @@ def main():
     expected={row['path'] for row in manifest['files'] if 'base' in row['modules']}
     expected.update(name for name,target in manifest['aliases'].items() if target in expected)
     actual={path.relative_to(runtime).as_posix() for path in runtime.rglob('*') if path.is_file()}
-    if actual!=expected|{'.lock'}:
+    if actual!=expected|{'.lock','.use','.ready'}:
         raise RuntimeError('The full Core consumer extracted the wrong runtime files')
     receipt.update(verification_complete=True,qt=coverage['minimum_qt'],core_only_gpl_qt_modules=[],
         optional_native_payloads_absent=[row['name'] for row in optional],

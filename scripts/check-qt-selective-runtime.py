@@ -70,7 +70,7 @@ def prepare() -> IO(Result<&1, &1, U32 & String, String>):
         selected = {'base', *modules}
         expected = {name for name, modules in owners.items() if selected.intersection(modules)}
         actual = {path.relative_to(runtime).as_posix() for path in runtime.rglob('*') if path.is_file()}
-        assert actual == expected | {'.lock'} | ({'lib/graph-alias'} if 'Graphs' in selected else set()), actual
+        assert actual == expected | {'.lock', '.use', '.ready'} | ({'lib/graph-alias'} if 'Graphs' in selected else set()), actual
         for name in expected:
             assert (runtime / name).read_bytes() == files[name].read_bytes()
         executable = (work / label).read_bytes()
