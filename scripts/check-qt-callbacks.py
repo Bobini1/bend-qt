@@ -26,6 +26,7 @@ from adapters import native_header_support
 from lifetime import evaluate_tables, cpp_tables
 from backend import compile_backend, versioned_include_paths
 from upstream import prepare as prepare_upstream
+from module_partitions import production_extraction, qualify
 import qt_targets
 
 
@@ -1773,7 +1774,7 @@ def main():
     parser.add_argument('--proxy-class', action='append', default=[], help='Also emit these override classes')
     parser.add_argument('--rhi', action='store_true', help='Include the version-bound RHI classes for lifecycle checks')
     parser.add_argument('--all-features', action='store_true', help='Run every fixture from one production extraction')
-    parser.add_argument('--source-work', type=Path, default=ROOT / 'build/qt612', help='Production extraction directory (api.json, headers.h, upstream.json) with the selected modules')
+    parser.add_argument('--source-work', type=Path, default=ROOT / 'build/qt612', help='Production generation directory; separately extracted groups supply their modules')
     parser.add_argument('--name-lock', type=Path, help='Use the name inventory of an alternate generation profile')
     parser.add_argument('--minimal-signal-codecs', action='store_true',
                         help='Focused control only: emit primitive and fixture-referenced signal codecs')
@@ -1801,7 +1802,8 @@ def main():
     headers, _, modules, _, _ = prepare_upstream(
         Path.home() / '.cache/bend-qt-generator' / ('pyside-setup' if version == qt_targets.DEFAULT else 'pyside-setup-' + version), args.qt_root,
         list(dict.fromkeys([*profile['qt_modules'], *extra_modules])), args.work, limited_abi=args.rhi)
-    missing = set(modules) - set(upstream['modules'])
+    api, extracted, extraction_files, namespaces = production_extraction(snapshot, modules)
+    missing = set(modules) - set(extracted)
     if missing:
         raise ValueError('Regenerate the production API or select --source-work with these modules: ' + ', '.join(sorted(missing)))
     source_headers = (snapshot / 'headers.h').read_text()
@@ -1809,7 +1811,6 @@ def main():
     for include in re.findall(r'^#include <(rhi/[^>]+)>', coherent_headers, re.M):
         if '#include <' + include + '>' not in source_headers:
             raise ValueError('The production extraction lacks the selected RHI header: ' + include)
-    api = json.loads((snapshot / 'api.json').read_text())
     import qobject_interfaces
     qobject_interfaces.restore(api, args.work, require_complete=False)
     import qio_pipe
@@ -1842,8 +1843,8 @@ def main():
     (args.work / 'suite-inputs.json').write_text(json.dumps({
         'source_work': str(snapshot), 'pyside_commit': target['shiboken_commit'], 'qt_modules': modules,
         'all_features': args.all_features,
-        'snapshot_sha256': {name: hashlib.sha256((snapshot / name).read_bytes()).hexdigest()
-                            for name in ('api.json', 'headers.h', 'upstream.json')},
+        'snapshot_sha256': {path.relative_to(snapshot).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                            for path in [*extraction_files, snapshot / 'headers.h']},
         'fixture_headers_sha256': hashlib.sha256(coherent_headers.encode()).hexdigest(),
         'expected_programs': [p[0] for p in programs]
     }, indent=2) + '\n')
@@ -1851,6 +1852,10 @@ def main():
     name_lock = overload_names.NameLock.load(args.name_lock) if args.name_lock else None
     if name_lock: name_lock.path = None  # Focused checks never write a production lock.
     generator = Generator(api, profile, name_lock)
+    # Separately extracted groups keep their production public names, such as
+    # Qt.Charts.QLineSeries, and therefore their locked overload names.
+    if namespaces:
+        qualify(generator, namespaces)
     generator.collect()
     def select_signal_codecs(g):
         if not args.minimal_signal_codecs:
@@ -1963,8 +1968,9 @@ def main():
             native = native.replace(placeholder, str(operations.pop()))
     tables = evaluate_tables(args.work)
     abi = qt_targets.abi((ROOT / 'generator/templates/abi.h').read_text(), generator.argument_capacity, version)
-    aliases = ''.join(f'using {name} = {source};\n' for name, source in api['typedefs'].items() if name in generator.ids)
-    aliases += representations.aliases(generator)
+    aliases = ''.join(f'using {name} = {source};\n' for name, source in generator.api['typedefs'].items()
+                      if name in generator.ids and '::' not in name)
+    aliases += getattr(generator, 'partition_aliases', '') + representations.aliases(generator)
     qml_prefix, qml_suffix = callbacks.qml_sources(generator, args.qt_root, args.work)
     globals = PROBE_GLOBALS
     if 'protected-fields' in names:

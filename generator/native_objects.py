@@ -84,17 +84,14 @@ def refine_traits(api, qt, modules, work, cxx):
 def saved_traits(work):
     """The traits a generation measured for the classes of work/api.json.
 
-    A partitioned generation measures them per native group. Groups with
-    separate headers have their own extraction, whose classes can share names
-    with the primary one (QtCharts and QtGraphs both declare QLineSeries), so
-    only the groups extracted with api.json contribute.
+    Traits are measured per native group. Groups with separate headers have
+    their own extraction, whose classes can share names with the primary one
+    (QtCharts and QtGraphs both declare QLineSeries), so only the groups
+    extracted with api.json contribute.
     """
     work = Path(work)
-    plan = work / 'module-plan.json'
-    if not plan.is_file():
-        return json.loads((work / 'native-traits.json').read_text())
     traits = {}
-    for group in json.loads(plan.read_text()):
+    for group in json.loads((work / 'module-plan.json').read_text()):
         if not group.get('separate_headers'):
             for name, value in json.loads((work / 'modules' / group['name'] / 'native-traits.json').read_text()).items():
                 traits.setdefault(name, value)

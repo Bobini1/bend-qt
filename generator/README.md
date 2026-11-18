@@ -212,23 +212,23 @@ RHI extraction follows the headers and types registered by the pinned PySide
 inventory. The active package does not add unrelated native graphics APIs to
 expand its coverage denominator.
 
-The default profile selects 57 modern Linux modules and the version-bound RHI
-headers declared by PySide. `generator/qt612-core` retains the compact Core,
-Gui, Network, OpenGL, Widgets, Qml and Quick profile.
-`generator/qt612-all` selects the modern modules without the RHI headers;
-`generator/qt612-legacy-charts` substitutes Charts/DataVisualization for Graphs.
-Those header families define conflicting C++ names and must remain separate.
-The legacy profile is checked with all supported Charts and DataVisualization
-methods and override classes, plus consumer examples for chart signals and
+The default profile selects 59 Linux modules and the version-bound RHI headers
+declared by PySide. `generator/qt612-core` retains the compact Core, Gui,
+Network, OpenGL, Widgets, Qml and Quick profile.
+Charts and DataVisualization define C++ names that conflict with Graphs, so
+their native groups set `separate_headers`: each is extracted and compiled with
+its own headers, and the Bend interface names their classes `Qt.Charts.*` and
+`Qt.DataVisualization.*`. They are checked with all supported methods and
+override classes, plus consumer examples for chart signals and
 Scatter/Bar/Surface data. Their adopting array APIs accept owning Bend lists;
 the adapter copies the inputs and gives Qt independent native rows and arrays.
-Run the module check against an extraction made with that profile:
+Run the module check on a production generation, with its public names:
 
 ```sh
-python3 scripts/check-qt-callbacks.py --source-work build/qt612-legacy-charts \
-  --name-lock generator/qt612-legacy-charts/names.lock.json \
-  --work build/charts-module-check --complete-module QtCharts \
-  --complete-module QtDataVisualization --only legacy-charts --skip-examples
+python3 scripts/check-qt-callbacks.py --work build/charts-module-check \
+  --name-lock generator/qt612/names.lock.json \
+  --complete-module QtCharts --complete-module QtDataVisualization \
+  --only legacy-charts --skip-examples
 ```
 
 To add another module, install its maintainer headers and append its Qt module

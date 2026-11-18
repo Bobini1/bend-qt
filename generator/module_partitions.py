@@ -1,8 +1,44 @@
 """Separate conflicting native modules behind one generated Bend interface."""
 import copy
+import json
 import re
 from pathlib import Path
 from types import SimpleNamespace
+
+
+def production_extraction(work, modules=()):
+    """The API and upstream modules a generation extracted for `modules`.
+
+    api.json is the primary extraction. Native groups whose headers conflict
+    with it (QtCharts and QtGraphs both declare QLineSeries) are extracted
+    separately under modules/<group>. A separate group owning any of `modules`
+    overlays its declarations and replaces primary classes of the same name.
+    Returns the API, its upstream module list, the extraction files read and
+    the public namespaces of the overlaid groups, which `qualify` applies.
+    """
+    work = Path(work)
+    api = json.loads((work / 'api.json').read_text())
+    upstream = list(json.loads((work / 'upstream.json').read_text())['modules'])
+    sources = [work / 'api.json', work / 'upstream.json']
+    namespaces = {}
+    for group in json.loads((work / 'module-plan.json').read_text()):
+        if not group.get('separate_headers') or not set(group['qt_modules']) & set(modules):
+            continue
+        namespaces.update(group.get('namespaces', {}))
+        part = work / 'modules' / group['name']
+        packages = {'PySide6.' + module for module in group['qt_modules']}
+        overlay = json.loads((part / 'api.json').read_text())
+        added = [row for row in overlay['classes'] if row.get('package') in packages]
+        names = {row['name'] for row in added}
+        api['classes'] = [row for row in api['classes'] if row['name'] not in names] + added
+        for key in ('enums', 'global_functions'):
+            api[key] = api.get(key, []) + [row for row in overlay.get(key, []) if row.get('package') in packages]
+        for name, target in overlay.get('typedefs', {}).items():
+            api['typedefs'].setdefault(name, target)
+        upstream += [module for module in json.loads((part / 'upstream.json').read_text())['modules']
+                     if module not in upstream]
+        sources += [part / 'api.json', part / 'upstream.json']
+    return api, upstream, sources, namespaces
 
 
 def function_packages(api, function):

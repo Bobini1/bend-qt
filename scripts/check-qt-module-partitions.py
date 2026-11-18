@@ -19,7 +19,7 @@ sys.path.insert(0, str(ROOT / 'generator'))
 from generate import native_source, coverage_report
 from backend import compiler_flags, compile_backend
 from lifetime import evaluate_tables
-from module_partitions import prepare_generators, merge_bend, effects, package, selective_package, scoped_api
+from module_partitions import prepare_generators, merge_bend, effects, package, selective_package, scoped_api, production_extraction
 from overload_names import NameLock
 from shared_state import transform
 from native_objects import refine_traits
@@ -41,16 +41,7 @@ ACTIVE_COMMON = {'QObject', 'QByteArray', 'QVariant', 'QMetaType', 'QPointF', 'Q
                  'QJSEngine', 'QJSValue', 'QCoreApplication'}
 
 
-def fixture(paths, families):
-    # The first path is the primary extraction. Families whose headers cannot
-    # share it come from their production group extractions, and replace the
-    # primary's classes of the same name: QtCharts and QtGraphs both declare
-    # QLineSeries, which is why they are extracted separately.
-    api = json.loads(paths[0].read_text())
-    for path in paths[1:]:
-        added = [cls for cls in json.loads(path.read_text())['classes'] if cls.get('package') in families]
-        names = {cls['name'] for cls in added}
-        api['classes'] = [cls for cls in api['classes'] if cls['name'] not in names] + added
+def fixture(api, families):
     classes = {cls['name']: cls for cls in api['classes']}
     selected = set(COMMON) | {cls['name'] for cls in api['classes']
         if cls.get('package') in families and cls['name'] in FAMILY_TYPES}
@@ -97,22 +88,18 @@ def main():
         (work / 'emission.json').write_text(json.dumps(dict(verification_complete=False, stage='partition emission/native integration')) + '\n')
     base_modules = ['QtCore', 'QtGui', 'QtWidgets', 'QtQml', 'QtQuick', 'QtNetwork', 'QtOpenGL']
     records = []
-    production = ROOT / 'build/qt612'
     specifications = [
-        ('modern', ['QtGraphs', 'QtGraphsWidgets'], {'PySide6.QtGraphs', 'PySide6.QtGraphsWidgets'}, {},
-         [production / 'api.json']),
+        ('modern', ['QtGraphs', 'QtGraphsWidgets'], {'PySide6.QtGraphs', 'PySide6.QtGraphsWidgets'}, {}),
         ('legacy', ['QtCharts', 'QtDataVisualization'], {'PySide6.QtCharts', 'PySide6.QtDataVisualization'},
-         {'PySide6.QtCharts': 'Charts', 'PySide6.QtDataVisualization': 'DataVisualization'},
-         [production / 'api.json', production / 'modules/Charts/api.json',
-          production / 'modules/DataVisualization/api.json']),
+         {'PySide6.QtCharts': 'Charts', 'PySide6.QtDataVisualization': 'DataVisualization'}),
     ]
     if args.selective:
-        specifications.insert(0, ('base', [], set(), {}, [production / 'api.json']))
-    for name, modules, families, namespaces, api_path in specifications:
+        specifications.insert(0, ('base', [], set(), {}))
+    for name, modules, families, namespaces in specifications:
         part_work = work / name; part_work.mkdir(exist_ok=True)
         headers = part_work / 'headers.h'
         headers.write_text(''.join('#include <' + module + '/' + module + '>\n' for module in base_modules + modules))
-        api = fixture(api_path, families)
+        api = fixture(production_extraction(ROOT / 'build/qt612', modules)[0], families)
         if args.scoped:
             api = scoped_api(api, base_modules if name == 'base' else modules, root=name == 'base')
         refine_traits(api, args.qt_root, base_modules + modules, part_work, 'clang++-19')

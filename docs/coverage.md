@@ -117,12 +117,13 @@ code or QML stay alive until explicitly broken.
 
 ## Broad API generation
 
-The default profile selects 57 modern Linux modules. Class discovery still
-comes from PySide's definitions. The generator also processes the public
-OpenGL headers listed by PySide and the version-bound RHI headers. The compact
-seven-module profile remains available to maintainers. Charts and
-DataVisualization use a separate profile because their C++ names conflict with
-Graphs; combining those header families is not a supported Qt configuration.
+The default profile selects 59 Linux modules. Class discovery still comes from
+PySide's definitions. The generator also processes the public OpenGL headers
+listed by PySide and the version-bound RHI headers. The compact seven-module
+profile remains available to maintainers. Charts and DataVisualization define
+C++ names that conflict with Graphs, and combining those header families is not
+a supported Qt configuration, so their native groups are extracted and compiled
+with their own headers.
 
 The adaptation layer includes virtual-method overrides and stored-function
 handlers, mutable signal replies, QObject and non-QObject ownership, retained
@@ -275,11 +276,10 @@ factories, inherited extensions, factory failures and native worker-thread
 property and method calls. The current receipt must cover the final artifacts,
 bundled examples and actual local publication client.
 
-The separate Charts/DataVisualization profile compiles every supported
-method/signal entry in those two modules and runs representative consumer programs.
-Its [receipt](../build/charts-module-check/receipt.json) records the complete-module
-selection and native tests, including chart signals and Scatter/Bar/Surface
-array ownership and snapshots. This is representative runtime coverage, not a
+The Charts/DataVisualization check compiles every supported method/signal entry
+in those two modules and runs representative consumer programs. Its receipt
+records the complete-module selection and native tests, including chart signals
+and Scatter/Bar/Surface array ownership and snapshots. This is representative runtime coverage, not a
 test of every graphical backend.
 
 The required final gate is `python3 scripts/check-qt612.py --bundle

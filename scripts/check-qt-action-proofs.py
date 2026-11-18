@@ -258,11 +258,10 @@ def main():
     coverage = json.loads((ROOT / 'packages/qt612/coverage.json').read_text())
     if coverage.get('lifetime_policy') != tables:
         raise RuntimeError('Packaged lifetime policy tables differ from Bend evaluation; regenerate it')
-    modules = coverage.get('native_payload', {}).get('modules')
-    native_sources = ([ROOT / 'build/qt612/modules' / name / 'wrappers.cpp' for name in modules]
-                      if modules else [ROOT / 'build/qt612/wrappers.cpp'])
+    native_sources = [ROOT / 'build/qt612/modules' / name / 'wrappers.cpp'
+                      for name in coverage['native_payload']['modules']]
     for native_source in native_sources:
-        if (modules or native_source.exists()) and native_source.read_text().count(cpp_tables(tables)) != 1:
+        if native_source.read_text().count(cpp_tables(tables)) != 1:
             raise RuntimeError(f'Generated native source does not contain the evaluated lifetime tables exactly once: {native_source}')
     receipt = {'bend': version.stdout.strip(), 'command': 'bend PROOF.bend --verdict',
         'verdict': log.strip(), 'qt_laws': laws, 'qt_law_count': len(laws),
@@ -270,7 +269,7 @@ def main():
         'codec_definitions_match_package': True, 'codec_source_sha256': sha(CODEC),
         'lifetime_definitions_match_package': True, 'lifetime_source_sha256': sha(LIFETIME),
         'lifetime_tables': tables,
-        'native_lifetime_table_sources': [str(p.relative_to(ROOT)) for p in native_sources if p.exists()],
+        'native_lifetime_table_sources': [str(p.relative_to(ROOT)) for p in native_sources],
         'sources_sha256': {str(p.relative_to(ROOT)): sha(p) for p in
                            (ROOT / 'LAWS.bend', ROOT / 'PROOF.bend', TEMPLATE, CODEC, LIFETIME)},
         'translation_sha256': sha(translation), 'native_runtime_proved': False}

@@ -71,11 +71,11 @@ python3 scripts/maintain-qt612.py final \
   --charts --setup-examples
 ```
 
-`--charts` prepares a separately attested legacy extraction and runs the
-existing fixture gate with both `--complete-module QtCharts` and
-`--complete-module QtDataVisualization`. Its fixtures include `legacy-charts`
-and `properties`. It remains separate from the conflicting Graphs module
-family in the production profile.
+`--charts` runs the existing fixture gate on the production generation with
+both `--complete-module QtCharts` and `--complete-module QtDataVisualization`.
+Its fixtures include `legacy-charts` and `properties`. Those two native groups
+are extracted with their own headers, because their C++ names conflict with
+Graphs.
 
 The required final check remains:
 

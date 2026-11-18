@@ -14,10 +14,12 @@ METHODS = {'array', 'itemAt', 'resetArray', 'addItem', 'addItems', 'insertItem',
 
 
 def family(owner):
+    # A separately extracted group qualifies its classes (DataVisualization::
+    # QBarDataItem aliases ::QBarDataItem). QBarDataArray is only a C++
+    # typedef in an argument type, so it keeps its global spelling.
     prefix, separator, name = owner.rpartition('::')
     item, array = FAMILIES[name if separator else owner]
-    qualify = lambda value: prefix + '::' + value if prefix and value else value
-    return qualify(item), qualify(array)
+    return (prefix + '::' + item if prefix else item), array
 
 
 def handles(g, f):

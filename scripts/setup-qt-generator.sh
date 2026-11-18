@@ -47,7 +47,7 @@ if [[ "$base_only" == 0 && ! -f "$qt/include/QtQuick/QtQuick" ]]; then
     "$cache/venv/bin/aqt" install-qt linux desktop "$version" "$arch" \
         --archives qtdeclarative --outputdir "$cache/Qt"
 fi
-if [[ "$base_only" == 0 ]] && ! python3 - "$root/generator/qt612-all/profile.json" "$qt" "$root/generator/qt_targets.json" "$version" <<'PY'
+if [[ "$base_only" == 0 ]] && ! python3 - "$root/generator/qt612/profile.json" "$qt" "$root/generator/qt_targets.json" "$version" <<'PY'
 import json, sys
 from pathlib import Path
 profile, qt = Path(sys.argv[1]), Path(sys.argv[2])

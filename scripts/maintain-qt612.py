@@ -483,12 +483,12 @@ class Workflow:
         validate_hashes(value['snapshot_sha256'], work)
         return value
 
-    def prepare(self, profile=None, work=None, name='prepare'):
+    def prepare(self):
         write_json(self.state / 'receipt.json', dict(schema=SCHEMA, verification_complete=False,
                    scope='extraction', public_hub_publication=False))
-        profile, work = profile or self.profile, work or self.source
+        profile, work = self.profile, self.source
         command = self.extraction_command(profile, work)
-        return self.stage(name, command, lambda: self.extraction_key(profile),
+        return self.stage('prepare', command, lambda: self.extraction_key(profile),
                           lambda: self.validate_extraction(profile, work),
                           lambda: artifacts([work / 'extraction.json',
                               *(work / p for p in read_json(work / 'extraction.json')['snapshot_sha256'])]))
@@ -576,7 +576,8 @@ class Workflow:
             paths = [metadata, names, self.profile / 'names.lock.json',
                      *(self.root / 'packages/qt612' / name for name in read_json(metadata)['generated_sha256']),
                      *(self.work / name for name in SNAPSHOT_FILES if (self.work / name).is_file()),
-                     self.work / 'wrappers.cpp']
+                     *(self.work / 'modules' / row['name'] / 'wrappers.cpp'
+                       for row in read_json(self.work / 'module-plan.json'))]
             paths += [Path(name) if Path(name).is_absolute() else self.work / name
                       for name in read_json(metadata).get('native_dependency_manifests', [])]
             return artifacts(paths, {str(metadata.resolve()): 'generation', str(names.resolve()): 'names'})
@@ -605,7 +606,7 @@ class Workflow:
                              lambda: validate_verification(receipt, canonical=True),
                              lambda: verification_outputs(receipt, self.work))
         validate_verification(receipt, canonical=True)
-        charts = self.charts() if self.args.charts else None
+        charts = self.charts(generation) if self.args.charts else None
         if self.args.setup_examples:
             self.stage('setup-examples', ['bash', 'scripts/check.sh'], check_inputs,
                        lambda: {'passed': True},
@@ -621,13 +622,13 @@ class Workflow:
             public_hub_publication=False))
         print('PASS stable generation and complete canonical validation' + (' with Charts/DataVisualization' if charts else ''))
 
-    def charts(self):
-        profile, source, work = (self.root / 'generator/qt612-legacy-charts',
-                                 self.state / 'charts-source', self.state / 'charts-native')
-        prepared = self.prepare(profile, source, 'charts-extraction')
-        command = ['python3', 'scripts/check-qt-callbacks.py', '--source-work', str(source),
-                   '--name-lock', str(profile / 'names.lock.json'), '--work', str(work),
-                   '--qt-root', str(self.args.qt_root), '--jobs', str(self.args.jobs),
+    def charts(self, generation):
+        # The production generation extracts Charts and DataVisualization with
+        # their own headers; the callbacks suite overlays those groups.
+        work = self.state / 'charts-native'
+        command = ['python3', 'scripts/check-qt-callbacks.py', '--source-work', str(self.work),
+                   '--name-lock', str(self.profile / 'names.lock.json'),
+                   '--work', str(work), '--qt-root', str(self.args.qt_root), '--jobs', str(self.args.jobs),
                    '--complete-module', 'QtCharts', '--complete-module', 'QtDataVisualization']
         for fixture in CHART_FIXTURES:
             command += ['--only', fixture]
@@ -635,7 +636,7 @@ class Workflow:
             value = validate_verification(work / 'receipt.json')
             return dict(receipt=value, native_dependencies=native_dependencies(work))
         return self.stage('charts-native', command,
-            lambda: dict(extraction=identity(prepared), source=generation_inputs(profile),
+            lambda: dict(generation=identity(generation),
                          checks=file_set(files_under(self.root / 'scripts')), dependencies=self.deps()),
             validate,
             lambda: dict(verification_outputs(work / 'receipt.json'), **backend_outputs(work)))
@@ -652,8 +653,7 @@ def arguments(argv=None):
     parser.add_argument('--cxx', default='clang++-19')
     parser.add_argument('--force', action='store_true', help='Rerun requested stages even when their identities match')
     parser.add_argument('--force-stage', action='append', default=[],
-                        choices=('prepare', 'generation', 'canonical', 'charts-extraction',
-                                 'charts-native', 'setup-examples'),
+                        choices=('prepare', 'generation', 'canonical', 'charts-native', 'setup-examples'),
                         help='Rerun this stage while retaining valid earlier stages')
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('prepare', help='Extract a reusable API model without collecting bindings')

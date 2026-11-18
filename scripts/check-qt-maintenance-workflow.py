@@ -442,8 +442,6 @@ class FinalWorkflowTests(TemporaryWorkspace):
         self.lock = self.file('generator/qt612/names.lock.json', 'initial lock')
         self.runtime = self.file('generator/runtime.py', 'runtime one')
         self.file('generator/qt612/profile.json', '{"name":"qt612"}')
-        self.file('generator/qt612-legacy-charts/profile.json', '{"name":"legacy"}')
-        self.file('generator/qt612-legacy-charts/names.lock.json', 'legacy lock')
         self.checker = self.file('scripts/check-qt612.py', 'canonical checker')
         self.file('scripts/check-qt-callbacks.py', 'focused checker')
         self.file('scripts/check.sh', 'setup examples')
@@ -489,7 +487,11 @@ class FinalWorkflowTests(TemporaryWorkspace):
             before = self.sources(self.profile)
             self.lock.write_text('completed lock')
             self.work.mkdir(parents=True, exist_ok=True)
-            (self.work / 'wrappers.cpp').write_text('native ' + self.runtime.read_text())
+            workflow.write_json(self.work / 'module-plan.json', [{'name': 'base'}, {'name': 'Charts'}])
+            for group in ('base', 'Charts'):
+                native = self.work / 'modules' / group / 'wrappers.cpp'
+                native.parent.mkdir(parents=True, exist_ok=True)
+                native.write_text('native ' + group + self.runtime.read_text())
             for name in workflow.SNAPSHOT_FILES:
                 (self.work / name).write_text('{}')
             package = self.root / 'packages/qt612'
@@ -503,7 +505,7 @@ class FinalWorkflowTests(TemporaryWorkspace):
                 native_dependency_manifests=self.native_metadata(self.work)))
             workflow.write_json(self.work / 'name-lock-preflight.json', dict(methods=2,
                 source_sha256=before, unacknowledged=[], created=['new name'],
-                native_source_sha256=workflow.sha(self.work / 'wrappers.cpp')))
+                native_source_sha256=workflow.sha(self.work / 'modules/base/wrappers.cpp')))
         elif command[1] == 'scripts/check-qt612.py':
             self.assertEqual(command[:5], ['python3', 'scripts/check-qt612.py', '--bundle',
                                            '--generator-checks', '--reject-system-qt'])
@@ -577,6 +579,9 @@ class FinalWorkflowTests(TemporaryWorkspace):
         modules = [charts[index + 1] for index, value in enumerate(charts) if value == '--complete-module']
         self.assertEqual(modules, ['QtCharts', 'QtDataVisualization'])
         self.assertIn('legacy-charts', charts)
+        # The production generation supplies the Charts groups; no other extraction runs.
+        self.assertEqual(charts[charts.index('--source-work') + 1], str(self.work))
+        self.assertEqual([command[1] for command in self.commands].count('generator/generate.py'), 1)
         before = len(self.commands)
         self.state.final()
         self.assertEqual(len(self.commands), before)
@@ -676,8 +681,8 @@ class FinalWorkflowTests(TemporaryWorkspace):
         self.assertEqual([command[1] for command in self.commands], [
             'generator/generate.py', 'scripts/check-qt-callbacks.py',
             'generator/generate.py', 'scripts/check-qt612.py',
-            'generator/generate.py', 'scripts/check-qt-callbacks.py', 'scripts/check.sh'])
-        self.assertEqual(sum('--extract-only' in command for command in self.commands), 2)
+            'scripts/check-qt-callbacks.py', 'scripts/check.sh'])
+        self.assertEqual(sum('--extract-only' in command for command in self.commands), 1)
         self.assertTrue(all('--emit-only' not in command for command in self.commands))
         receipt = workflow.read_json(self.root / 'cli-state/receipt.json')
         self.assertTrue(receipt['verification_complete'])
