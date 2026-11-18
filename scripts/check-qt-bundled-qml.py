@@ -98,7 +98,7 @@ extern "C" const char *probe(const char *root) {
     QCoreApplication::setLibraryPaths({QString::fromUtf8(root)+"/plugins"});
     QQmlEngine engine;
     for (const auto &path : engine.importPathList())
-        if (path.startsWith("/home/bobini/.cache/bend-qt-generator/Qt/") || path.startsWith("/usr/lib"))
+        if (path.startsWith(QDir::homePath()+"/.cache/bend-qt-generator/Qt/") || path.startsWith("/usr/lib"))
             return "QML default imports escaped the selected runtime";
     QQmlComponent component(&engine);
     component.setData("import QtQuick\nimport QtQuick.Window\nWindow { width: 40; height: 32; visible: true; color: '#123456'; Rectangle { x: 4; y: 4; width: 12; height: 12; color: '#eedd22' } }",QUrl());

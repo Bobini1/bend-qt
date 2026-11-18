@@ -16,6 +16,8 @@ env:
   PYTHONUNBUFFERED: '1'
   BQT_SHARD_JOBS: '2'
   BQT_STATE_JOBS: '2'
+  # Check timeouts are sized for a 32-core workstation running eight jobs.
+  BQT_CHECK_TIMEOUT_SCALE: '6'
   LIBGL_ALWAYS_SOFTWARE: '1'
 jobs:
   build:
@@ -192,6 +194,14 @@ jobs:
           path: build/ci-state
       - name: Restore the generation
         run: python3 scripts/ci-qt-build.py --qt-version "$QT_VERSION" restore
+      # list-models once aborted here on a qFatal from a QJSEngine constructed
+      # without an application, which no workstation run reproduces. Report a
+      # backtrace with fatal Qt messages; other messages keep Qt's format.
+      - name: Report fatal Qt messages with a backtrace
+        if: matrix.part == 'callbacks'
+        run: >-
+          echo 'QT_MESSAGE_PATTERN=%{if-category}%{category}: %{endif}%{message}%{if-fatal}
+          [backtrace %{backtrace depth=48 separator=" < "}]%{endif}' >> "$GITHUB_ENV"
       - name: Check
         run: >-
           xvfb-run -a -s '-screen 0 1280x1024x24'

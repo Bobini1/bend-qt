@@ -12,7 +12,9 @@ The shared `.github/actions/qt-toolchain` action installs them. SDK, source and
 extractor caches are separated by version and build inputs. Downloaded Ubuntu
 packages are cached weekly, because the mirror has delivered them at 100 kB/s.
 Native compiler and analysis concurrency are each limited to two workers on
-the standard 16 GB runner. Builds and checks run at a lower CPU priority than
+the standard 16 GB runner. The canonical check's timeouts, sized for a 32-core
+workstation, are multiplied by six there through `BQT_CHECK_TIMEOUT_SCALE`.
+Builds and checks run at a lower CPU priority than
 the runner, which is exempt from the OOM killer. A check that exhausts memory
 then fails with its logs, instead of the runner losing its connection.
 Diagnostics include a memory log and the kernel log.

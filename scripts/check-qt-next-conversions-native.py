@@ -127,7 +127,8 @@ def main():
     with (work/'native-compile.log').open('w') as log:
         result=subprocess.run(['flock','-x','/tmp/bendqt-focused-compile.lock',*cmd],stdout=log,stderr=subprocess.STDOUT,timeout=1800)
     if result.returncode:raise RuntimeError('Focused C++ failed: '+str(work/'native-compile.log'))
-    env=dict(os.environ,QT_QPA_PLATFORM='wayland',XDG_RUNTIME_DIR='/mnt/wslg/runtime-dir',
+    # Offscreen creates its OpenGL contexts through GLX, as the gate's other GL fixtures do.
+    env=dict(os.environ,QT_QPA_PLATFORM='offscreen',
              QT_PLUGIN_PATH=str(args.qt_root/'plugins'),LD_LIBRARY_PATH=str(args.qt_root/'lib'),LIBGL_ALWAYS_SOFTWARE='1')
     result=subprocess.run([str(exe)],capture_output=True,text=True,env=env,timeout=90)
     output=result.stdout+result.stderr;(work/'native-run.log').write_text(output)

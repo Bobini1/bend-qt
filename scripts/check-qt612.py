@@ -103,9 +103,14 @@ EXAMPLES = {
 }
 
 
+# Timeouts stop a hung check and are sized for a maintainer workstation. A
+# slower machine, such as a 4-core CI runner, multiplies them by this factor.
+TIMEOUT_SCALE = float(os.environ.get('BQT_CHECK_TIMEOUT_SCALE', '1'))
+
+
 def run(command, env, cwd, expected=0, timeout=300):
     result = subprocess.run([str(x) for x in command], env=env, cwd=cwd, text=True,
-                            capture_output=True, timeout=timeout)
+                            capture_output=True, timeout=timeout * TIMEOUT_SCALE)
     if result.returncode != expected:
         raise RuntimeError(f"{command}: {result.returncode}\n{result.stdout[-6000:]}\n{result.stderr[-6000:]}")
     return result
@@ -252,6 +257,7 @@ def check_package(package_dir, programs, env, runtimes, output, jobs=1, bundle=F
                              CXX="/no-consumer-cxx",
                              CPLUS_INCLUDE_PATH="/no-consumer-qt-headers", PKG_CONFIG_LIBDIR="/no-consumer-pc")
             def capture(command, environment, cwd, log, timeout):
+                timeout *= TIMEOUT_SCALE
                 try:
                     result = subprocess.run(command, env=environment, cwd=cwd, text=True,
                                             capture_output=True, timeout=timeout)
