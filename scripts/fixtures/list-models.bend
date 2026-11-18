@@ -184,22 +184,33 @@ def variants(+first: Qt.ObjectType.Instance(Card())) -> Qt.Action(Unit):
     titles: String <- card_titles(copied)
     require(String.eq(titles, "first"), "A typed object list did not round-trip through QVariant")
 
+# List operations must leave the application in place. Qt aborts a QML engine
+# constructed without one, so each step is checked before the engine.
+def alive(step: String) -> Qt.Action(Unit):
+  do Qt.Action<Unit>:
+    exists: Bool <- Qt.QCoreApplication.instanceExists()
+    require(exists, "The Qt application no longer exists " ++ step)
+
 def run(+backend: Qt.ObjectType.Instance(Backend())) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +object: Qt.QObject = Qt.ObjectType.as_QObject(~Backend(), backend)
+    alive("after creating the backend")
     +first: Qt.ObjectType.Instance(Card()) <- card("first")
     +second: Qt.ObjectType.Instance(Card()) <- card("second")
+    alive("after creating the cards")
     initial(object, first, second)
+    alive("after setting the lists")
     views(object, first, second)
     variants(first)
     stale(object)
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
+    alive("before the list model checks")
     Qt.scoped(Unit, Qt.ObjectType.with(~Backend(), Unit, Qt.ObjectType.new(~Backend()), backend => run(backend)))
     live: U32 <- Qt.Runtime.liveObjects()
     require(U32.is_eq(live, 0), "List models leaked native handles")
     Qt.Action.lift(Unit, IO.print("QT612_LIST_MODELS_OK arrays=1 views=1 updates=1 typed_objects=1 unregistered_values=1 nested=1 qml_writes=1 stale=1"))
 
 def main() -> IO(Unit):
-  IO.try(Unit, Qt.run(Unit, checks()))
+  IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))
