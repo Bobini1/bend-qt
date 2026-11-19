@@ -12,6 +12,7 @@ import re
 import subprocess
 import sys
 import output_files
+import portable_paths
 
 from backend import command, compile_backend, validate_backend
 from upstream import prepare, select_classes
@@ -1720,7 +1721,7 @@ def main():
         output_files.write_text(args.output / 'LICENSE', runtime_release_inputs['package_license'].read_text())
         for filename, content in runtime_bundle['assets'].items():
             output_files.write_text(args.output / filename, content)
-    json_write(args.output / "coverage.json", coverage)
+    json_write(args.output / "coverage.json", portable_paths.portable(coverage, args.qt_prefix))
     hashes = {name: hashlib.sha256((args.output / name).read_bytes()).hexdigest()
               for name in ("qt.bend", "qt.c", "coverage.json", *(['LICENSE', *runtime_bundle['assets']] if runtime_bundle else []))}
     # The lock is a generation input, so it changes only after a complete

@@ -34,6 +34,19 @@ def versioned_include_paths(qt: Path, modules):
                          qt / 'include' / module / version / module)]
 
 
+# Clang takes libstdc++'s headers and its startup objects from the newest GCC
+# it finds. Hosts with different GCC versions installed, such as a hosted CI
+# runner with GCC 14 next to Ubuntu 24.04's default GCC 13, then compile
+# different native modules. Every compile and link names GCC 13.
+GCC_INSTALL = Path('/usr/lib/gcc/x86_64-linux-gnu/13')
+
+
+def toolchain_flags():
+    if not (GCC_INSTALL / 'crtbeginS.o').is_file() or not (GCC_INSTALL / 'libstdc++.so').exists():
+        raise RuntimeError('Native modules are built with GCC 13\'s C++ library; install libstdc++-13-dev')
+    return ['--gcc-install-dir=' + str(GCC_INSTALL)]
+
+
 def compiler_flags(qt: Path, cxx: str, modules):
     # O2's global value numbering becomes pathological on the full generated
     # proxy inventory. O1 keeps ordinary native optimization without that pass;
@@ -41,8 +54,11 @@ def compiler_flags(qt: Path, cxx: str, modules):
     # Function sections and address-significance tables let LLD fold
     # identical functions whose address is never taken (--icf=safe). The
     # runtime identifies entry kinds by deleter address, so --icf=all is unsafe.
-    flags = [cxx, "-std=c++17", "-O1", "-fPIC", "-fvisibility=hidden", "-ferror-limit=0",
+    # Inline Qt test helpers expand __FILE__ to header paths; record them
+    # relative to the Qt installation, as package metadata does.
+    flags = [cxx, *toolchain_flags(), "-std=c++17", "-O1", "-fPIC", "-fvisibility=hidden", "-ferror-limit=0",
              "-fexceptions", "-frtti", "-ffunction-sections", "-faddrsig", "-fno-stack-protector",
+             *[f"-ffile-prefix-map={path}=<QT>" for path in dict.fromkeys((Path(qt).absolute(), Path(qt).resolve()))],
              "-DQT_NO_VERSION_TAGGING", "-DQT_NO_DEBUG", "-DNDEBUG",
              "-I" + str(qt / "include"), "-I" + str(qt / "mkspecs/linux-g++")]
     for module in modules:

@@ -583,6 +583,10 @@ def runtime(c):
     output_writes = run(['python3', ROOT / 'scripts/check-qt-generation-writes.py'], env, ROOT, timeout=60)
     print(output_writes.stdout, end='', flush=True)
     receipt['generation_output_writes'] = dict(passed=True, stdout=output_writes.stdout.strip())
+    portable = run(['python3', ROOT / 'scripts/check-qt-portable-package.py', '--package', package,
+                    '--qt-root', args.qt_prefix], env, ROOT, timeout=900)
+    print(portable.stdout, end='', flush=True)
+    receipt['portable_package'] = dict(passed=True, stdout=portable.stdout.strip())
     overloads = run(["python3", ROOT / "scripts/check-overload-names.py"], env, ROOT, timeout=300)
     print(overloads.stdout, end="", flush=True)
     receipt['overload_names'] = json.loads((OUT / 'overload-names/receipt.json').read_text())

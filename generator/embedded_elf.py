@@ -10,6 +10,8 @@ import tempfile
 import time
 import zlib
 
+from backend import toolchain_flags
+
 # Start Qt, run one operation, tear Qt down.
 EXPORTS = ('bqt_abi_call', 'bqt_abi_start', 'bqt_abi_stop')
 
@@ -28,7 +30,7 @@ def _dependency(path):
 
 
 def _search_directories(cxx, qt, command):
-    text = command([cxx, '-print-search-dirs']).stdout
+    text = command([cxx, *toolchain_flags(), '-print-search-dirs']).stdout
     libraries = next((line.partition('=')[2] for line in text.splitlines() if line.startswith('libraries:')), '')
     directories = [qt / 'lib', *[Path(value) for value in libraries.split(os.pathsep) if value]]
     result = {}
@@ -135,7 +137,7 @@ def _build_package(inputs, qt, work, cxx, modules, command, linker, dependency_f
     # functions nothing references. Exports and static constructors are GC
     # roots. Other linkers keep the previous layout.
     folding = ['-Wl,--icf=safe,--gc-sections'] if 'LLD' in linker['identity']['version'] else []
-    result = command([cxx, *linker['flags'], '-shared', *inputs, '-o', native, '-L' + str(qt / 'lib'),
+    result = command([cxx, *toolchain_flags(), *linker['flags'], '-shared', *inputs, '-o', native, '-L' + str(qt / 'lib'),
         *folding,
         *(['-Wl,--dependency-file=' + str(dependency_file)] if dependency_file else []),
         '-Wl,--as-needed,-z,defs,-z,now,-z,relro,-z,noexecstack',

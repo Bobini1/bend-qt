@@ -34,9 +34,13 @@ each run one part of `scripts/check-qt612.py` with `--part`. A separate runner
 generates the same inputs again, in place of the in-place regeneration part.
 The final job requires every part receipt for the same package, check sources
 and options. The second generation's digest must match the package exactly. It
-then writes the complete receipt with `--combine`. Older versions run fresh
-full-package Core, mixed-module and fourteen-module QML consumers, plus
-version-specific callback, model and protected-getter checks on one runner.
+then writes the complete receipt with `--combine`. Generation does not depend
+on the machine: package files name no build directory, native modules use GCC
+13's C++ library, and bundled file modes come from their content. A
+maintainer's generation from the same sources therefore matches CI's package.
+Older versions run fresh full-package Core, mixed-module and fourteen-module
+QML consumers, plus version-specific callback, model and protected-getter
+checks on one runner.
 Those older-version checks are not described as the full Qt 6.12 canonical suite.
 
 Successful validation permits creation of the package artifact. Failed jobs

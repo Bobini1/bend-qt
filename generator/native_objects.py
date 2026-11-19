@@ -7,7 +7,7 @@ object. Native ownership transfer is a separate runtime/lifetime policy.
 import json
 import hashlib
 from pathlib import Path
-from backend import command, versioned_include_paths
+from backend import command, toolchain_flags, versioned_include_paths
 
 
 def refine_traits(api, qt, modules, work, cxx):
@@ -57,12 +57,12 @@ def refine_traits(api, qt, modules, work, cxx):
     receipt = work / 'native-traits.json'
     stamp = work / 'native-traits-source.sha256'
     content = '\n'.join(lines) + '\n'
-    digest = hashlib.sha256(content.encode()).hexdigest()
+    digest = hashlib.sha256('\0'.join([content, cxx, *toolchain_flags()]).encode()).hexdigest()
     cached = (source.exists() and source.read_text() == content and program.exists()
               and receipt.exists() and stamp.exists() and stamp.read_text() == digest)
     if not cached:
         source.write_text(content)
-        command([cxx, '-std=c++17', '-DQT_NO_VERSION_TAGGING', '-Wno-deprecated-declarations',
+        command([cxx, *toolchain_flags(), '-std=c++17', '-DQT_NO_VERSION_TAGGING', '-Wno-deprecated-declarations',
                  '-I' + str(qt / 'include'), '-I' + str(qt / 'mkspecs/linux-g++'),
                  *['-I' + str(qt / 'include' / m) for m in modules],
                  *['-I' + str(path) for path in versioned_include_paths(qt, modules)], source, '-o', program])

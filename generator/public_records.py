@@ -337,7 +337,8 @@ def restore(api, headers, include_paths, work):
     roots={c['name'] for c in api['classes'] if c.get('generate') and not c.get('namespace')
            and '/private/' not in c.get('source_file','')
            and '/rhi/' not in c.get('source_file','')}
-    records=scan(headers,['-x','c++','-std=c++17','-fPIC','-DQT_NO_VERSION_TAGGING',
+    from backend import toolchain_flags
+    records=scan(headers,[*toolchain_flags(),'-x','c++','-std=c++17','-fPIC','-DQT_NO_VERSION_TAGGING',
                           *['-I'+str(path) for path in include_paths]],roots)
     import json
     (Path(work)/'public-records.json').write_text(json.dumps(records,indent=2)+'\n')

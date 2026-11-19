@@ -157,31 +157,31 @@ def prepare(qt, snapshots, notices, output, cache):
         return dict(schema=1, sources=sources, supplements=supplements, notices=extra_notices,
                     boundary='Byte-pinned omitted binary evidence and upstream source/license declarations; full release closure is a separate check')
     version = qt.parent.name
-    build = Path.home() / ('.cache/bend-qt-webview-' + version)
-    if not (build / 'source/.git').is_dir():
-        build = Path.home() / '.cache/bend-qt-generator/webview-plugin-build'
-        cache_text = (build / 'CMakeCache.txt').read_text()
-        source = Path(re.search(r'^CMAKE_HOME_DIRECTORY:INTERNAL=(.+)$', cache_text, re.M)[1])
-        staged = build.parent / 'webview-plugin-stage/plugins/webview/libqtwebview_webengine.so'
-    else:
-        source = build / 'source'
-        staged = build / 'stage/plugins/webview/libqtwebview_webengine.so'
+    # The setup recipe builds the plugin from its pinned source in this
+    # directory, installs it into Qt and records the installed digest.
+    build = Path(os.environ.get('BEND_QT_WEBVIEW_BUILD') or Path.home() / ('.cache/bend-qt-webview-' + version))
+    source = build / 'source'
+    staged = build / 'stage/plugins/webview/libqtwebview_webengine.so'
+    record, recipe = build / 'plugin.sha256', build / 'recipe.sha256'
+    setup = Path(__file__).resolve().parents[1] / 'scripts/setup-qt-webview-backend.sh'
+    if (not (source / '.git').is_dir() or not staged.is_file() or not record.is_file()
+            or not recipe.is_file() or recipe.read_text().split() != [digest(setup)]):
+        raise ValueError('Build the WebView plugin with the current scripts/setup-qt-webview-backend.sh: ' + str(build))
     command = ['git', '-c', 'safe.directory=' + str(source), '-c', 'core.filemode=false',
                '-c', 'core.autocrlf=true', '-C', str(source)]
     head = subprocess.run([*command, 'rev-parse', 'HEAD'], check=True,
                           capture_output=True, text=True).stdout.strip()
     changed = subprocess.run([*command, 'status', '--porcelain'], check=True,
                              capture_output=True, text=True).stdout.strip()
-    if head != webview['revision'] or changed or digest(plugin) != digest(staged):
+    installed = digest(plugin)
+    if (head != webview['revision'] or changed or installed != digest(staged)
+            or record.read_text().split()[:1] != [installed]):
         raise ValueError('The local WebView plugin differs from its matching clean source/build stage')
     matching = source_files(webview, lambda name: name.startswith('src/plugins/webengine/') and name.endswith(('.cpp', '.h')))
-    inputs = [path for path in (build / 'configure.log', build / 'build.log', build / 'plugin.sha256',
-                               build / 'config.summary', build / 'CMakeCache.txt', build / 'build.ninja') if path.is_file()]
-    if not inputs:
-        raise ValueError('Missing WebView plugin build evidence')
+    # Build logs name the build machine's directories, so the provenance
+    # records the recipe and the verified source rather than log digests.
     add(plugin, expression(matching), webview_source, notices[webview_source],
         dict(source_revision=head, source_tree_clean=True, source_archive_sha256=webview['sha256'],
-             build_inputs={str(path): digest(path) for path in inputs},
              configure_recipe='scripts/setup-qt-webview-backend.sh'), modules=['QtWebView'])
     return dict(schema=1, sources=sources, supplements=supplements, notices=extra_notices,
                 boundary='Byte-pinned omitted binary evidence and upstream source/license declarations; full release closure is a separate check')

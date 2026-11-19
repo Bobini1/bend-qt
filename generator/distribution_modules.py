@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+from portable_paths import portable
 from qt_licenses import Inventory, allows
 
 
@@ -475,7 +476,7 @@ def generate(args, profile, source_inputs, prepared_release):
         raise RuntimeError('Runtime release inputs changed during native compilation; package not replaced')
     args.output.mkdir(parents=True, exist_ok=True)
     files = dict(emitted['assets'], **{'qt.bend': emitted['bend'], 'qt.c': emitted['c'],
-        'coverage.json': json.dumps(coverage, indent=2) + '\n',
+        'coverage.json': json.dumps(portable(coverage, args.qt_prefix), indent=2) + '\n',
         'LICENSE': prepared_release['package_license'].read_text()})
     for name, text in files.items():
         output_files.write_text(args.output / name, text)

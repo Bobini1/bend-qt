@@ -40,7 +40,11 @@ def main():
     rng = random.Random(4391)
     for n in (0, 1, 55, 56, 63, 64, 65, 131072, 600001):
         path = source / f'file-{n}'
-        path.write_bytes(rng.randbytes(n)); path.chmod(0o700 if n == 65 else 0o600)
+        # Only ELF content is executable. file-64 has execute bits, as every
+        # file on a mounted Windows drive does, and is still data.
+        data = rng.randbytes(n)
+        path.write_bytes(b'\x7fELF' + data[4:] if n == 65 else data)
+        path.chmod(0o755 if n in (64, 65) else 0o600)
         files[f'lib/nested/file-{n}'] = path
     files['NOTICE'] = source / 'notice'
     files['NOTICE'].write_text('Qt test data, not a redistributable Qt runtime.\n')
@@ -102,7 +106,7 @@ def main() -> IO(Unit):
         for name, original in files.items():
             current = path / name
             assert current.read_bytes() == original.read_bytes(), name
-            assert current.stat().st_mode & 0o777 == (0o700 if original.stat().st_mode & 0o111 else 0o600)
+            assert current.stat().st_mode & 0o777 == (0o700 if name.endswith('/file-65') else 0o600), name
         assert (path / 'lib/alias').stat().st_ino == (path / aliases['lib/alias']).stat().st_ino
 
     verify()

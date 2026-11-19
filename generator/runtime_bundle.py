@@ -53,7 +53,10 @@ def embed(files, *, aliases=None, context=None, block_size=512 * 1024,
         if not source.is_file():
             raise ValueError('Missing runtime input: ' + str(source))
         raw = source.read_bytes()
-        row = dict(path=name, size=len(raw), mode=0o700 if source.stat().st_mode & 0o111 else 0o600,
+        # Libraries and helper processes are ELF files; everything else is
+        # data. The source file's mode depends on the build machine's
+        # filesystem, such as a Windows drive mounted with every bit set.
+        row = dict(path=name, size=len(raw), mode=0o700 if raw[:4] == b'\x7fELF' else 0o600,
                    sha256=hashlib.sha256(raw).hexdigest(), first=len(blocks), count=0)
         if selective:
             row['modules'] = owners[name]

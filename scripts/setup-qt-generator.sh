@@ -29,6 +29,11 @@ if [[ ! -f /usr/lib/llvm-19/include/clang-c/Index.h ]]; then
     echo 'Install maintainer dependencies: libclang-19-dev llvm-19-dev python3-venv' >&2
     exit 1
 fi
+# Native modules are compiled against GCC 13's C++ library on every host.
+if [[ ! -f /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o || ! -d /usr/include/c++/13 ]]; then
+    echo 'Install the maintainer dependency libstdc++-13-dev' >&2
+    exit 1
+fi
 mkdir -p "$cache"
 bash "$root/scripts/setup-qt-linker.sh"
 if [[ ! -x "$cache/venv/bin/aqt" ]]; then

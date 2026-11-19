@@ -25,8 +25,10 @@ runtime replacement and the remaining release validation boundary.
 ## Setup and generation
 
 On Ubuntu 24.04, the maintainer tools are Clang 19, CMake, Ninja, Git, Python
-with venv support, `libclang-19-dev`, `llvm-19-dev` and
-`libxkbcommon-dev`. Run from the workspace:
+with venv support, `libclang-19-dev`, `llvm-19-dev`, `libstdc++-13-dev` and
+`libxkbcommon-dev`. Clang otherwise uses the newest installed GCC's C++
+library; native modules always use GCC 13's, Ubuntu 24.04's default, so
+packages built on different machines are identical. Run from the workspace:
 
 ```bash
 bash scripts/setup-qt-generator.sh
@@ -95,6 +97,10 @@ inputs during analysis prevent caching the result. This changes maintainer
 build time without changing consumer compilation or Qt runtime behavior.
 
 The default output is `packages/qt612/qt.bend`, `qt.c` and `coverage.json`.
+Package files record Qt paths as `<QT>/include/...` and workspace paths
+relative to the workspace. Generation and `scripts/check-qt-portable-package.py`
+reject any package file, decoded native module or bundled runtime file that
+names the build machine's Qt, workspace or home directory.
 The default work directory is `build/qt612`. It retains the extracted API,
 Shiboken rejection logs, generated C++, native payload and verification reports.
 On WSL, native objects, precompiled headers and link intermediates for work
@@ -819,4 +825,8 @@ The pinned Linux Qt archive omits that plugin. Maintainer setup runs
 `scripts/setup-qt-webview-backend.sh` to build and install only the official
 QtWebView WebEngine plugin from the pinned source. Its build directory stays on
 the Linux filesystem. This setup needs `libxkbcommon-dev`; it does not replace
-the kit's Qt libraries or add a consumer build step.
+the kit's Qt libraries or add a consumer build step. The plugin links with its
+installed RPATH, not the build tree's, because the linker hashes the RPATH into
+its build ID; the plugin is then identical on every machine. The script stamps
+its own digest and rebuilds the plugin when it changes; release preparation
+accepts only a plugin built by the current script.

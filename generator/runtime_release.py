@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 from urllib.parse import urlparse
 
+from portable_paths import portable, require_portable
 from qt_licenses import Inventory, allows
 from qt_targets import installed_version
 from runtime_bundle import embed, relative_path
@@ -143,7 +144,7 @@ def prepare(manifest, qt, profile):
     expected.update({name: row['sha256'] for name, row in data.get('notices', {}).items()})
     expected.update({'notices/sbom/' + Path(path).name: digest for path, digest in inventory.evidence.items()})
     expected['notices/DISTRIBUTION-LICENSE'] = data['package_license']['sha256']
-    return dict(files=files, aliases=selection['aliases'], selection=selection,
+    return dict(qt=Path(qt), files=files, aliases=selection['aliases'], selection=selection,
                 expected_sha256=expected, package_license=package_license,
                 sources=delivered_sources, manifest=data,
                 manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest())
@@ -159,10 +160,15 @@ def package(prepared, profile, work, *, owners=None, include_loader=True):
         if isinstance(value, list):
             return [public_value(item) for item in value]
         return value
-    public = public_value(prepared['sources'])
+    public = portable(public_value(prepared['sources']), prepared['qt'])
     source_manifest.write_text(json.dumps(public, indent=2) + '\n')
     files = dict(prepared['files'], **{'notices/corresponding-sources.json': source_manifest})
     files['notices/DISTRIBUTION-LICENSE'] = prepared['package_license']
+    # The release writes these notices. Upstream notices and SBOMs may name
+    # Qt's own build directories, which are the same for every maintainer.
+    for name in ('notices/BUILDING.txt', 'notices/DISTRIBUTION-LICENSE'):
+        if name in files:
+            require_portable(Path(files[name]).read_text(), prepared['qt'], name)
     if owners is not None:
         owners = {name: owners.get(name, {'base'}) for name in files}
     bundle = embed(files, aliases=prepared['aliases'], context=dict(

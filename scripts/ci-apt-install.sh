@@ -4,7 +4,7 @@
 # has delivered them at 100 kB/s, and the canonical gate starts several runners.
 set -euo pipefail
 packages=(
-  clang-19 libclang-19-dev llvm-19-dev lld-19 cmake ninja-build git
+  clang-19 libclang-19-dev llvm-19-dev lld-19 libstdc++-13-dev cmake ninja-build git
   python3-venv curl elan zstd qt6-base-dev qt6-declarative-dev
   libx11-dev libasound2-dev libxkbcommon-dev libxkbcommon-x11-0
   libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1
