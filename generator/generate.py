@@ -1505,7 +1505,6 @@ def coverage_report(generator, api, profile, license_report, runtime_bundle, lif
                 'public_record_supplement': api.get('public_record_supplement', {}),
                 'abi_cohorts': abi_cohorts.inventory(generator),
                 'native_payload': backend['payload'],
-                'public_abi_payload': backend.get('public_abi_fallback', {}).get('payload'),
                 'native_type_traits': measured_traits,
                 'public_fields': generator.public_fields,
                 'render_result_lifetimes': render_result_lifetimes.inventory(generator),
@@ -1736,9 +1735,7 @@ def main():
     if any(source_inputs.get(path) != completed_inputs.get(path)
            for path in source_inputs.keys() | completed_inputs.keys() if path != lock_key):
         raise RuntimeError('Generator inputs changed while completing the name lock')
-    dependency_manifests = list(dict.fromkeys([
-        *backend.get('native_dependency_manifests', []),
-        *backend.get('public_abi_fallback', {}).get('native_dependency_manifests', [])]))
+    dependency_manifests = list(dict.fromkeys(backend.get('native_dependency_manifests', [])))
     json_write(args.work / "generation.json", {"generated_sha256": hashes, "source_sha256": completed_inputs,
                                              "runtime_release_manifest": str(args.runtime_manifest.resolve()) if args.runtime_manifest else None,
                                              "input_name_lock_sha256": source_inputs.get(lock_key), "qt": api["qt_headers"],

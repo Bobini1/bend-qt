@@ -175,9 +175,9 @@ Results and failures:
 - A handler that fails makes the Bend-started Qt operation during which Qt ran
   it fail with the same code and message. The first failure is kept; later
   ones in the same operation are dropped. For example, `QPushButton.click`
-  fails with 44 when its clicked handler fails with 44. A Qt event loop keeps
-  running until it is exited and then reports the failure; the package's own
-  waits end at once.
+  fails with 44 when its clicked handler fails with 44. A failure ends the
+  event loop that `exec` or `QEventLoop.exec` runs, and the package's own
+  waits, at once.
 - A virtual method handler that fails with ENOSYS (38, `Qt.Virtual.base`) runs
   the C++ base implementation. A virtual without a handler does the same; a
   pure virtual without one fails the current operation with ENOSYS.

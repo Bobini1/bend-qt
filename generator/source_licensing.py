@@ -77,7 +77,9 @@ class Resolver:
             annotation_paths = {Path(info.source_path) if Path(info.source_path).is_absolute() else root / info.source_path
                                 for info in annotations if info.source_path}
             evidence = {}
-            for annotation in annotation_paths:
+            # A set's order depends on the process's hash seed; sort it so the
+            # release manifest is the same on every run.
+            for annotation in sorted(annotation_paths):
                 if not annotation.resolve().is_relative_to(root):
                     raise ValueError('A REUSE annotation escapes its source snapshot')
                 evidence[str(annotation.relative_to(root))] = hashlib.sha256(annotation.read_bytes()).hexdigest()

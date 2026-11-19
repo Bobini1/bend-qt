@@ -72,8 +72,9 @@ def refine_traits(api, qt, modules, work, cxx):
                   for name, *bits in (line.split() for line in output.splitlines())}
         receipt.write_text(json.dumps(traits, indent=2, sort_keys=True) + '\n')
         stamp.write_text(digest)
-    else:
-        traits = json.loads(receipt.read_text())
+    # A fresh measurement and a cached one both come from the sorted receipt,
+    # so the package's trait inventory does not depend on the cache.
+    traits = json.loads(receipt.read_text())
     for c in classes:
         measured = traits[c['name']]
         c['native_copyable'], c['native_movable'] = measured['copyable'], measured['movable']

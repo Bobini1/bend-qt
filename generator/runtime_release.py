@@ -144,22 +144,31 @@ def prepare(manifest, qt, profile):
     expected.update({name: row['sha256'] for name, row in data.get('notices', {}).items()})
     expected.update({'notices/sbom/' + Path(path).name: digest for path, digest in inventory.evidence.items()})
     expected['notices/DISTRIBUTION-LICENSE'] = data['package_license']['sha256']
+    raw = manifest.read_bytes()
+    # The manifest file locates each pinned input on this machine. The package
+    # identifies the release by what remains: every input's digest, source,
+    # license and notice, which is the same on every machine.
+    release = portable(public_value(json.loads(raw)), qt)
     return dict(qt=Path(qt), files=files, aliases=selection['aliases'], selection=selection,
                 expected_sha256=expected, package_license=package_license,
                 sources=delivered_sources, manifest=data,
-                manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest())
+                manifest_sha256=hashlib.sha256(raw).hexdigest(),
+                release_sha256=hashlib.sha256(json.dumps(release, sort_keys=True).encode()).hexdigest())
+
+
+def public_value(value):
+    """Drops the local file locations of byte-pinned inputs; their digests remain."""
+    if isinstance(value, dict):
+        return {key: public_value(item) for key, item in value.items() if key != 'file'}
+    if isinstance(value, list):
+        return [public_value(item) for item in value]
+    return value
 
 
 def package(prepared, profile, work, *, owners=None, include_loader=True):
     work = Path(work); work.mkdir(parents=True, exist_ok=True)
     source_manifest = work / 'runtime-sources.json'
     # Local build paths do not belong in the distributed source manifest.
-    def public_value(value):
-        if isinstance(value, dict):
-            return {key: public_value(item) for key, item in value.items() if key != 'file'}
-        if isinstance(value, list):
-            return [public_value(item) for item in value]
-        return value
     public = portable(public_value(prepared['sources']), prepared['qt'])
     source_manifest.write_text(json.dumps(public, indent=2) + '\n')
     files = dict(prepared['files'], **{'notices/corresponding-sources.json': source_manifest})
@@ -173,7 +182,7 @@ def package(prepared, profile, work, *, owners=None, include_loader=True):
         owners = {name: owners.get(name, {'base'}) for name in files}
     bundle = embed(files, aliases=prepared['aliases'], context=dict(
         qt=profile['minimum_qt'], flavor=profile['license_flavor'],
-        release_manifest_sha256=prepared['manifest_sha256']), owners=owners)
+        release_sha256=prepared['release_sha256']), owners=owners)
     for row in bundle['manifest']['files']:
         expected = prepared['expected_sha256'].get(row['path'])
         if expected and row['sha256'] != expected:

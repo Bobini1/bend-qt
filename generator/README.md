@@ -729,8 +729,8 @@ subclass proxies. Typed Property, Signal and Method descriptors provide native
 metadata, named invokables, storage, notify signals and optional Bend accessors.
 Native bases retain their inherited properties, methods and virtual handlers.
 Dynamic pointer metatypes preserve concrete Bend class identity. Metadata uses
-the Qt 6 moc format and public connection ABI; it also runs in the public-ABI
-payload. Immutable definitions remain valid for process-lifetime Qt/QML caches.
+the Qt 6 moc format and public connection ABI. Immutable definitions remain
+valid for process-lifetime Qt/QML caches.
 Creatable QML classes use the generated proxy's placement constructor, native
 size and interface offsets. A default constructor supplies the ordinary path;
 `Qml.handleConstructor` can select another constructor through `Base.newAs`.
@@ -766,17 +766,17 @@ the resulting destruction.
 ## Handlers
 
 `callbacks.py` discovers overridable virtuals and generates typed argument
-records (`HandlerArgs_*`) and reply codecs. `X.newOverride(args...)` creates an
+records (`CallbackArgs_*`) and reply codecs. `X.newOverride(args...)` creates an
 override object. `D.Virtual.method.handle(~S, ~f, obj, state)` installs the
 handler for one virtual method on it, where `D` declares the method; installing
 again replaces it. A virtual without a handler runs the C++ base
 implementation, and so does a handler that fails with 38
 (`Virtual.base(R)`). A pure virtual without a handler makes the current Qt
 operation fail with ENOSYS. Receivers and borrowed arguments are pinned for
-the duration of the call. Mutable references return a `HandlerReply_*` record
+the duration of the call. Mutable references return a `CallbackReply_*` record
 and commit only after the entire reply validates. Native factories transfer
 ownership only under an explicit contract; borrowed pointer replies retain
-tracked objects until the proxy is destroyed, and `HandlerResult_*` codecs
+tracked objects until the proxy is destroyed, and `CallbackResult_*` codecs
 release the handles of retained results.
 
 `callback_functions.py` restores typed `std::function` parameters from upstream

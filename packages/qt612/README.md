@@ -423,9 +423,9 @@ virtual method has none, so calling it without a handler fails the current Qt
 operation with ENOSYS (38).
 
 Methods with mutable reference parameters return a generated
-`HandlerReply_*` record: the result, if any, followed by the new values. For
+`CallbackReply_*` record: the result, if any, followed by the new values. For
 example, a `QValidator.Virtual.validate` handler returns
-`HandlerReply_QValidator_State_String_Int32{state, text, position}`. The
+`CallbackReply_QValidator_State_String_Int32{state, text, position}`. The
 reply is validated as a whole before Qt's references are written. A returned
 object transfers ownership only when the native contract requests it.
 Borrowed object results are retained by the override object until it is
@@ -935,7 +935,8 @@ See the [consumption fixture](../../scripts/fixtures/future-take.bend).
 transport. The `shared.bend`, `optional.bend` and future examples show these APIs.
 
 `IncubationFlag.new`, `load` and `store` control QML creation through
-`QQmlIncubationController.incubateWhile(controller, flag, msecs)`. The call
+`QQmlIncubationController.incubateWhile__IncubationFlag_Int32(controller,
+flag, msecs)`, or `incubateWhile__IncubationFlag` without a duration. The call
 runs a Qt event loop while it waits and retains its flag and engine until
 completion. Setting the flag to false, for example from a forked Bend
 computation, stops the wait. A duration of zero or minus one means no overall
@@ -959,7 +960,7 @@ requires the matching RHI ABI cohort. See the
 
 `QWebView.runJavaScriptWithHandler(~S, ~f, view, script, state)` copies its
 QVariant result before calling the handler. The ordinary
-`QWebView.runJavaScript__String` form uses Qt's empty result callback. QWebView
+`QWebView.runJavaScript` form uses Qt's empty result callback. QWebView
 is a native window and stays on the main thread. The bundled runtime includes
 its matching WebView backend plugin. Direct constructors check for missing or
 unloadable plugins and return ENOTSUP. Backend initialization failures inside
