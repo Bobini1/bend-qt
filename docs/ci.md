@@ -11,6 +11,8 @@ and Lean 4.34.0 are explicit dependencies. The Bend download is checksum-checked
 The shared `.github/actions/qt-toolchain` action installs them. SDK, source and
 extractor caches are separated by version and build inputs. Downloaded Ubuntu
 packages are cached weekly, because the mirror has delivered them at 100 kB/s.
+Each apt step has a time limit and up to three attempts, because a stalled
+mirror once held a runner for its whole six hours.
 Native compiler and analysis concurrency are each limited to two workers on
 the standard 16 GB runner. The canonical check's timeouts, sized for a 32-core
 workstation, are multiplied by six there through `BQT_CHECK_TIMEOUT_SCALE`.

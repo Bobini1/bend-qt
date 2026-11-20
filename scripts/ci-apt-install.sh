@@ -21,15 +21,28 @@ packages=(
 archives="$HOME/apt-archives"
 cache=/var/cache/apt/archives
 mkdir -p "$archives"
-sudo apt-get update
+# A mirror has also stalled an index download for six hours without failing,
+# which used up the whole job. Each attempt gets a time limit and is retried.
+apt_get() {
+  local minutes=$1; shift
+  for attempt in 1 2 3; do
+    if timeout "${minutes}m" sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=60 "$@"; then
+      return 0
+    fi
+    echo "apt-get $1 failed or stalled (attempt $attempt of 3)" >&2
+    sleep 10
+  done
+  return 1
+}
+apt_get 10 update
 if compgen -G "$archives/*.deb" > /dev/null; then
   sudo cp "$archives"/*.deb "$cache"/
   # Drop versions the mirror no longer offers, so the cache does not grow.
   sudo apt-get autoclean
 fi
-sudo apt-get install -y --no-install-recommends --download-only "${packages[@]}"
+apt_get 60 install -y --no-install-recommends --download-only "${packages[@]}"
 rm -f "$archives"/*.deb
 if compgen -G "$cache/*.deb" > /dev/null; then
   cp "$cache"/*.deb "$archives"/
 fi
-sudo apt-get install -y --no-install-recommends "${packages[@]}"
+apt_get 20 install -y --no-install-recommends "${packages[@]}"

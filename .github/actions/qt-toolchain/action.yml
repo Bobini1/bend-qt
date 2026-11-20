@@ -16,7 +16,11 @@ runs:
       with:
         path: ~/apt-archives
         key: apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/ci-apt-install.sh') }}-${{ steps.week.outputs.week }}
-        restore-keys: apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/ci-apt-install.sh') }}-
+        # Any earlier archive set helps: autoclean drops outdated versions and
+        # apt downloads only what is missing.
+        restore-keys: |
+          apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/ci-apt-install.sh') }}-
+          apt-${{ runner.os }}-${{ runner.arch }}-
     - name: Install maintainer and headless test dependencies
       shell: bash
       run: bash scripts/ci-apt-install.sh
