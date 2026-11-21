@@ -56,11 +56,11 @@ def bend_helpers(g):
     snapshot = 'QStringConverterBase.State.CleanupSnapshot'
     g.bend += [
         f'type {snapshot} is Data:',
-        f'  {snapshot}{{flags: Flags_QStringConverterBase__Flag, internalState: Int32, remainingChars: Int64, invalidChars: Int64}}', '',
+        f'  {snapshot}{{flags: QStringConverterBase.Flag, internalState: Int32, remainingChars: Int64, invalidChars: Int64}}', '',
         f'def {PUBLIC}.decode(value: Wire) -> Maybe<&2, {snapshot}>:',
         '  match value:',
         '    case WireSequence{WireScalar{flags, 0} <> WireScalar{internal, 0} <> WireScalar{remaining_lo, remaining_hi} <> WireScalar{invalid_lo, invalid_hi} <> Nil{}}:',
-        f'      Some{{{snapshot}{{Flags_QStringConverterBase__Flag{{flags}}, Int32{{internal}}, Int64{{remaining_lo, remaining_hi}}, Int64{{invalid_lo, invalid_hi}}}}}}',
+        f'      Some{{{snapshot}{{QStringConverterBase.Flag{{flags}}, Int32{{internal}}, Int64{{remaining_lo, remaining_hi}}, Int64{{invalid_lo, invalid_hi}}}}}}',
         '    case _: None{}', '']
     g.converter_cleanup_handler = signals.invoke_value(g, PUBLIC, snapshot, PUBLIC + '.decode')
 

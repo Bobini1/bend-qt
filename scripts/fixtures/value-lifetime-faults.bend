@@ -41,7 +41,7 @@ def native_tree_deletion(+tree: Qt.QTreeWidget, +iterator: Qt.QTreeWidgetItemIte
     error(Qt.QTreeWidgetItem, stale, 116)
 
 def tree(+value: Qt.QTreeWidget) -> Qt.Action(Unit):
-  Qt.QTreeWidgetItemIterator.with(Unit, Qt.QTreeWidgetItemIterator.new__QTreeWidget_Flags_QTreeWidgetItemIterator__IteratorFlag(value, Qt.Flags_QTreeWidgetItemIterator__IteratorFlag{0}), iterator => native_tree_deletion(value, iterator))
+  Qt.QTreeWidgetItemIterator.with(Unit, Qt.QTreeWidgetItemIterator.new__QTreeWidget_QTreeWidgetItemIterator_IteratorFlag(value, Qt.QTreeWidgetItemIterator.IteratorFlag.All()), iterator => native_tree_deletion(value, iterator))
 
 def native_document_deletion(+document: Qt.QTextDocument, +block: Qt.QTextBlock, +iterator: Qt.QTextBlock.iterator) -> Qt.Action(Unit):
   do Qt.Action<Unit>:

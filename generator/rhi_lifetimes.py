@@ -123,7 +123,8 @@ def prepare(g):
     payload = dict(kind='value', name='QRhiReadbackResult', bend='QRhiReadbackResult', raw='U32',
                    cpp='QRhiReadbackResult', pointer=False)
     g.rhi_readback_payload = g.conversions.register(payload)
-    g.types['Flags_QRhi__Flag'] = 'scalar'
+    g.types['QRhi.Flag'] = 'scalar'
+    g.flag_types.add('QRhi.Flag')
     if 'QRhiAdapter' in g.ids:
         child = dict(name='QRhiAdapter', cpp='QRhiAdapter *', const=False, pointers=1, reference=0,
                      enum=False, flags=False, container=False, instantiations=[])
@@ -402,7 +403,7 @@ def emit_backend_creation(g):
         if implementation not in ('Null', 'OpenGLES2', 'D3D11', 'D3D12', 'Metal'):
             continue
         parameters = dict(kind='value', name=name, bend=name, raw='U32')
-        flags = dict(kind='flags', bend='Flags_QRhi__Flag', raw='U32')
+        flags = dict(kind='flags', bend='QRhi.Flag', raw='U32')
         variants = [('createWith' + backend, [('parameters', parameters), ('flags', flags)], False, False, False),
                     ('probeWith' + backend, [('parameters', parameters)], True, False, False)]
         handles = 'QRhi' + backend + 'NativeHandles'

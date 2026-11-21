@@ -25,7 +25,7 @@ def content(value: Qt.QByteArray) -> Qt.Action(Unit):
 
 def retained_readers(+source: Qt.QByteArray, +resource: Qt.QResource, +file: Qt.QFile) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    opened: Bool <- Qt.QFile.open__Flags_QIODeviceBase__OpenModeFlag(file, Qt.Flags_QIODeviceBase__OpenModeFlag{1})
+    opened: Bool <- Qt.QFile.open__QIODeviceBase_OpenModeFlag(file, Qt.QIODeviceBase.OpenModeFlag.ReadOnly())
     require(opened, "Resource file did not open")
     valid: Bool <- Qt.QResource.isValid(resource)
     require(valid, "Registered resource was not visible")

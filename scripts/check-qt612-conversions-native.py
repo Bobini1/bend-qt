@@ -302,8 +302,6 @@ def volume_operations(source):
         'GET': ('get<QCustom3DVolume>', 'const auto *data = self->textureData();'),
         'IMAGES': ('get<QCustom3DVolume>', 'self->createTextureData(images)'),
         'SLICE': ('get<QCustom3DVolume>', 'volume_slice_extent(r, self', 'reinterpret_cast<const uchar *>(a2->constData())'),
-        'SIGNAL': ('get<QCustom3DVolume>', '&QCustom3DVolume::textureDataChanged',
-                   'uint32_t requested_type = 0;'),
     }
     definitions = []
     for suffix, fragments in selectors.items():

@@ -68,7 +68,7 @@ def parented(+parent: Qt.QWidget, child: Qt.QTextBrowser) -> Qt.Action(Unit):
     Qt.QDesktopServices.setUrlHandler("bend-parent", Qt.QTextBrowser.as_QObject(child), "setSource")
     busy: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QWidget.destroy(parent))
     denied(busy, 16)
-    Qt.Connection.with(Unit, Qt.QWidget.connect_destroyed(~U32, ~parent_destroyed, parent, 4), connection => close_parent(parent, connection))
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QWidget.destroyed(), ~U32, ~parent_destroyed, parent, 4), connection => close_parent(parent, connection))
 
 def parent(+owner: Qt.QWidget) -> Qt.Action(Unit):
   Qt.QTextBrowser.with(Unit, Qt.QTextBrowser.new__QWidget(owner), child => parented(owner, child))

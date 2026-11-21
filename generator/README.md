@@ -128,6 +128,10 @@ type `S` before them. The C effect checks the operation, receiver mode,
 argument shapes and result packer before calling Qt. Sharing keeps Bend's
 publication client from rereading the same C file for every public binding.
 The layout inventory is recorded in `coverage.json` under `effect_transport`.
+A public def that needs more than one effect, such as a QObject schema
+constructor, calls the shared effect itself through `effect_transport.call`, so
+no definition name carries an operation number. Bend has no private
+definitions; helpers that templates call by name live under `Internal`.
 
 `scripts/check-qt612-effect-transport.py` exercises valid calls, a handler
 round trip, and mismatched calls rejected before the native call.
@@ -255,21 +259,28 @@ arguments narrower than U32 are range-checked before calling Qt.
 Constructors, static and instance methods, overloads and inherited methods are
 generated. Inherited Bend names share native wrappers.
 
-Signals support multiple scalar, string, value and container arguments.
-`X.connect_signal(~S, ~f, object, state)` connects a typed Bend handler and
-returns `Action(Connection)`. For example,
-`QPushButton.connect_clicked(~S, ~f, button, state)` expects
-`f: S -> Bool -> Action(Unit)`. No signal descriptor type is needed. Overloaded
-signals use typed member pointers and distinct public names. Qt runs the
-handler during the emission: `QPushButton.click` returns after the clicked
-handler ran. QObject pointer arguments arrive as borrowed handles that follow
-Qt's lifetime; null is preserved. A signal with mutable reference arguments is
-handled by returning `Action(SignalReply_<types>)` with the new values.
+Native signals are `Signal` declarations, as signals declared in Bend are
+(`signals.py`). `collect` gives each signal of a class an entry named like the
+signal, with the lock identity `signal-descriptor <signature>`; overloads spell
+their Bend argument types. Its definition, such as `QSlider.rangeChanged()`,
+lists one argument descriptor per parameter, with the native type name, the
+parameter's codec and the module's schema dependency, and the class as sender:
+`Signal.connect`, `Signal.connectWith` and `Signal.emit` take a QSlider. The
+argument types join the descriptor inventory, so the shared runtime finds the
+signal by name and argument types in the sender's meta-object. There are no
+per-signal connect or emit operations. QObject pointer arguments arrive as
+borrowed handles that follow Qt's lifetime; null is preserved. A value class
+passed by non-const reference or pointer, such as the QAuthenticator of
+authenticationRequired, is borrowed for a synchronous call: the descriptor
+names `X&` or `X*`, and an emitting thread waits for the main thread.
 `Connection.disconnect` and `Connection.with` end a connection;
-`Runtime.liveConnections()` counts open
-ones. QObject.destroyed passes an `ObjectIdentity`, the handle word of the
+`Runtime.liveConnections()` counts open ones. `QObject.destroyed()` passes an
+`ObjectIdentity` (descriptor `BendObjectIdentity`), the handle word of the
 destroyed object. It is not a usable object handle. That connection closes
 itself after its single delivery, so a later disconnect fails with ESTALE.
+`Signal.emit` activates the signal through the meta-object, as PySide does, and
+refuses the signals in `signals.RESERVED_EMISSIONS`, which the runtime observes
+to release native resources or to run Bend's scheduler.
 
 Bend can also declare signals on new QObjects. A closed `Signal.define`
 declaration carries argument codecs and determines both the handler and emitter
@@ -332,7 +343,8 @@ and STORED. See the [property coverage table](../docs/property-system.md) and
 [property examples](../examples/qt612/properties.bend).
 
 The same argument descriptors supply properties, signals, methods and generic
-QVariant boxing. They include native numeric types, public enums and flags,
+QVariant boxing. They include native numeric types, public enums (`E.arg()`)
+and their QFlags metatypes (`E.flagsArg()`),
 typed QObject and non-QObject pointers, copied values, compiled containers,
 runtime enums and arbitrary typed Bend Data. Unsupported native instantiations
 remain explicit in the coverage inventory. Runtime enum metadata is available
@@ -403,10 +415,15 @@ Shiboken sometimes strips unknown defaulted parameters. The backend compares
 its model with the original signature and excludes changed parameter lists.
 Register the missing types to expose those methods; it never casts a shortened
 signature to the original C++ member function type. A trailing QPrivateSignal
-marker is handled by Qt's typed connect machinery and is not a Bend payload.
+marker is not a parameter of the signal's declaration.
 The extractor retains original C++ defaults separately from PySide's defaults.
 Default variants supply those native defaults after N explicit arguments and
 are named as ordinary overloads. Typed casts select the intended overload.
+As in PySide, `QFlags<E>` converts to E's own Bend type; `enum_operations`
+gives each flags enum `or`, `and`, `xor`, `without` and `has`, which Bend's
+`.|.`, `.&.` and `.^.` operators call. Native code still passes `QFlags<E>`
+where the signature has it. When an `E` and a `QFlags<E>` overload share a
+Bend shape, the QFlags one is bound.
 Numeric adapters also cover Qt integer aliases, WId on this
 64-bit platform and 64-bit enums/flags. These include uchar, ushort, uint16_t,
 qlonglong, qulonglong and ulong. Narrow inputs are range checked. Binary helpers
@@ -437,7 +454,10 @@ shape. It is a generation input and only a complete generation updates it,
 after the package artifacts are written. New names are appended automatically.
 A vanished identity becomes a tombstone that keeps its name reserved. A new
 identity with exactly the removed Bend shape inherits the name, which covers
-Qt's source-compatible signature replacements. Tombstones are breaking changes:
+Qt's source-compatible signature replacements. A name whose suffix spells a
+Bend type that no longer exists is tombstoned under `<identity> /renamed`, and
+its entry is named again; a conversion corrected to another existing type
+keeps its name. Tombstones are breaking changes:
 `check-overload-names.py`, part of the generator checks, fails until a
 maintainer regenerates with `--acknowledge-removed-names`. Focused fixture
 profiles read the lock but never write it. Deterministic regeneration must
@@ -658,9 +678,10 @@ generation reuse, disconnection and scope end, mixed QObject/value arguments,
 argument cleanup and stale borrowed handles.
 `examples/qt612/bytes.bend` covers all byte values, binary view inputs, owning
 view results, source mutation/destruction and invalid inputs.
-`scripts/check-qt612-signal-native.py` compiles an emitted signal connect with
-the shared runtime and checks null and live payloads, emission from another
-thread, disconnection and sender destruction. It is a maintainer test and does
+`scripts/check-qt612-signal-native.py` compiles the shared runtime and drives
+native signal declarations through it: null and live payloads, emission from
+another thread, `Signal.emit`, the refused observed signals, disconnection,
+QObject references, a borrowed QAuthenticator and sender destruction. It is a maintainer test and does
 not change consumer requirements. The regular
 examples use Action blocks and generated scopes with one outer IO.try.
 `examples/qt612/quick.bend` loads a Qt Quick window from QML, receives a Unicode

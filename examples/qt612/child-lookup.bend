@@ -42,7 +42,7 @@ def press(+button: Qt.QPushButton, +probe: Qt.QObject, connection: Qt.Connection
     require(String.eq(state, "unchecked"), "The found button did not report an unchecked click")
 
 def watch_button(+button: Qt.QPushButton, +probe: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QPushButton.connect_clicked(~Qt.QObject, ~clicked, button, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QPushButton.clicked(), ~Qt.QObject, ~clicked, button, probe),
     connection => press(button, probe, connection))
 
 def sign_in(value: Maybe<&2, Qt.QPushButton>) -> Qt.Action(Unit):
@@ -108,7 +108,7 @@ def load(loader: Qt.QUiLoader, buffer: Qt.QBuffer) -> Qt.Action(Unit):
 def open_form(+buffer: Qt.QBuffer, xml: Qt.QByteArray) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QBuffer.setData__QByteArray(buffer, xml)
-    opened: Bool <- Qt.QBuffer.open(buffer, Qt.Flags_QIODeviceBase__OpenModeFlag{1})
+    opened: Bool <- Qt.QBuffer.open(buffer, Qt.QIODeviceBase.OpenModeFlag.ReadOnly())
     require(opened, "The form buffer did not open")
     Qt.QUiLoader.with(Unit, Qt.QUiLoader.new(), loader => load(loader, buffer))
 

@@ -81,7 +81,7 @@ def line_output(+buffer: Qt.QBuffer, +output: Qt.QByteArray) -> Qt.Action(Unit):
 def line_source(+buffer: Qt.QBuffer, source: Qt.QByteArray) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QBuffer.setData__QByteArray(buffer, source)
-    opened: Bool <- Qt.QBuffer.open(buffer, Qt.Flags_QIODeviceBase__OpenModeFlag{1})
+    opened: Bool <- Qt.QBuffer.open(buffer, Qt.QIODeviceBase.OpenModeFlag.ReadOnly())
     require(opened, "Cannot open in-memory device")
     Qt.QByteArray.with(Unit, Qt.QByteArray.new(), output => line_output(buffer, output))
 

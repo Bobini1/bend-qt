@@ -39,7 +39,7 @@ def names_case(+child: Qt.QPushButton, +probe: Qt.QObject, +names: Qt.Connection
     expect_error(Unit, again, 116)
 
 def watch_names(+child: Qt.QPushButton, +probe: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QPushButton.connect_objectNameChanged(~Qt.QObject, ~name_changed, child, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QPushButton.objectNameChanged(), ~Qt.QObject, ~name_changed, child, probe),
     names => names_case(child, probe, names))
 
 def child_case(+parent: Qt.QWidget, +child: Qt.QPushButton) -> Qt.Action(Qt.QPushButton):
@@ -76,10 +76,10 @@ def burst_case(+button: Qt.QPushButton, +counter: Qt.QTimer, connection: Qt.Conn
 def counted(+button: Qt.QPushButton, +counter: Qt.QTimer) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QTimer.setInterval__Int32(counter, Qt.Int32{0})
-    # A signal of a handle with the wrong class is rejected.
-    mismatch: Result<&1, &1, U32 & String, Qt.Connection> <- Qt.Action.attempt(Qt.Connection, Qt.QPushButton.connect_clicked(~Qt.QTimer, ~count_click, Qt.QPushButton{Qt.QTimer.word(counter)}, counter))
-    expect_error(Qt.Connection, mismatch, 22)
-    Qt.Connection.with(Unit, Qt.QPushButton.connect_clicked(~Qt.QTimer, ~count_click, button, counter),
+    # A forged handle of another class has no such signal: ENOENT.
+    mismatch: Result<&1, &1, U32 & String, Qt.Connection> <- Qt.Action.attempt(Qt.Connection, Qt.Signal.connect(~Qt.QPushButton.clicked(), ~Qt.QTimer, ~count_click, Qt.QPushButton{Qt.QTimer.word(counter)}, counter))
+    expect_error(Qt.Connection, mismatch, 2)
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QPushButton.clicked(), ~Qt.QTimer, ~count_click, button, counter),
       connection => burst_case(button, counter, connection))
 
 def replacement_case(child: Qt.QPushButton, +replacement: Qt.QPushButton) -> Qt.Action(Unit):
@@ -105,7 +105,7 @@ def ticking(+timer: Qt.QTimer, ticks: Qt.Connection) -> Qt.Action(Unit):
     require(U32.is_eq(live, 0), "Destroying the sender left its connection open")
 
 def timer_case(+timer: Qt.QTimer) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QTimer.connect_timeout(~U32, ~timeout, timer, 3), ticks => ticking(timer, ticks))
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QTimer.timeout(), ~U32, ~timeout, timer, 3), ticks => ticking(timer, ticks))
 
 def date_case(date: Qt.QDate) -> Qt.Action(Unit):
   do Qt.Action<Unit>:

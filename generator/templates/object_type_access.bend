@@ -45,22 +45,22 @@ def ObjectType.handleBinding(~object: ObjectType, ~property: Property, ~S: Data,
   Property.handleBinding(~property, ~S, ~f, ObjectType.as_QObject(~object, self), state)
 
 def ObjectType.emit(~object: ObjectType, ~signal: Signal, self: ObjectType.Instance(object)) -> SignalArguments.Handler(Signal.arguments(signal)):
-  Signal.emit(~signal, ObjectType.as_QObject(~object, self))
+  Internal.Signal.emit(~signal, ObjectType.as_QObject(~object, self))
 
 def ObjectType.connect(~object: ObjectType, ~signal: Signal, ~S: Data, ~f: S -> SignalArguments.Handler(Signal.arguments(signal)), self: ObjectType.Instance(object), state: S) -> Action(Connection):
-  Signal.connect(~signal, ~S, ~f, ObjectType.as_QObject(~object, self), state)
+  Internal.Signal.connect(~signal, ~S, ~f, ObjectType.as_QObject(~object, self), state)
 
 def ObjectType.connectWith(~object: ObjectType, ~signal: Signal, ~S: Data, ~f: S -> SignalArguments.Handler(Signal.arguments(signal)), self: ObjectType.Instance(object), connectionType: Qt.ConnectionType, state: S) -> Action(Connection):
-  Signal.connectWith(~signal, ~S, ~f, ObjectType.as_QObject(~object, self), connectionType, state)
+  Internal.Signal.connectWith(~signal, ~S, ~f, ObjectType.as_QObject(~object, self), connectionType, state)
 
 def ObjectType.connectMethod(~object: ObjectType, ~signal: Signal, ~receiver: ObjectType, ~method: Method, self: ObjectType.Instance(object), target: ObjectType.Instance(receiver)) -> Action(Connection):
-  Signal.connectMethod(~signal, ~method, ObjectType.as_QObject(~object, self), ObjectType.as_QObject(~receiver, target))
+  Internal.Signal.connectMethodWith(~signal, ~method, ObjectType.as_QObject(~object, self), ObjectType.as_QObject(~receiver, target), Qt.ConnectionType.AutoConnection())
 
 def ObjectType.connectSignal(~object: ObjectType, ~signal: Signal, ~receiver: ObjectType, ~destination: Signal, self: ObjectType.Instance(object), target: ObjectType.Instance(receiver)) -> Action(Connection):
-  Signal.connectSignal(~signal, ~destination, ObjectType.as_QObject(~object, self), ObjectType.as_QObject(~receiver, target))
+  Internal.Signal.connectSignalWith(~signal, ~destination, ObjectType.as_QObject(~object, self), ObjectType.as_QObject(~receiver, target), Qt.ConnectionType.AutoConnection())
 
 def ObjectType.connectMethodWith(~object: ObjectType, ~signal: Signal, ~receiver: ObjectType, ~method: Method, self: ObjectType.Instance(object), target: ObjectType.Instance(receiver), connectionType: Qt.ConnectionType) -> Action(Connection):
-  Signal.connectMethodWith(~signal, ~method, ObjectType.as_QObject(~object, self), ObjectType.as_QObject(~receiver, target), connectionType)
+  Internal.Signal.connectMethodWith(~signal, ~method, ObjectType.as_QObject(~object, self), ObjectType.as_QObject(~receiver, target), connectionType)
 
 def ObjectType.connectSignalWith(~object: ObjectType, ~signal: Signal, ~receiver: ObjectType, ~destination: Signal, self: ObjectType.Instance(object), target: ObjectType.Instance(receiver), connectionType: Qt.ConnectionType) -> Action(Connection):
-  Signal.connectSignalWith(~signal, ~destination, ObjectType.as_QObject(~object, self), ObjectType.as_QObject(~receiver, target), connectionType)
+  Internal.Signal.connectSignalWith(~signal, ~destination, ObjectType.as_QObject(~object, self), ObjectType.as_QObject(~receiver, target), connectionType)

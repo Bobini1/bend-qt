@@ -57,7 +57,7 @@ def buffer(+root: Qt.QRhi, +value: Qt.QRhiBuffer) -> Qt.Action(Unit):
     Qt.QRhiResourceUpdateBatch.with(Unit, Qt.QRhi.nextResourceUpdateBatch(root), updates => batch(root, value, updates))
 
 def root(+root: Qt.QRhi) -> Qt.Action(Unit):
-  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.Flags_QRhiBuffer__UsageFlag{4}, 4), value => buffer(root, value))
+  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.QRhiBuffer.UsageFlag.UniformBuffer(), 4), value => buffer(root, value))
 
 def native_delete(+root: Qt.QRhi, +buffer: Qt.QRhiBuffer) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -66,7 +66,7 @@ def native_delete(+root: Qt.QRhi, +buffer: Qt.QRhiBuffer) -> Qt.Action(Unit):
     rejected(U32, 116, stale)
 
 def externally_deleted(+root: Qt.QRhi) -> Qt.Action(Unit):
-  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.Flags_QRhiBuffer__UsageFlag{4}, 4), value => native_delete(root, value))
+  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.QRhiBuffer.UsageFlag.UniformBuffer(), 4), value => native_delete(root, value))
 
 def unread(probe: Qt.QObject, value: Qt.QRhiReadbackResult) -> Qt.Action(Unit):
   Qt.QObject.setObjectName(probe, "read")
@@ -83,7 +83,7 @@ def cancel_buffer(root: Qt.QRhi, buffer: Qt.QRhiBuffer) -> Qt.Action(Unit):
   Qt.QRhiResourceUpdateBatch.with(Unit, Qt.QRhi.nextResourceUpdateBatch(root), batch => Qt.QObject.with(Unit, Qt.QObject.new(), probe => pending(buffer, batch, probe)))
 
 def cancel_root(+root: Qt.QRhi) -> Qt.Action(Unit):
-  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.Flags_QRhiBuffer__UsageFlag{4}, 4), value => cancel_buffer(root, value))
+  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.QRhiBuffer.UsageFlag.UniformBuffer(), 4), value => cancel_buffer(root, value))
 
 def fail_in_pass(command: Qt.QRhiCommandBuffer) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -108,10 +108,10 @@ def binding_copy(buffer: Qt.QRhiBuffer, +binding: Qt.QRhiShaderResourceBinding) 
   Qt.QRhiShaderResourceBinding.with(Unit, Qt.QRhiShaderResourceBinding.new__QRhiShaderResourceBinding(binding), copy => copied_binding(buffer, binding, copy))
 
 def binding_buffer(+buffer: Qt.QRhiBuffer) -> Qt.Action(Unit):
-  Qt.QRhiShaderResourceBinding.with(Unit, Qt.QRhiShaderResourceBinding.uniformBuffer__Int32_Flags_QRhiShaderResourceBinding__StageFlag_QRhiBuffer(Qt.Int32{0}, Qt.Flags_QRhiShaderResourceBinding__StageFlag{1}, buffer), binding => binding_copy(buffer, binding))
+  Qt.QRhiShaderResourceBinding.with(Unit, Qt.QRhiShaderResourceBinding.uniformBuffer__Int32_QRhiShaderResourceBinding_StageFlag_QRhiBuffer(Qt.Int32{0}, Qt.QRhiShaderResourceBinding.StageFlag.VertexStage(), buffer), binding => binding_copy(buffer, binding))
 
 def binding_root(root: Qt.QRhi) -> Qt.Action(Unit):
-  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.Flags_QRhiBuffer__UsageFlag{4}, 4), value => binding_buffer(value))
+  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.QRhiBuffer.UsageFlag.UniformBuffer(), 4), value => binding_buffer(value))
 
 def cross_bind(binding: Qt.QRhiShaderResourceBinding, bindings: Qt.QRhiShaderResourceBindings) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -125,10 +125,10 @@ def cross_descriptor(binding: Qt.QRhiShaderResourceBinding) -> Qt.Action(Unit):
   Qt.QRhi.with(Unit, Qt.QRhi.newNull(), root => cross_root(binding, root))
 
 def cross_buffer(buffer: Qt.QRhiBuffer) -> Qt.Action(Unit):
-  Qt.QRhiShaderResourceBinding.with(Unit, Qt.QRhiShaderResourceBinding.uniformBuffer__Int32_Flags_QRhiShaderResourceBinding__StageFlag_QRhiBuffer(Qt.Int32{0}, Qt.Flags_QRhiShaderResourceBinding__StageFlag{1}, buffer), cross_descriptor)
+  Qt.QRhiShaderResourceBinding.with(Unit, Qt.QRhiShaderResourceBinding.uniformBuffer__Int32_QRhiShaderResourceBinding_StageFlag_QRhiBuffer(Qt.Int32{0}, Qt.QRhiShaderResourceBinding.StageFlag.VertexStage(), buffer), cross_descriptor)
 
 def cross_source(root: Qt.QRhi) -> Qt.Action(Unit):
-  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.Flags_QRhiBuffer__UsageFlag{4}, 4), cross_buffer)
+  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.QRhiBuffer.UsageFlag.UniformBuffer(), 4), cross_buffer)
 
 def expired_descriptor(root: Qt.QRhi, +descriptor: Qt.QRhiShaderResourceBinding) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -139,24 +139,24 @@ def expired_descriptor(root: Qt.QRhi, +descriptor: Qt.QRhiShaderResourceBinding)
 
 def expire_buffer(root: Qt.QRhi, buffer: Qt.QRhiBuffer) -> Qt.Action(Unit):
   Qt.QRhiShaderResourceBinding.with(Unit,
-    Qt.QRhiShaderResourceBinding.uniformBuffer__Int32_Flags_QRhiShaderResourceBinding__StageFlag_QRhiBuffer(Qt.Int32{0}, Qt.Flags_QRhiShaderResourceBinding__StageFlag{1}, buffer), descriptor => expired_descriptor(root, descriptor))
+    Qt.QRhiShaderResourceBinding.uniformBuffer__Int32_QRhiShaderResourceBinding_StageFlag_QRhiBuffer(Qt.Int32{0}, Qt.QRhiShaderResourceBinding.StageFlag.VertexStage(), buffer), descriptor => expired_descriptor(root, descriptor))
 
 def expire_root(+root: Qt.QRhi) -> Qt.Action(Unit):
-  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.Flags_QRhiBuffer__UsageFlag{4}, 4), buffer => expire_buffer(root, buffer))
+  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.QRhiBuffer.UsageFlag.UniformBuffer(), 4), buffer => expire_buffer(root, buffer))
 
 def typed_null(+parameters: Qt.QRhiNullInitParams) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     possible: Bool <- Qt.QRhi.probeWithNull(parameters)
     require(possible, "Typed Null initialization probe failed")
-    Qt.QRhi.with(Unit, Qt.QRhi.createWithNull(parameters, Qt.Flags_QRhi__Flag{0}), binding_root)
+    Qt.QRhi.with(Unit, Qt.QRhi.createWithNull(parameters, Qt.QRhi.Flag{0}), binding_root)
 
 def texture_arrays() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     empty: Result<&1, &1, U32 & String, Qt.QRhiShaderResourceBinding> <- Qt.Action.attempt(Qt.QRhiShaderResourceBinding,
-      Qt.QRhiShaderResourceBinding.textures(Qt.Int32{0}, Qt.Flags_QRhiShaderResourceBinding__StageFlag{1}, []))
+      Qt.QRhiShaderResourceBinding.textures(Qt.Int32{0}, Qt.QRhiShaderResourceBinding.StageFlag.VertexStage(), []))
     rejected(Qt.QRhiShaderResourceBinding, 34, empty)
     Qt.QRhiShaderResourceBinding.with(Unit,
-      Qt.QRhiShaderResourceBinding.textures(Qt.Int32{0}, Qt.Flags_QRhiShaderResourceBinding__StageFlag{1}, [Qt.QRhiTexture{0}]), value => Qt.Action.pure(Unit, Unit{}))
+      Qt.QRhiShaderResourceBinding.textures(Qt.Int32{0}, Qt.QRhiShaderResourceBinding.StageFlag.VertexStage(), [Qt.QRhiTexture{0}]), value => Qt.Action.pure(Unit, Unit{}))
 
 def destroyed(probe: Qt.QObject, identity: Qt.ObjectIdentity) -> Qt.Action(Unit):
   Qt.QObject.setObjectName(probe, U32.show(Qt.ObjectIdentity.word(identity)))
@@ -182,7 +182,7 @@ def gles_params(+surface: Qt.QOffscreenSurface, +parameters: Qt.QRhiGles2InitPar
     Qt.QRhiGles2InitParams.Fields.set_fallbackSurface(parameters, Qt.QOffscreenSurface.as_QSurface(surface))
     possible: Bool <- Qt.QRhi.probeWithGles2(parameters)
     require(possible, "Typed OpenGL initialization probe failed")
-    Qt.QRhi.with(Unit, Qt.QRhi.createWithGles2(parameters, Qt.Flags_QRhi__Flag{0}), root => gles_live(surface, parameters, root))
+    Qt.QRhi.with(Unit, Qt.QRhi.createWithGles2(parameters, Qt.QRhi.Flag{0}), root => gles_live(surface, parameters, root))
 
 def gles_surface(surface: Qt.QOffscreenSurface) -> Qt.Action(Unit):
   Qt.QRhiGles2InitParams.with(Unit, Qt.QRhiGles2InitParams.new(), parameters => gles_params(surface, parameters))

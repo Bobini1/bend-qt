@@ -32,14 +32,14 @@ def Model() -> Qt.ObjectType:
 def fail_body(state: Unit) -> Qt.Action(String):
   do Qt.Action<String>:
     object: Qt.QObject <- Qt.QObject.new()
-    connection: Qt.Connection <- Qt.QObject.connect_destroyed(~Unit, ~cleanup, object, Unit{})
+    connection: Qt.Connection <- Qt.Signal.connect(~Qt.QObject.destroyed(), ~Unit, ~cleanup, object, Unit{})
     kept: Qt.Connection <- Qt.Connection.detachFromScope(connection)
     Qt.Action.fail(String, 73, body_text())
 
 def new_then_cleanup_fails(state: Unit) -> Qt.Action(Qt.QObject):
   do Qt.Action<Qt.QObject>:
     object: Qt.QObject <- Qt.QObject.new()
-    connection: Qt.Connection <- Qt.QObject.connect_destroyed(~Unit, ~cleanup, object, Unit{})
+    connection: Qt.Connection <- Qt.Signal.connect(~Qt.QObject.destroyed(), ~Unit, ~cleanup, object, Unit{})
     kept: Qt.Connection <- Qt.Connection.detachFromScope(connection)
     Qt.QObject.new()
 

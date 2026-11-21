@@ -16,6 +16,7 @@ struct NativePointerCapture {
     const void *pointer = nullptr;
     uint16_t type = 0;
     bool native_frame = false;
+    bool read_only = false;  // Qt passed a const pointer; borrow it read-only.
 };
 struct NativePointerKeyLess {
     bool operator()(const std::pair<const void *, uint16_t> &left,

@@ -778,9 +778,9 @@
         "Signal.connectWith",
         "Signal.connectMethod",
         "Signal.member",
-        "Class.connect_signal"
+        "Class.signal()"
       ],
-      "explanation": "Typed signal descriptors and ordinary generated signal helpers replace Python callable/type coercion. Explicit Qt connection modes are available.",
+      "explanation": "Signal declarations, the same for native and Bend-declared signals, replace Python callable/type coercion. Explicit Qt connection modes are available.",
       "evidence": [
         "generator/custom_signals.py",
         "generator/templates/custom_signals.bend",
@@ -1549,9 +1549,9 @@
         "Signal.connectWith",
         "Signal.connectMethod",
         "Signal.member",
-        "Class.connect_signal"
+        "Class.signal()"
       ],
-      "explanation": "Typed signal descriptors and ordinary generated signal helpers replace Python callable/type coercion. Explicit Qt connection modes are available.",
+      "explanation": "Signal declarations, the same for native and Bend-declared signals, replace Python callable/type coercion. Explicit Qt connection modes are available.",
       "evidence": [
         "generator/custom_signals.py",
         "generator/templates/custom_signals.bend",
@@ -2320,9 +2320,9 @@
         "Signal.connectWith",
         "Signal.connectMethod",
         "Signal.member",
-        "Class.connect_signal"
+        "Class.signal()"
       ],
-      "explanation": "Typed signal descriptors and ordinary generated signal helpers replace Python callable/type coercion. Explicit Qt connection modes are available.",
+      "explanation": "Signal declarations, the same for native and Bend-declared signals, replace Python callable/type coercion. Explicit Qt connection modes are available.",
       "evidence": [
         "generator/custom_signals.py",
         "generator/templates/custom_signals.bend",
@@ -3091,9 +3091,9 @@
         "Signal.connectWith",
         "Signal.connectMethod",
         "Signal.member",
-        "Class.connect_signal"
+        "Class.signal()"
       ],
-      "explanation": "Typed signal descriptors and ordinary generated signal helpers replace Python callable/type coercion. Explicit Qt connection modes are available.",
+      "explanation": "Signal declarations, the same for native and Bend-declared signals, replace Python callable/type coercion. Explicit Qt connection modes are available.",
       "evidence": [
         "generator/custom_signals.py",
         "generator/templates/custom_signals.bend",
@@ -8584,7 +8584,7 @@
         "QAction.new",
         "QAction.setIcon",
         "QAction.setShortcut",
-        "QAction.connect_triggered",
+        "QAction.triggered()",
         "QWidget.addAction"
       ],
       "explanation": "Construct/configure the QAction, install its ordinary typed handler and add it to the QWidget. The Python callable overload combines those operations.",
@@ -8699,7 +8699,7 @@
         "QAction.new",
         "QAction.setIcon",
         "QAction.setShortcut",
-        "QAction.connect_triggered",
+        "QAction.triggered()",
         "QWidget.addAction"
       ],
       "explanation": "Construct/configure the QAction, install its ordinary typed handler and add it to the QWidget. The Python callable overload combines those operations.",
@@ -8814,7 +8814,7 @@
         "QAction.new",
         "QAction.setIcon",
         "QAction.setShortcut",
-        "QAction.connect_triggered",
+        "QAction.triggered()",
         "QWidget.addAction"
       ],
       "explanation": "Construct/configure the QAction, install its ordinary typed handler and add it to the QWidget. The Python callable overload combines those operations.",
@@ -8929,7 +8929,7 @@
         "QAction.new",
         "QAction.setIcon",
         "QAction.setShortcut",
-        "QAction.connect_triggered",
+        "QAction.triggered()",
         "QWidget.addAction"
       ],
       "explanation": "Construct/configure the QAction, install its ordinary typed handler and add it to the QWidget. The Python callable overload combines those operations.",
@@ -11620,7 +11620,7 @@
         "QAction.new",
         "QAction.setIcon",
         "QAction.setShortcut",
-        "QAction.connect_triggered",
+        "QAction.triggered()",
         "QMenu.addAction__QAction"
       ],
       "explanation": "Construct/configure/connect the action, then add it to the menu.",
@@ -11639,7 +11639,7 @@
         "QAction.new",
         "QAction.setIcon",
         "QAction.setShortcut",
-        "QAction.connect_triggered",
+        "QAction.triggered()",
         "QMenu.addAction__QAction"
       ],
       "explanation": "Construct/configure/connect the action, then add it to the menu.",
@@ -11686,7 +11686,7 @@
       "status": "composition",
       "equivalents": [
         "QMessageBox.open",
-        "QMessageBox.connect_finished"
+        "QMessageBox.finished()"
       ],
       "explanation": "Connect the ordinary finished signal and open the native dialog; the Python overload combines these steps.",
       "evidence": [
@@ -12578,7 +12578,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12596,7 +12596,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12614,7 +12614,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12632,7 +12632,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12650,7 +12650,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12668,7 +12668,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12686,7 +12686,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12704,7 +12704,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12722,7 +12722,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12740,7 +12740,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12758,7 +12758,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12776,7 +12776,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12794,7 +12794,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12812,7 +12812,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12830,7 +12830,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12848,7 +12848,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12866,7 +12866,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12884,7 +12884,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12902,7 +12902,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12920,7 +12920,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12938,7 +12938,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12956,7 +12956,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -12974,7 +12974,7 @@
       "status": "adapter",
       "equivalents": [
         "QRestAccessManager.getWithHandler/postWithHandler/putWithHandler/patchWithHandler/deleteResourceWithHandler/headWithHandler/sendCustomRequestWithHandler",
-        "QNetworkReply.connect_finished",
+        "QNetworkReply.finished()",
         "QRestReply.new__QNetworkReply"
       ],
       "explanation": "Typed native callback overloads deliver QRestReply with context cancellation. Ordinary reply methods and finished-signal composition remain available.",
@@ -13092,7 +13092,7 @@
       "status": "composition",
       "equivalents": [
         "QShortcut.new",
-        "QShortcut.connect_activated"
+        "QShortcut.activated()"
       ],
       "explanation": "Construct the native shortcut with its key/context and install the ordinary typed signal handler.",
       "evidence": [
@@ -13108,7 +13108,7 @@
       "status": "composition",
       "equivalents": [
         "QShortcut.new",
-        "QShortcut.connect_activated"
+        "QShortcut.activated()"
       ],
       "explanation": "Construct the native shortcut with its key/context and install the ordinary typed signal handler.",
       "evidence": [

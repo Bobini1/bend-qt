@@ -74,7 +74,7 @@ def mouse(+event: Qt.QMouseEvent) -> Qt.Action(Unit):
     require(U32.is_eq(Qt.QEventPoint.word(absent), 0), "Missing event point did not return a null view")
 
 def point(position: Qt.QPointF, device: Qt.QPointingDevice) -> Qt.Action(Unit):
-  Qt.QMouseEvent.with(Unit, Qt.QMouseEvent.new__QEvent_Type_QPointF_Qt_MouseButton_Flags_Qt__MouseButton_Flags_Qt__KeyboardModifier_QPointingDevice(Qt.QEvent.Type.MouseMove(), position, Qt.Qt.MouseButton.NoButton(), Qt.Flags_Qt__MouseButton{0}, Qt.Flags_Qt__KeyboardModifier{0}, device), event => mouse(event))
+  Qt.QMouseEvent.with(Unit, Qt.QMouseEvent.new__QEvent_Type_QPointF_Qt_MouseButton_Qt_MouseButton_Qt_KeyboardModifier_QPointingDevice(Qt.QEvent.Type.MouseMove(), position, Qt.Qt.MouseButton.NoButton(), Qt.Qt.MouseButton.NoButton(), Qt.Qt.KeyboardModifier.NoModifier(), device), event => mouse(event))
 
 def pointer_device(device: Qt.QPointingDevice) -> Qt.Action(Unit):
   Qt.QPointF.with(Unit, Qt.QPointF.new(), position => point(position, device))
@@ -96,7 +96,7 @@ def present_string(value: Maybe<&2, String>, expected: String) -> Qt.Action(Unit
 
 def backing_member(+stream: Qt.QTextStream, +buffer: Qt.QStringBuffer) -> Qt.Action(Qt.QStringBuffer):
   do Qt.Action<Qt.QStringBuffer>:
-    Qt.QTextStream.setString(stream, buffer, Qt.Flags_QIODeviceBase__OpenModeFlag{3})
+    Qt.QTextStream.setString(stream, buffer, Qt.QIODeviceBase.OpenModeFlag.ReadWrite())
     denied: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QStringBuffer.destroy(buffer))
     error(Unit, denied, 16)
     return buffer
@@ -109,12 +109,12 @@ def string_backing(+stream: Qt.QTextStream) -> Qt.Action(Unit):
     Qt.QStringBuffer.replace(buffer, "changed")
     second: Maybe<&2, String> <- Qt.QTextStream.string(stream)
     present_string(second, "changed")
-    Qt.QTextStream.setString(stream, Qt.QStringBuffer{0}, Qt.Flags_QIODeviceBase__OpenModeFlag{3})
+    Qt.QTextStream.setString(stream, Qt.QStringBuffer{0}, Qt.QIODeviceBase.OpenModeFlag.ReadWrite())
     stale: Result<&1, &1, U32 & String, String> <- Qt.Action.attempt(String, Qt.QStringBuffer.value(buffer))
     error(String, stale, 116)
 
 def backing_constructor(buffer: Qt.QStringBuffer) -> Qt.Action(Unit):
-  Qt.QTextStream.with(Unit, Qt.QTextStream.new__QStringBuffer_Flags_QIODeviceBase__OpenModeFlag(buffer, Qt.Flags_QIODeviceBase__OpenModeFlag{1}), value => do Qt.Action<Unit>:
+  Qt.QTextStream.with(Unit, Qt.QTextStream.new__QStringBuffer_QIODeviceBase_OpenModeFlag(buffer, Qt.QIODeviceBase.OpenModeFlag.ReadOnly()), value => do Qt.Action<Unit>:
     snapshot: Maybe<&2, String> <- Qt.QTextStream.string(value)
     present_string(snapshot, "constructor"))
 

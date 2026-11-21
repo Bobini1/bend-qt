@@ -47,7 +47,7 @@ def clone_lifetime(+source: Qt.Shared_QQuickItemGrabResult, +clone: Qt.Shared_QQ
     expect_error(Unit, forbidden, 1)
     adoption: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QQuickItemGrabResult.setParent(second, Qt.QObject{0}))
     expect_error(Unit, adoption, 1)
-    Qt.Connection.with(Unit, Qt.QQuickItemGrabResult.connect_ready(~U32, ~finished, second, 5), connection => ready(second, connection))
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QQuickItemGrabResult.ready(), ~U32, ~finished, second, 5), connection => ready(second, connection))
     return second
 
 def holder(+value: Qt.Shared_QQuickItemGrabResult) -> Qt.Action(Unit):

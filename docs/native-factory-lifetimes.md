@@ -42,8 +42,8 @@ painter views belong to the current render callback.
 generated deleter. An unknown private Qt renderer remains Qt-owned.
 
 `QtCoreHelper.QIOPipe` provides the pinned PySide duplex pipe helper as native
-Qt objects. Construct a pipe, open it with `Flags_QIODeviceBase__OpenModeFlag`,
-and use `end1()` and `end2()` as ordinary `QIODevice` handles. Native
+Qt objects. Construct a pipe, open it with a `QIODeviceBase.OpenModeFlag` such
+as `ReadWrite()`, and use `end1()` and `end2()` as ordinary `QIODevice` handles. Native
 `readyRead` and `bytesWritten` signals run normal Bend handlers. The pipe owns
 both parentless endpoints; keep the pipe alive while using them. Endpoint
 handles become stale when the pipe is destroyed.

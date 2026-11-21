@@ -124,7 +124,7 @@ static int signal_codec_error = 0;
 static QThread *main_thread = QThread::currentThread();
 static std::vector<std::shared_ptr<void>> signal_codec_copies;
 static bool fail(BqtRequest *, int code, const char *) { signal_codec_error = code; return true; }
-struct NativePointerCapture { const void *pointer; uint16_t type; bool native_frame; };
+struct NativePointerCapture { const void *pointer; uint16_t type; bool native_frame; bool read_only = false; };
 struct NativeMetadataCapture { const QMetaObject *pointer; };
 static NativePointerCapture native_pointer_capture(const void *pointer, uint16_t type, bool native_frame) { return {pointer,type,native_frame}; }
 static std::optional<NativeMetadataCapture> native_metadata_capture(const QMetaObject *meta) { return NativeMetadataCapture{meta}; }

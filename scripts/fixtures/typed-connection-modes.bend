@@ -21,7 +21,7 @@ def objects() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +button: Qt.QPushButton <- Qt.QPushButton.new()
     +probe: Qt.QObject <- Qt.QObject.new()
-    +connection: Qt.Connection <- Qt.QPushButton.connect_clickedWith(~Qt.QObject, ~clicked, button, Qt.Qt.ConnectionType.QueuedConnection(), probe)
+    +connection: Qt.Connection <- Qt.Signal.connectWith(~Qt.QPushButton.clicked(), ~Qt.QObject, ~clicked, button, Qt.Qt.ConnectionType.QueuedConnection(), probe)
     Qt.QPushButton.click(button)
     Qt.QPushButton.click(button)
     before: String <- Qt.QObject.objectName(probe)
@@ -31,7 +31,7 @@ def objects() -> Qt.Action(Unit):
     require(String.eq(after, "clicked;clicked;"), "Typed queued handler lost emissions")
     Qt.Connection.disconnect(connection)
     Qt.QObject.setObjectName(probe, "")
-    +single: Qt.Connection <- Qt.QPushButton.connect_clickedWith(~Qt.QObject, ~clicked, button,
+    +single: Qt.Connection <- Qt.Signal.connectWith(~Qt.QPushButton.clicked(), ~Qt.QObject, ~clicked, button,
       Qt.Qt.ConnectionType{U32.or(Qt.Qt.ConnectionType.word(Qt.Qt.ConnectionType.QueuedConnection()), Qt.Qt.ConnectionType.word(Qt.Qt.ConnectionType.SingleShotConnection()))}, probe)
     Qt.QPushButton.click(button)
     Qt.QPushButton.click(button)
@@ -41,10 +41,10 @@ def objects() -> Qt.Action(Unit):
     count: U32 <- Qt.Runtime.liveConnections()
     require(U32.is_eq(count, 0), "Typed single-shot retained its handler")
     refused: Result<&1, &1, U32 & String, Qt.Connection> <- Qt.Action.attempt(Qt.Connection,
-      Qt.QPushButton.connect_clickedWith(~Qt.QObject, ~clicked, button, Qt.Qt.ConnectionType.UniqueConnection(), probe))
+      Qt.Signal.connectWith(~Qt.QPushButton.clicked(), ~Qt.QObject, ~clicked, button, Qt.Qt.ConnectionType.UniqueConnection(), probe))
     expected(refused, 22)
     refused: Result<&1, &1, U32 & String, Qt.Connection> <- Qt.Action.attempt(Qt.Connection,
-      Qt.QPushButton.connect_clickedWith(~Qt.QObject, ~clicked, button, Qt.Qt.ConnectionType{4}, probe))
+      Qt.Signal.connectWith(~Qt.QPushButton.clicked(), ~Qt.QObject, ~clicked, button, Qt.Qt.ConnectionType{4}, probe))
     expected(refused, 22)
 
 def checks() -> Qt.Action(Unit):

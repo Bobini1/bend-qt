@@ -100,7 +100,7 @@ def tree_iterator(+iterator: Qt.QTreeWidgetItemIterator, +tree: Qt.QTreeWidget, 
 def tree_item(+item: Qt.QTreeWidgetItem, +tree: Qt.QTreeWidget) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QTreeWidget.addTopLevelItem(tree, item)
-    Qt.QTreeWidgetItemIterator.with(Unit, Qt.QTreeWidgetItemIterator.new__QTreeWidget_Flags_QTreeWidgetItemIterator__IteratorFlag(tree, Qt.Flags_QTreeWidgetItemIterator__IteratorFlag{0}), iterator => tree_iterator(iterator, tree, item))
+    Qt.QTreeWidgetItemIterator.with(Unit, Qt.QTreeWidgetItemIterator.new__QTreeWidget_QTreeWidgetItemIterator_IteratorFlag(tree, Qt.QTreeWidgetItemIterator.IteratorFlag.All()), iterator => tree_iterator(iterator, tree, item))
 
 def tree(value: Qt.QTreeWidget) -> Qt.Action(Unit):
   Qt.QTreeWidgetItem.with(Unit, Qt.QTreeWidgetItem.new(), item => tree_item(item, value))

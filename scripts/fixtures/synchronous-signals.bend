@@ -11,20 +11,20 @@ def expect_error(-A: Type, result: Result<&1, &1, U32 & String, A>, expected: U3
     case Fail{(code, message)}: require(U32.is_eq(code, expected), "Unexpected error: " ++ message)
     case Done{value}: Qt.Action.fail(Unit, 1, "Expected the handler failure")
 
-def filled(+authenticator: Qt.QAuthenticator) -> Qt.Action(Qt.SignalReply_QAuthenticator):
-  do Qt.Action<Qt.SignalReply_QAuthenticator>:
+def fill(+authenticator: Qt.QAuthenticator) -> Qt.Action(Unit):
+  do Qt.Action<Unit>:
     realm: String <- Qt.QAuthenticator.realm(authenticator)
-    require(String.eq(realm, "Bend native authentication fixture"), "The authenticator input was not copied")
+    require(String.eq(realm, "Bend native authentication fixture"), "The handler did not receive Qt's authenticator")
     Qt.QAuthenticator.setUser(authenticator, "bend-user")
     Qt.QAuthenticator.setPassword(authenticator, "bend-password")
-    return Qt.SignalReply_QAuthenticator{authenticator}
 
-# Qt waits for the new credentials before the signal returns.
-def credentials(state: Unit, reply: Qt.QNetworkReply, authenticator: Qt.QAuthenticator) -> Qt.Action(Qt.SignalReply_QAuthenticator):
-  filled(authenticator)
+# The handler fills in Qt's own authenticator, borrowed for the call, as a
+# PySide slot does. Qt reads it after the signal returns.
+def credentials(state: Unit, reply: Qt.QNetworkReply, authenticator: Qt.QAuthenticator) -> Qt.Action(Unit):
+  fill(authenticator)
 
-def refused(code: U32, reply: Qt.QNetworkReply, authenticator: Qt.QAuthenticator) -> Qt.Action(Qt.SignalReply_QAuthenticator):
-  Qt.Action.fail(Qt.SignalReply_QAuthenticator, code, "Intentional handler failure")
+def refused(code: U32, reply: Qt.QNetworkReply, authenticator: Qt.QAuthenticator) -> Qt.Action(Unit):
+  Qt.Action.fail(Unit, code, "Intentional handler failure")
 
 def emit_signal(+manager: Qt.QNetworkAccessManager) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -43,8 +43,8 @@ def emit_failing(+manager: Qt.QNetworkAccessManager, connection: Qt.Connection) 
 
 def manager_demo(+manager: Qt.QNetworkAccessManager) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    Qt.Connection.with(Unit, Qt.QNetworkAccessManager.connect_authenticationRequired(~Unit, ~credentials, manager, Unit{}), connection => emit_signal(manager))
-    Qt.Connection.with(Unit, Qt.QNetworkAccessManager.connect_authenticationRequired(~U32, ~refused, manager, 44), connection => emit_failing(manager, connection))
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QNetworkAccessManager.authenticationRequired(), ~Unit, ~credentials, manager, Unit{}), connection => emit_signal(manager))
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QNetworkAccessManager.authenticationRequired(), ~U32, ~refused, manager, 44), connection => emit_failing(manager, connection))
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -52,7 +52,7 @@ def checks() -> Qt.Action(Unit):
     objects: U32 <- Qt.Runtime.liveObjects()
     connections: U32 <- Qt.Runtime.liveConnections()
     require(U32.is_eq(objects, 0) && U32.is_eq(connections, 0), "The signal handlers leaked handles")
-    Qt.Action.lift(Unit, IO.print("QT612_SYNCHRONOUS_SIGNALS_OK credentials_before_return=1 copied_input=1 output_committed=1 handler_error=1 other_thread_reply=1 other_thread_error=1 objects=0 connections=0"))
+    Qt.Action.lift(Unit, IO.print("QT612_SYNCHRONOUS_SIGNALS_OK credentials_before_return=1 borrowed_input=1 filled_in_place=1 handler_error=1 other_thread_reply=1 other_thread_error=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
   IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => checks())))

@@ -140,6 +140,34 @@ def reserve(g, public, params, ret, operation, *, has_self=False):
     return found
 
 
+def call(g, public, params, ret, operation, *, has_self=False):
+    """The shared raw effect call for `operation`, with `params` as Bend values.
+
+    For a public def that calls the transport itself instead of through a
+    separate wrapper. Handler parameters need `emit`.
+    """
+    found = reserve(g, public, params, ret, operation, has_self=has_self)
+    native = params[1:] if has_self else params
+    if any(t['raw'] == 'Handler' for _, t in native):
+        raise ValueError('A handler parameter needs its public wrapper: ' + public)
+    values = [str(operation), f'{params[0][1]["bend"]}.word({params[0][0]})' if has_self and params[0][1]['bend'] != 'U32'
+              else params[0][0] if has_self else '0']
+    for name, t in native:
+        values += arguments(name, t)
+    return f'{found["name"]}({", ".join(values)})'
+
+
+def arguments(name, t):
+    """Raw transport values of the Bend value `name`."""
+    # A constant is fixed by the generated def, not passed by its caller.
+    if 'constant' in t: return [str(t['constant'])]
+    if t['raw'] == 'Wire': return [f'{t["codec"]}.encode({name})']
+    if t['raw'] == 'U32 & U32': return [f'{t["bend"]}.lo({name})', f'{t["bend"]}.hi({name})']
+    if t['bend'] in ('U32', 'String'): return [name]
+    if t['bend'] == 'Bool': return [f'bool_word({name})']
+    return [f'{t["bend"]}.word({name})']
+
+
 def emit(g, public, params, ret, operation, *, has_self=False, alias=None, doc=None):
     found = reserve(g, public, params, ret, operation, has_self=has_self)
     native = params[1:] if has_self else params
@@ -150,14 +178,8 @@ def emit(g, public, params, ret, operation, *, has_self=False, alias=None, doc=N
     if handlers:
         values.insert(0, 'S')
     for name, t in native:
-        # A constant is fixed by the generated def, not passed by its caller.
-        if 'constant' in t: values.append(str(t['constant']))
-        elif t['raw'] == 'Wire': values.append(f'{t["codec"]}.encode({name})')
-        elif t['raw'] == 'Handler': values += [f'pair => run(Unit, {t["invoke"]}(~S, ~f, pair))', name]
-        elif t['raw'] == 'U32 & U32': values += [f'{t["bend"]}.lo({name})', f'{t["bend"]}.hi({name})']
-        elif t['bend'] in ('U32', 'String'): values.append(name)
-        elif t['bend'] == 'Bool': values.append(f'bool_word({name})')
-        else: values.append(f'{t["bend"]}.word({name})')
+        if t['raw'] == 'Handler': values += [f'pair => run(Unit, {t["invoke"]}(~S, ~f, pair))', name]
+        else: values += arguments(name, t)
     call = f'{found["name"]}({", ".join(values)})'
     public_params = [f'~S: Data, ~f: {handlers[0]["function"]}'] if handlers else []
     public_params += [('+' if t['raw'] == 'U32 & U32' else '') + n + ': ' + ('S' if t['raw'] == 'Handler' else t['bend'])

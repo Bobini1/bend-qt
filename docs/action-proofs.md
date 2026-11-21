@@ -123,9 +123,11 @@ native dependency graph or Qt destructor behavior into proved properties.
 The [object signal fixture](../examples/qt612/object-signals.bend) exercises
 borrowed identity, nulls, generation reuse, disconnection, scope end, mixed
 object/value arguments, argument cleanup and stale borrowed handles. The
-[native signal probe](../scripts/check-qt612-signal-native.py) compiles an
-emitted connect with the shared runtime and checks null and live payloads,
-emission from another thread, disconnection and sender destruction. These are
+[native signal probe](../scripts/check-qt612-signal-native.py) compiles the
+shared runtime and drives native signal declarations through it: null and live
+payloads, emission from another thread, `Signal.emit`, refused observed
+signals, disconnection, QObject references, a borrowed QAuthenticator and
+sender destruction. These are
 runtime tests; they do not prove that an object remains alive after a handler
 returns.
 

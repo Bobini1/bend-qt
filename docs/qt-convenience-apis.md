@@ -14,8 +14,8 @@ Qt.QPushButton.findAllIn(root, "")
 Qt.QPushButton.findAllMatchingIn(root, pattern)
 ```
 
-The `With` variants take `Qt.Flags_Qt__FindChildOption` as the last argument.
-For example, `QPushButton.findAllInWith(root, "", Qt.Flags_Qt__FindChildOption{0})`
+The `With` variants take a `Qt.Qt.FindChildOption` as the last argument.
+For example, `QPushButton.findAllInWith(root, "", Qt.Qt.FindChildOption.FindDirectChildrenOnly())`
 searches direct children only. The ordinary variants use Qt's recursive default.
 An empty name matches every name. The requested class still filters results.
 `findIn` follows Qt's preference for the nearest matching child; returned handles

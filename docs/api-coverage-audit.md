@@ -28,7 +28,7 @@ These are local audit receipts, not consumer dependencies.
 
 | Feature group | Bend interface or disposition |
 | --- | --- |
-| QObject connections and signal emission | Generated `connect_signal` helpers and descriptor-based `Signal.connect`, connection modes, method connections and `Signal.emit`. |
+| QObject connections and signal emission | One `Signal` declaration per native signal, such as `QSlider.rangeChanged()`, and per Bend-declared signal; `Signal.connect`, connection modes, method connections and `Signal.emit` for both. |
 | Finding children | Typed class `findIn`, `findAllIn` and regular-expression searches. Explicit Qt child-search options have a separate regression fixture. |
 | Translation | Native class `tr` uses that class's static metaobject. `ObjectType.tr` uses the declared runtime schema. |
 | Python callable action and shortcut constructors | Construct the QAction or QShortcut, configure it and connect its ordinary typed signal. |

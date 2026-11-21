@@ -77,7 +77,7 @@ def read_numbers(+stream: Qt.QDataStream) -> Qt.Action(Unit):
 def numbers() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +bytes: Qt.QByteArray <- Qt.QByteArray.new()
-    +writer: Qt.QDataStream <- Qt.QDataStream.new__QByteArray_Flags_QIODeviceBase__OpenModeFlag(bytes, Qt.Flags_QIODeviceBase__OpenModeFlag{2})
+    +writer: Qt.QDataStream <- Qt.QDataStream.new__QByteArray_QIODeviceBase_OpenModeFlag(bytes, Qt.QIODeviceBase.OpenModeFlag.WriteOnly())
     write_numbers(writer)
     Qt.QDataStream.release(writer)
     values: List<&2, U32> <- Qt.QByteArray.toBytes(bytes)
@@ -116,7 +116,7 @@ def read_text(+stream: Qt.QDataStream) -> Qt.Action(Unit):
 def text() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +bytes: Qt.QByteArray <- Qt.QByteArray.new()
-    +writer: Qt.QDataStream <- Qt.QDataStream.new__QByteArray_Flags_QIODeviceBase__OpenModeFlag(bytes, Qt.Flags_QIODeviceBase__OpenModeFlag{2})
+    +writer: Qt.QDataStream <- Qt.QDataStream.new__QByteArray_QIODeviceBase_OpenModeFlag(bytes, Qt.QIODeviceBase.OpenModeFlag.WriteOnly())
     write_text(writer)
     Qt.QDataStream.release(writer)
     +reader: Qt.QDataStream <- Qt.QDataStream.new__QByteArray(bytes)

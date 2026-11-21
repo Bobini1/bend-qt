@@ -6,6 +6,7 @@ from conversions import native as native_type
 import abi_cohorts
 import effect_transport
 import protected_members
+import signals
 from module_partitions import argument_entries
 
 HERE = Path(__file__).resolve().parent
@@ -191,7 +192,7 @@ def prepare(g):
             if flags:
                 cpp = 'QFlags<' + name + '>'
                 t = g.type(dict(source(cpp), flags=True))
-                add(t['bend'] + '.arg', cpp, dict(source(cpp), flags=True))
+                add(t['bend'] + '.flagsArg', cpp, dict(source(cpp), flags=True))
         except ValueError as error:
             g.custom_signal_excluded_types[name] = str(error)
     for name, t in sorted(signature_types.items()):
@@ -199,7 +200,20 @@ def prepare(g):
             enum_name = name[7:-1] if name.startswith('QFlags<') else name
             enum = g.enums.get(enum_name, {})
             if enum.get('public', True) or protected_members.enum_accessible(g, enum_name):
-                add(t['bend'] + '.arg', native_type(t), dict(source(name), flags=True))
+                add(t['bend'] + '.flagsArg', native_type(t), dict(source(name), flags=True))
+    # Native signal declarations name their argument types (signals.py).
+    # Containers are compiled from the conversion inventory below.
+    g.types['ObjectIdentity'] = 'scalar'
+    known = {signals.normalized(cpp) for cpp in used_names}
+    for method in g.methods:
+        for name, t in method.get('signal', {}).get('args', []):
+            if name == signals.IDENTITY or t['kind'] in ('list', 'set', 'map', 'pair', 'optional', 'array'):
+                continue
+            cpp = signals.normalized(native_type(t))
+            if cpp not in known:
+                known.add(cpp)
+                used_names.add(cpp)
+                g.custom_signal_arguments.append((None, cpp, t))
     if 'QVariant' in g.ids:
         variant = source('QVariant')
         text = source('QString')
@@ -292,23 +306,32 @@ def emit(g):
     handler = effect_transport.handler('', '')
     raw = effect_transport.reserve(g, 'Signal.connect', [('self', OBJECT), ('declaration', WIRE),
                                    ('handler', handler)], CONNECTION, connect, has_self=True)
+    # Internal.Signal.* take any QObject, for callers such as ObjectType.emit
+    # that hold a declaration of unknown sender. Signal.* take the sender class.
+    handler_type = 'S -> SignalArguments.Handler(Signal.arguments(signal))'
     g.bend += [
-        'def Signal.connect(~signal: Signal, ~S: Data, ~handler: S -> SignalArguments.Handler(Signal.arguments(signal)), self: QObject, state: S) -> Action(Connection):',
+        f'def Internal.Signal.connect(~signal: Signal, ~S: Data, ~handler: {handler_type}, self: QObject, state: S) -> Action(Connection):',
         '  do Action<Connection>:', '    schema: Wire <- Signal.schema(signal)',
         f'    word: U32 <- {raw["name"]}(S, {connect}, QObject.word(self), schema, pair => run(Unit, Signal.invoke(~signal, ~S, ~handler, pair)), state)',
         '    return Connection{word}', '',
+        f'def Signal.connect(~signal: Signal, ~S: Data, ~handler: {handler_type}, self: Signal.Sender(signal), state: S) -> Action(Connection):',
+        '  Internal.Signal.connect(~signal, ~S, ~handler, QObject{Signal.word(signal, self)}, state)', '',
         'def Signal.emit_values(~signal: Signal, self: QObject, values: List<&2, Wire>) -> Action(Unit):',
         '  do Action<Unit>:', '    schema: Wire <- Signal.schema(signal)',
         '    Signal.emit_raw(self, schema, WireSequence{values})', '',
-        'def Signal.emit(~signal: Signal, self: QObject) -> SignalArguments.Handler(Signal.arguments(signal)):',
-        '  SignalArguments.emit(Signal.arguments(signal), values => Signal.emit_values(~signal, self, values), EncodedArguments.empty(Unit))', '']
+        'def Internal.Signal.emit(~signal: Signal, self: QObject) -> SignalArguments.Handler(Signal.arguments(signal)):',
+        '  SignalArguments.emit(Signal.arguments(signal), values => Signal.emit_values(~signal, self, values), EncodedArguments.empty(Unit))', '',
+        'def Signal.emit(~signal: Signal, self: Signal.Sender(signal)) -> SignalArguments.Handler(Signal.arguments(signal)):',
+        '  Internal.Signal.emit(~signal, QObject{Signal.word(signal, self)})', '']
     raw = effect_transport.reserve(g, 'Signal.connectWith', [('self', OBJECT), ('declaration', WIRE),
                                    ('connectionType', WORD), ('handler', handler)], CONNECTION, connect_typed, has_self=True)
     g.bend += [
-        'def Signal.connectWith(~signal: Signal, ~S: Data, ~handler: S -> SignalArguments.Handler(Signal.arguments(signal)), self: QObject, connectionType: Qt.ConnectionType, state: S) -> Action(Connection):',
+        f'def Internal.Signal.connectWith(~signal: Signal, ~S: Data, ~handler: {handler_type}, self: QObject, connectionType: Qt.ConnectionType, state: S) -> Action(Connection):',
         '  do Action<Connection>:', '    schema: Wire <- Signal.schema(signal)',
         f'    word: U32 <- {raw["name"]}(S, {connect_typed}, QObject.word(self), schema, Qt.ConnectionType.word(connectionType), pair => run(Unit, Signal.invoke(~signal, ~S, ~handler, pair)), state)',
-        '    return Connection{word}', '']
+        '    return Connection{word}', '',
+        f'def Signal.connectWith(~signal: Signal, ~S: Data, ~handler: {handler_type}, self: Signal.Sender(signal), connectionType: Qt.ConnectionType, state: S) -> Action(Connection):',
+        '  Internal.Signal.connectWith(~signal, ~S, ~handler, QObject{Signal.word(signal, self)}, connectionType, state)', '']
     g.emit_effect('Signal.connect_member_raw', [('self', OBJECT), ('declaration', WIRE), ('receiver', OBJECT),
                   ('member', WIRE), ('kind', WORD), ('connectionType', WORD)], CONNECTION, connect_member, has_self=True)
 
@@ -318,11 +341,13 @@ def emit_destinations(g):
         return
     for name, descriptor, schema, kind in [('Method', 'Method', 'Method.schema', 0), ('Signal', 'Signal', 'Signal.schema', 1)]:
         g.bend += [
-            f'def Signal.connect{name}With(~signal: Signal, ~destination: {descriptor}, self: QObject, receiver: QObject, connectionType: Qt.ConnectionType) -> Action(Connection):',
+            f'def Internal.Signal.connect{name}With(~signal: Signal, ~destination: {descriptor}, self: QObject, receiver: QObject, connectionType: Qt.ConnectionType) -> Action(Connection):',
             '  do Action<Connection>:', '    source: Wire <- Signal.schema(signal)',
             f'    target: Wire <- {schema}(destination)',
             f'    Signal.connect_member_raw(self, source, receiver, target, {kind}, Qt.ConnectionType.word(connectionType))', '',
-            f'def Signal.connect{name}(~signal: Signal, ~destination: {descriptor}, self: QObject, receiver: QObject) -> Action(Connection):',
+            f'def Signal.connect{name}With(~signal: Signal, ~destination: {descriptor}, self: Signal.Sender(signal), receiver: QObject, connectionType: Qt.ConnectionType) -> Action(Connection):',
+            f'  Internal.Signal.connect{name}With(~signal, ~destination, QObject{{Signal.word(signal, self)}}, receiver, connectionType)', '',
+            f'def Signal.connect{name}(~signal: Signal, ~destination: {descriptor}, self: Signal.Sender(signal), receiver: QObject) -> Action(Connection):',
             f'  Signal.connect{name}With(~signal, ~destination, self, receiver, Qt.ConnectionType.AutoConnection())', '']
 
 
@@ -336,7 +361,7 @@ def cpp(g):
     def guarded(native, lines):
         return ['#if BQT_HAS_RHI', *lines, '#endif'] if abi_cohorts.required(g, native) else lines
     import metadata_lifetimes
-    guards, owned, temporary = [], [], []
+    guards, owned, temporary, borrowed_classes = [], [], [], set()
     for i, _, native, t in argument_entries(g):
         prefix = f'bqt_native_signal_argument_{i}_'
         current_declarations, current_definitions = [], []
@@ -379,11 +404,17 @@ def cpp(g):
                       f'    return BendSignalApi::{owned_helper}(value, depth);'])
         guard_body = []
         if t['kind'] == 'object' and not g.classes[t['name']]['qobject']:
+            read_only = str(native.startswith('const ')).lower()
             guard_body += [f'auto *pointer = *static_cast<{native} const *>(value.constData());',
-                f'if (pointer) snapshot.native_objects.push_back(native_pointer_capture(pointer, {g.ids[t["name"]]}, native_frame));']
-            temporary += guarded(native, [f'case {g.ids[t["name"]]}:',
-                f'    arguments.borrow_argument(r, static_cast<{native}>(const_cast<void *>(capture.pointer)), {g.ids[t["name"]]}, receiver);',
-                '    break;'])
+                'if (pointer) {', f'    auto capture = native_pointer_capture(pointer, {g.ids[t["name"]]}, native_frame);',
+                f'    capture.read_only = {read_only};', '    snapshot.native_objects.push_back(std::move(capture));', '}']
+            # X* and const X* share the class's case; the capture says which.
+            if t['name'] not in borrowed_classes:
+                borrowed_classes.add(t['name'])
+                temporary += guarded(native, [f'case {g.ids[t["name"]]}:',
+                    f'    if (capture.read_only) arguments.borrow_argument(r, static_cast<const {t["name"]} *>(capture.pointer), {g.ids[t["name"]]}, receiver);',
+                    f'    else arguments.borrow_argument(r, static_cast<{t["name"]} *>(const_cast<void *>(capture.pointer)), {g.ids[t["name"]]}, receiver);',
+                    '    break;'])
         if t.get('name') in metadata_lifetimes.VALUES and t['kind'] == 'value':
             guard_body += [f'snapshot.guard_metadata(static_cast<const {native} *>(value.constData())->enclosingMetaObject());']
         if t.get('children') and any(leaf['kind'] == 'object' or leaf.get('name') == 'QVariant' or
@@ -432,7 +463,7 @@ def cpp(g):
               + (HERE / 'templates/value_types.cpp').read_text() + '\n' + value_types.declarations()
               + qml_list_properties.cpp(g) + (HERE / 'templates/custom_signals.cpp').read_text())
     for key, value in [('META_TYPES', '\n'.join(meta)), ('READ_VALUES', '\n'.join(reads)),
-                       ('WRITE_VALUES', '\n'.join(writes)), ('ASSIGN_VALUES', '\n'.join(assignments)), ('ASSIGNABLE_VALUES', '\n'.join(assignable)), ('TYPE_NAMES', names), ('GUARD_CONTAINERS', '\n'.join(guards)), ('TEMPORARY_POINTERS', '\n'.join(temporary)), ('OWNED_CONTAINER_VALUES', '\n'.join(owned)), ('ARGUMENT_DECLARATIONS', '\n'.join(declarations)), ('ARGUMENT_DEFINITIONS', ''.join(definitions)), ('QOBJECT_ID', str(g.ids['QObject']))]:
+                       ('WRITE_VALUES', '\n'.join(writes)), ('ASSIGN_VALUES', '\n'.join(assignments)), ('ASSIGNABLE_VALUES', '\n'.join(assignable)), ('TYPE_NAMES', names), ('GUARD_CONTAINERS', '\n'.join(guards)), ('TEMPORARY_POINTERS', '\n'.join(temporary)), ('OWNED_CONTAINER_VALUES', '\n'.join(owned)), ('ARGUMENT_DECLARATIONS', '\n'.join(declarations)), ('ARGUMENT_DEFINITIONS', ''.join(definitions)), ('QOBJECT_ID', str(g.ids['QObject'])), ('RESERVED_EMISSIONS', signals.reserved_cpp())]:
         source = source.replace('@' + key + '@', value)
     import runtime_dispatch
     source += '''
@@ -465,5 +496,5 @@ def inventory(g):
                 operations=g.custom_signal_operations,
                 base_class='QObject', limits='Qt native metadata index range and available memory',
                 metadata_lifetime='Immutable cached schemas live until native payload teardown',
-                argument_lifetime='QObject references are borrowed and guarded at emission; native value arguments are scoped copies',
+                argument_lifetime='QObject references are borrowed and guarded at emission; native value arguments are scoped copies, except a value class passed by non-const reference or pointer, which is borrowed for a synchronous call',
                 metadata_abi='Qt 6 moc revision 13; public QMetaObject connection API')

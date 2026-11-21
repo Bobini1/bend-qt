@@ -27,6 +27,7 @@ import retention as retention_module
 import callbacks
 import signals
 import custom_signals
+import enum_operations
 import scope_actions
 import qt_objects
 import generic_variants
@@ -247,8 +248,9 @@ class Generator:
         self.excluded = []
         for name, enum in self.enums.items():
             self.types[ident(name)] = 'scalar' if enum_fits_word(enum) else 'wide'
+        # Enums that PySide registers as flags, and those a QFlags signature names.
+        self.flag_types = {ident(name) for name, enum in self.enums.items() if enum.get('flags')}
         self.methods = []
-        self.signal_kinds = {}
         self.cases = []
         self.bend = []
         self.effects = []
@@ -361,8 +363,12 @@ class Generator:
             enum_name = name[7:-1] if t["flags"] else name
             enum = self.enums.get(enum_name)
             wide = enum and not enum_fits_word(enum)
-            public = "Flags_" + c_ident(name[7:-1]) if t["flags"] else ident(name)
+            # As in PySide, QFlags<E> and E are one Bend type: a value of E
+            # may hold several flags, combined with E.or (see enum_operations).
+            public = ident(enum_name)
             self.types[public] = 'wide' if wide else 'scalar'
+            if t['flags']:
+                self.flag_types.add(public)
             return {"kind": ('flags' if t['flags'] else 'enum') + ('64' if wide else ''), "bend": public,
                     "raw": "U32 & U32" if wide else 'U32', "name": name, "cpp": t["cpp"]}
         mapping = {"bool": ("bool", "Bool"), "int": ("i32", "Int32"),
@@ -562,7 +568,6 @@ class Generator:
             elif getattr(self, 'partition_export_packages', None):
                 methods = [f for f in methods if not f.get('partition_module')
                            or 'PySide6.' + f['partition_module'] in self.partition_export_packages]
-            signal_counts = Counter(f["name"] for f in methods)
             for f in methods:
                 f = protected_members.callable_contract(self, name, f)
                 bindable = False
@@ -594,9 +599,9 @@ class Generator:
                     # that a later release may add, so it keeps names suffixed.
                     bindable = True
                     if f['signal']:
-                        signal = signals.describe(self, f, signal_counts[f['name']] > 1)
-                        self.methods.append({'class': name, 'function': f, 'args': [], 'return': signal['result'],
-                                             'signal': signal, 'signal_args': signal['args'],
+                        signal = signals.describe(self, f)
+                        self.methods.append({'class': name, 'function': f, 'args': [], 'return': signals.SIGNAL,
+                                             'signal': signal, 'signal_args': [t for _, t in signal['args']],
                                              'default_constructor': False})
                         continue
                     args, plan, outputs = self.parameters(f)
@@ -633,8 +638,10 @@ class Generator:
                                              "default_constructor": True})
                 except ValueError as error:
                     self.excluded.append({"class": name, "signature": f["signature"],
-                                          "source_signatures": f["source_signatures"], "reason": str(error)})
-                    self.excluded_identities[(name, native_operators.identity(f))] = str(error)
+                                          "source_signatures": f["source_signatures"], "reason": str(error),
+                                          **({'signal': True} if f['signal'] else {})})
+                    self.excluded_identities[(name, ('signal-descriptor ' if f['signal'] else '')
+                                              + native_operators.identity(f))] = str(error)
                     if bindable:
                         self.unbound_overloads[(name, self.base_name({'function': f}))] += 1
         # Default variants take N explicit arguments and supply the remaining
@@ -683,7 +690,7 @@ class Generator:
             name = 'op_reverse_' + name.removeprefix('op_')
         if name in ('destroy', 'release', 'with', 'word', 'wrap', 'cast'):
             name = 'native_' + name
-        return "new" if f["constructor"] else ("connect_" if f["signal"] else "") + name
+        return "new" if f["constructor"] else name
 
     def argument(self, t, index):
         synchronization = gl_sync.argument(self, t, index)
@@ -822,6 +829,8 @@ class Generator:
             return [f"r->result.word = ({expression}) ? own(r, {copied}, {self.ids[t['name']]}) : 0;", 'r->result.owned_handle = r->result.word;']
         if kind == "object":
             store = 'borrow_const' if t.get('readonly') or t.get('native_const') else 'own' if t.get('owned') else 'borrow'
+            if not self.classes[t['name']]['qobject'] and not self.classes[t['name']].get('native_object'):
+                store = 'borrowed_value'  # Qt's value, lent to a signal handler (signals.borrowed)
             return [f"r->result.word = {store}(r, {expression}, {self.ids[t['name']]});",
                     'r->result.' + ('owned_handle' if store == 'own' else 'borrowed_handle') + ' = r->result.word;']
         if kind == "value":
@@ -1030,9 +1039,7 @@ class Generator:
         lines += converter_cleanup.before_call(self, m)
         lines += moves.before_call(self, m)
         lines += engine_lifetimes.before_native(self, m)
-        if f['signal']:
-            lines += signals.connect_case(self, m)
-        elif f["constructor"]:
+        if f["constructor"]:
             lines += [f"r->result.word = {native_objects.construct_owned(self, name, arguments, function=f)};"]
             lines.append('r->result.owned_handle = r->result.word;')
             lines += moves.after_native(self, m)
@@ -1231,6 +1238,9 @@ class Generator:
             if touch_sequences.public_adapter(self, m):
                 continue
             f = m["function"]
+            if f['signal']:
+                m['operation'] = None  # A declaration; the runtime finds the signal (see signals.py).
+                continue
             key = (m['class'] if f['constructor'] else self.receiver_class(m),
                    native_operators.identity(f), json.dumps(m['args'], sort_keys=True), json.dumps(m['return'], sort_keys=True))
             previous = native_methods.get(key)
@@ -1246,14 +1256,15 @@ class Generator:
             params = [(f"arg{i}", t) for i, t in enumerate(m["args"])]
             if has_self:
                 params.insert(0, ("self", {"bend": ident(m["class"]), "raw": "U32"}))
-            if f['signal']:
-                signals.entry(self, m, operation, doc=overload_names.signature_comment(m))
-                continue
             self.emit_effect(m["bend_name"], params, m["return"], operation, has_self=has_self,
                              alias=previous['bend_name'] if previous else None,
                              doc=overload_names.signature_comment(m))
         url_handlers.emit(self)
         custom_signals.emit(self)
+        # After the Signal template they use (see signals.descriptor).
+        for m in self.methods:
+            if m['function']['signal']:
+                signals.descriptor(self, m, overload_names.signature_comment(m))
         qt_objects.emit(self)
         qml_list_properties.emit(self)
         generic_variants.emit(self)
@@ -1342,6 +1353,11 @@ class Generator:
                 fields = str(number & 0xffffffff) + (f', {(number >> 32) & 0xffffffff}' if wide else '')
                 out += [f"def {ident(name)}.{value['name']}() -> {ident(name)}:",
                         f"  {ident(name)}{{{fields}}}", ""]
+        enums = {ident(name): enum for name, enum in self.enums.items()}
+        for public in sorted(self.flag_types):
+            if public not in self.types: continue
+            values = [v['name'] for v in enums.get(public, {'values': []})['values']]
+            out += enum_operations.lines(public, self.types[public] == 'wide', values)
         return "\n".join(out) + "\n"
 
     def all_bases(self, name):
@@ -1518,14 +1534,14 @@ def coverage_report(generator, api, profile, license_report, runtime_bundle, lif
                 "excluded_classes": generator.excluded_classes,
                 "qt_modules": modules, "generated_enums": sorted(name for name in generator.enums if ident(name) in generator.types),
                 "generated_count": len(generator.methods),
-                "generated_native_method_count": len({m['operation'] for m in generator.methods}),
+                "generated_native_method_count": len({m['operation'] for m in generator.methods if 'signal' not in m}),
                 "representation_adapters": ['F64', 'Int64', 'UInt64', '64-bit enums/flags', 'Qt integer aliases',
                     'QVariant', 'UTF-8 QByteArray', 'binary QByteArray', 'owning QByteArrayView snapshots',
                     'checked QObject downcasts', 'recursive containers', 'multi-argument signals', 'overloaded signals',
                     'mutable signal arguments', 'native default arguments',
                     'mutable references', 'scalar output parameters', 'QObject ownership transfers', 'arithmetic/comparison/assignment operators'],
                 'container_conversions': sorted({t['cpp'] for t in generator.conversions.cpp.values() if t['kind'] in ('list', 'map', 'pair')}),
-                'signal_payloads': signals.inventory(generator),
+                'native_signals': signals.inventory(generator),
                 'custom_signals': custom_signals.inventory(generator),
                 'qt_objects': qt_objects.inventory(generator),
                 'generic_variants': generic_variants.inventory(generator),
@@ -1553,9 +1569,8 @@ def coverage_report(generator, api, profile, license_report, runtime_bundle, lif
                                "return": m["return"]["bend"], "operation": m["operation"],
                                'argument_conversions': [coverage_inventory.conversion_policy(t) for t in m['args']],
                                'return_conversion': coverage_inventory.conversion_policy(m['return']),
-                               **({'signal_handler': dict(arguments=m['signal']['kind']['arguments'],
-                                    reply=m['signal']['kind']['reply']['bend'],
-                                    mutable_arguments=[i for i, _ in m['signal']['outputs']])} if 'signal' in m else {}),
+                               **({'signal': dict(arguments=[t['bend'] for _, t in m['signal']['args']],
+                                                  native_types=[name for name, _ in m['signal']['args']])} if 'signal' in m else {}),
                                'restored_native_arguments': m['function'].get('restored_native_arguments', []),
                                'omitted_native_callback': m['function'].get('omitted_native_callback'),
                                'adaptation': m['function'].get('adaptation'),

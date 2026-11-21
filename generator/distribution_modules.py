@@ -305,7 +305,14 @@ def combined_coverage(reports, parts, bundle, licensing):
                     seen.add(key); rows.append(row)
         result[name] = rows
     result['generated_count'] = len(result['generated'])
-    result['generated_native_method_count'] = len({row['operation'] for row in result['generated']})
+    result['generated_native_method_count'] = len({row['operation'] for row in result['generated'] if 'signal' not in row})
+    excluded = {}
+    for row in result['excluded']:
+        if row.get('signal'):
+            excluded[row['reason']] = excluded.get(row['reason'], 0) + 1
+    result['native_signals'] = dict(reports[0]['native_signals'],
+        declarations=sum('signal' in row for row in result['generated']), excluded=dict(sorted(excluded.items())),
+        borrowed_arguments=sorted({name for report in reports for name in report['native_signals']['borrowed_arguments']}))
     result['qt_modules'] = sorted({module for part in parts for module in part.owned_modules})
     result['qt_licensing'] = licensing
     result['bundled_runtime'] = bundle['manifest'] if bundle else None

@@ -39,9 +39,9 @@ def running(+machine: Qt.QStateMachine, +target: Qt.QObject, +trigger: Qt.QObjec
     progress(probe, "stopped", "State machine did not stop")
 
 def watched(+machine: Qt.QStateMachine, +second: Qt.QState, +target: Qt.QObject, +trigger: Qt.QObject, +probe: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QStateMachine.connect_started(~Qt.QObject, ~machine_started, machine, probe), started =>
-    Qt.Connection.with(Unit, Qt.QState.connect_entered(~Qt.QObject, ~second_entered, second, probe), entered =>
-      Qt.Connection.with(Unit, Qt.QStateMachine.connect_stopped(~Qt.QObject, ~machine_stopped, machine, probe), stopped =>
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QStateMachine.started(), ~Qt.QObject, ~machine_started, machine, probe), started =>
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QState.entered(), ~Qt.QObject, ~second_entered, second, probe), entered =>
+      Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QStateMachine.stopped(), ~Qt.QObject, ~machine_stopped, machine, probe), stopped =>
         running(machine, target, trigger, probe))))
 
 def connected(+machine: Qt.QStateMachine, +second: Qt.QState, +target: Qt.QObject, +trigger: Qt.QObject, transition: Qt.QSignalTransition) -> Qt.Action(Unit):

@@ -51,7 +51,7 @@ def show_window(+window: Qt.QQuickWindow, +probe: Qt.QObject, titles: Qt.Connect
     Qt.QQuickWindow.hide(window)
 
 def watch_title(+window: Qt.QQuickWindow, +probe: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QQuickWindow.connect_windowTitleChanged(~Qt.QObject, ~title_changed, window, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QQuickWindow.windowTitleChanged(), ~Qt.QObject, ~title_changed, window, probe),
     titles => show_window(window, probe, titles))
 
 def root_demo(+root: Qt.QObject) -> Qt.Action(Unit):

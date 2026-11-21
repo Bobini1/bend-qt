@@ -14,7 +14,7 @@ def rejected(-A: Type, code: U32, result: Result<&1, &1, U32 & String, A>) -> Qt
 def snapshot(value: Qt.QStringConverterBase.State.CleanupSnapshot) -> Qt.Action(Unit):
   match value:
     case Qt.QStringConverterBase.State.CleanupSnapshot{flags, internal, +remaining, +invalid}:
-      require(U32.is_eq(Qt.Flags_QStringConverterBase__Flag.word(flags), 0) && U32.is_eq(Qt.Int64.lo(remaining), 8) && U32.is_eq(Qt.Int64.hi(remaining), 0) && U32.is_eq(Qt.Int64.lo(invalid), 9) && U32.is_eq(Qt.Int64.hi(invalid), 0), "Cleanup snapshot changed native fields")
+      require(U32.is_eq(Qt.QStringConverterBase.Flag.word(flags), 0) && U32.is_eq(Qt.Int64.lo(remaining), 8) && U32.is_eq(Qt.Int64.hi(remaining), 0) && U32.is_eq(Qt.Int64.lo(invalid), 9) && U32.is_eq(Qt.Int64.hi(invalid), 0), "Cleanup snapshot changed native fields")
 
 # Qt runs the handler when it clears the state, with a copy of the state's
 # fields. The state itself is already cleared.
@@ -43,7 +43,7 @@ def armed(+state: Qt.QStringConverterBase.State, bad: Bool) -> Qt.Action(Unit):
 def clear_once(+state: Qt.QStringConverterBase.State) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     armed(state, False{})
-    blocked: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QStringConverterBase.State.Fields.set_flags(state, Qt.Flags_QStringConverterBase__Flag{16}))
+    blocked: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QStringConverterBase.State.Fields.set_flags(state, Qt.QStringConverterBase.Flag.UsesIcu()))
     rejected(Unit, 22, blocked)
     Qt.QStringConverterBase.State.clear(state)
     installed: Bool <- Qt.QStringConverterBase.State.Cleanup.installed(state)
@@ -106,10 +106,10 @@ def opaque_storage(+state: Qt.QStringConverterBase.State) -> Qt.Action(Unit):
     occupied: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, install(state, False{}))
     rejected(Unit, 95, occupied)
     Qt.QStringConverterBase.State.clear(state)
-    Qt.QStringConverterBase.State.Fields.set_flags(state, Qt.Flags_QStringConverterBase__Flag{16})
+    Qt.QStringConverterBase.State.Fields.set_flags(state, Qt.QStringConverterBase.Flag.UsesIcu())
     icu: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, install(state, False{}))
     rejected(Unit, 95, icu)
-    Qt.QStringConverterBase.State.Fields.set_flags(state, Qt.Flags_QStringConverterBase__Flag{0})
+    Qt.QStringConverterBase.State.Fields.set_flags(state, Qt.QStringConverterBase.Flag.Default())
 
 def failed_handler(+state: Qt.QStringConverterBase.State) -> Qt.Action(Unit):
   do Qt.Action<Unit>:

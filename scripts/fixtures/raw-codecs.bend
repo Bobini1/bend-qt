@@ -49,7 +49,7 @@ def pairs(+query: Qt.QUrlQuery) -> Qt.Action(Unit):
     raw_pairs(query, Qt.WireSequence{Qt.WireSequence{Qt.WireText{"key"} <> Qt.WireText{"saved"} <> Nil{}} <> Nil{}})
     malformed: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, raw_pairs(query, Qt.WireSequence{Qt.WireSequence{Qt.WireText{"a"} <> Qt.WireText{"b"} <> Qt.WireText{"c"} <> Nil{}} <> Nil{}}))
     expect_error(Unit, malformed)
-    result: List<&2, Qt.PairValue<String, String>> <- Qt.QUrlQuery.queryItems__Flags_QUrl__ComponentFormattingOption(query, Qt.Flags_QUrl__ComponentFormattingOption{0})
+    result: List<&2, Qt.PairValue<String, String>> <- Qt.QUrlQuery.queryItems__QUrl_ComponentFormattingOption(query, Qt.QUrl.ComponentFormattingOption.PrettyDecoded())
     pairs_result(result)
 
 def demo() -> Qt.Action(Unit):

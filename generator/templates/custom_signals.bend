@@ -225,27 +225,65 @@ def SignalArguments.emit(arguments: SignalArguments, sink: List<&2, Wire> -> Act
     case MoreSignalArguments{argument, rest}:
       value => SignalArguments.emit(rest, sink, EncodedArguments.add(Unit, argument, value, values))
 
+# QObject.destroyed() passes the identity of the destroyed object; its handle
+# is already invalid. The runtime closes such a connection after its delivery.
+def Internal.ObjectIdentity.decode(wire: Wire) -> Maybe<&2, ObjectIdentity>:
+  match wire:
+    case WireScalar{word, 0}: Some{ObjectIdentity{word}}
+    case _: None{}
+
+def ObjectIdentity.arg() -> TypeDescriptor:
+  TypeDescriptor{ObjectIdentity, "BendObjectIdentity", value => WireScalar{ObjectIdentity.word(value), 0},
+    wire => Internal.ObjectIdentity.decode(wire), Action.pure(Wire, WireScalar{0, 0})}
+
+# The class of the objects that declare a signal: QObject for a declaration
+# made with Signal.define, the declaring class for a native Qt signal such as
+# QSlider.rangeChanged(). Signal.connect and Signal.emit take a value of it.
+type SignalSender is Type:
+  SignalSender{Value: Data, word: Value -> U32}
+
+def SignalSender.Value(sender: SignalSender) -> Data:
+  match sender:
+    case SignalSender{Value, word}: Value
+
+def SignalSender.word(sender: SignalSender, value: SignalSender.Value(sender)) -> U32:
+  match sender:
+    case SignalSender{Value, word}: word(value)
+
 type Signal is Type:
-  Signal{name: String, arguments: SignalArguments, names: List<&1, String>, flags: U32, major: U32, minor: U32}
+  Signal{name: String, arguments: SignalArguments, names: List<&1, String>, flags: U32, major: U32, minor: U32, sender: SignalSender}
 
 def Signal.define(name: String, arguments: List<&1, TypeDescriptor>) -> Signal:
-  Signal{name, SignalArguments.fromList(arguments), Nil{}, 0, 0, 0}
+  Signal{name, SignalArguments.fromList(arguments), Nil{}, 0, 0, 0, SignalSender{QObject, value => QObject.word(value)}}
+
+# A native Qt signal of the sender's class, found by name and argument types.
+# Flag 2 marks arguments Qt lends for the call: delivery is synchronous.
+def Internal.Signal.native(name: String, arguments: List<&1, TypeDescriptor>, flags: U32, sender: SignalSender) -> Signal:
+  Signal{name, SignalArguments.fromList(arguments), Nil{}, flags, 0, 0, sender}
 
 def Signal.withArgumentNames(signal: Signal, names: List<&1, String>) -> Signal:
   match signal:
-    case Signal{name, arguments, previous, flags, major, minor}: Signal{name, arguments, names, flags, major, minor}
+    case Signal{name, arguments, previous, flags, major, minor, sender}: Signal{name, arguments, names, flags, major, minor, sender}
 
 def Signal.withRevision(signal: Signal, minor: U32) -> Signal:
   match signal:
-    case Signal{name, arguments, names, flags, major, previous}: Signal{name, arguments, names, U32.or(flags, 1), 65535, minor}
+    case Signal{name, arguments, names, flags, major, previous, sender}: Signal{name, arguments, names, U32.or(flags, 1), 65535, minor, sender}
 
 def Signal.withVersionRevision(signal: Signal, major: U32, minor: U32) -> Signal:
   match signal:
-    case Signal{name, arguments, names, flags, previousMajor, previousMinor}: Signal{name, arguments, names, U32.or(flags, 1), Internal.Revision.major(major), minor}
+    case Signal{name, arguments, names, flags, previousMajor, previousMinor, sender}: Signal{name, arguments, names, U32.or(flags, 1), Internal.Revision.major(major), minor, sender}
 
 def Signal.arguments(signal: Signal) -> SignalArguments:
   match signal:
-    case Signal{name, arguments, names, flags, major, minor}: arguments
+    case Signal{name, arguments, names, flags, major, minor, sender}: arguments
+
+def Signal.Sender(signal: Signal) -> Data:
+  match signal:
+    case Signal{name, arguments, names, flags, major, minor, sender}: SignalSender.Value(sender)
+
+def Signal.word(signal: Signal, value: Signal.Sender(signal)) -> U32:
+  match signal:
+    case Signal{name, arguments, names, flags, major, minor, sender}: SignalSender.word(sender, value)
 
 def Signal.deliver(~signal: Signal, ~S: Data, ~handler: S -> SignalArguments.Handler(Signal.arguments(signal)), state: S, values: List<&2, Wire>) -> Action(Unit):
   SignalArguments.run(Signal.arguments(signal), handler(state), SignalArguments.decode(Signal.arguments(signal), values))
@@ -266,7 +304,7 @@ def Signal.argumentNamesWire(names: List<&1, String>) -> List<&2, Wire>:
 
 def Signal.schema(signal: Signal) -> Action(Wire):
   match signal:
-    case Signal{name, arguments, names, flags, major, minor}:
+    case Signal{name, arguments, names, flags, major, minor, sender}:
       do Action<Wire>:
         types: List<&2, Wire> <- SignalArguments.names(arguments)
         return WireSequence{[WireText{name}, WireSequence{types},

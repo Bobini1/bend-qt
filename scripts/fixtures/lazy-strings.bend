@@ -97,7 +97,7 @@ def acquire_encoder(value: Qt.QStringEncoder) -> Qt.Action(Qt.QStringEncoder__De
   Qt.QStringEncoder.encode(value, "A")
 
 def encoder() -> Qt.Action(Unit):
-  Qt.QStringEncoder__DecodedData_QStringView.with(Unit, Qt.QStringEncoder.with(Qt.QStringEncoder__DecodedData_QStringView, Qt.QStringEncoder.new__QStringConverter_Encoding_Flags_QStringConverterBase__Flag(Qt.QStringConverter.Encoding.Utf8(), Qt.Flags_QStringConverterBase__Flag{4}), acquire_encoder), value => encoded(value))
+  Qt.QStringEncoder__DecodedData_QStringView.with(Unit, Qt.QStringEncoder.with(Qt.QStringEncoder__DecodedData_QStringView, Qt.QStringEncoder.new__QStringConverter_Encoding_QStringConverterBase_Flag(Qt.QStringConverter.Encoding.Utf8(), Qt.QStringConverterBase.Flag.WriteBom()), acquire_encoder), value => encoded(value))
 
 def empty(+value: Qt.QStringDecoder__EncodedData_QByteArrayView) -> Qt.Action(Unit):
   do Qt.Action<Unit>:

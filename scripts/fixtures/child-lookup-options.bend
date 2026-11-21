@@ -25,12 +25,12 @@ def tree() -> Qt.Action(Unit):
     first: Maybe<&2, Qt.QTimer> <- Qt.QTimer.findIn(root, "match")
     same(first, direct)
     recursive: List<&2, Qt.QTimer> <- Qt.QTimer.findAllIn(root, "")
-    shallow: List<&2, Qt.QTimer> <- Qt.QTimer.findAllInWith(root, "", Qt.Flags_Qt__FindChildOption{0})
+    shallow: List<&2, Qt.QTimer> <- Qt.QTimer.findAllInWith(root, "", Qt.Qt.FindChildOption.FindDirectChildrenOnly())
     require(U32.is_eq(count(recursive), 2) && U32.is_eq(count(shallow), 1), "Child lookup ignored the recursion option")
     +pattern: Qt.QRegularExpression <- Qt.QRegularExpression.new__String("^match$")
-    matching: List<&2, Qt.QTimer> <- Qt.QTimer.findAllMatchingInWith(root, pattern, Qt.Flags_Qt__FindChildOption{0})
+    matching: List<&2, Qt.QTimer> <- Qt.QTimer.findAllMatchingInWith(root, pattern, Qt.Qt.FindChildOption.FindDirectChildrenOnly())
     require(U32.is_eq(count(matching), 1), "Pattern lookup ignored direct children only")
-    named: Maybe<&2, Qt.QTimer> <- Qt.QTimer.findInWith(root, "match", Qt.Flags_Qt__FindChildOption{0})
+    named: Maybe<&2, Qt.QTimer> <- Qt.QTimer.findInWith(root, "match", Qt.Qt.FindChildOption.FindDirectChildrenOnly())
     same(named, direct)
 
 def checks() -> Qt.Action(Unit):

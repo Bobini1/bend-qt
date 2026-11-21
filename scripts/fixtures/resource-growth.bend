@@ -28,7 +28,7 @@ def grow_on_destruction(probe: Qt.QObject, identity: Qt.ObjectIdentity) -> Qt.Ac
 
 def destruction_body(probe: Qt.QObject, source: Qt.QObject) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    connection: Qt.Connection <- Qt.QObject.connect_destroyed(~Qt.QObject, ~grow_on_destruction, source, probe)
+    connection: Qt.Connection <- Qt.Signal.connect(~Qt.QObject.destroyed(), ~Qt.QObject, ~grow_on_destruction, source, probe)
     return Unit{}
 
 def noop(state: Unit, text: String) -> Qt.Action(Unit):
@@ -39,7 +39,7 @@ def connections(remaining: Nat, +sender: Qt.QObject) -> Qt.Action(Unit):
     case 0n: Qt.Action.pure(Unit, Unit{})
     case 1n+rest:
       do Qt.Action<Unit>:
-        connection: Qt.Connection <- Qt.QObject.connect_objectNameChanged(~Unit, ~noop, sender, Unit{})
+        connection: Qt.Connection <- Qt.Signal.connect(~Qt.QObject.objectNameChanged(), ~Unit, ~noop, sender, Unit{})
         connections(rest, sender)
 
 def resize_signal() -> Qt.Signal:

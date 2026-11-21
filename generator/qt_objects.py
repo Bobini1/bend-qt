@@ -59,17 +59,15 @@ def emit(g):
             g.next_id += 1
             public = constructor['name']
             inputs = [(f'arg{i}', t) for i, t in enumerate(constructor['inputs'])]
-            internal = 'Internal.ObjectType.new_' + str(operation)
             from callbacks import ident
             body = f'return RuntimeQtObjects::create_with(r, {constructor["operation"]}, {g.ids[c["name"]]}, &BqtProxy_{ident(c["name"])}::bqt_create_{constructor["operation"]});'
             g.cases.append(f'case {operation}: {{\n    ' + abi_cohorts.operation(g, operation, body) + '\n}')
-            g.emit_effect(internal, [('schema', WIRE), *inputs], WORD, operation)
+            create = effect_transport.call(g, public, [('declaration', WIRE), *inputs], WORD, operation)
             parameters = ', '.join(('+' if t['raw'] == 'U32 & U32' else '') + name + ': ' + t['bend'] for name, t in inputs)
-            arguments = ', '.join(name for name, _ in inputs)
             g.bend += [f'def {public}(~schema: ObjectType' + (', ' + parameters if parameters else '') + ') -> Action(ObjectType.Instance(schema)):',
                        '  do Action<ObjectType.Instance(schema)>:',
                        '    declaration: Wire <- ObjectType.schema(schema)',
-                       f'    word: U32 <- {internal}(declaration' + (', ' + arguments if arguments else '') + ')',
+                       f'    word: U32 <- {create}',
                        '    return QtInstance{word}', '']
             g.qt_object_constructors.append(dict(name=public, native_base=c['name'], operation=operation,
                                                   constructor=constructor['operation']))

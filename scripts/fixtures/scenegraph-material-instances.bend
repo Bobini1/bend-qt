@@ -41,7 +41,7 @@ def write_tint(stream: Qt.QDataStream, value: Tint) -> Qt.Action(Unit):
 
 def uniforms(host: Qt.QObject, +state: Qt.QSGMaterialShader.RenderState, material: Qt.QSGMaterial, +bytes: Qt.QByteArray) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    +stream: Qt.QDataStream <- Qt.QDataStream.new__QByteArray_Flags_QIODeviceBase__OpenModeFlag(bytes, Qt.Flags_QIODeviceBase__OpenModeFlag{2})
+    +stream: Qt.QDataStream <- Qt.QDataStream.new__QByteArray_QIODeviceBase_OpenModeFlag(bytes, Qt.QIODeviceBase.OpenModeFlag.WriteOnly())
     Qt.QDataStream.setByteOrder(stream, Qt.QDataStream.ByteOrder.LittleEndian())
     Qt.QDataStream.setFloatingPointPrecision(stream, Qt.QDataStream.FloatingPointPrecision.SinglePrecision())
     +transform: Qt.QMatrix4x4 <- Qt.QSGMaterialShader.RenderState.combinedMatrix(state)
@@ -96,7 +96,7 @@ def make_shader(+host: Qt.QObject) -> Qt.Action(Qt.QSGMaterialShader):
     +prefix: String <- Qt.CallbackProbe.materialShaderPrefix()
     Qt.QSGMaterialShader.configureShaderFile(value, Qt.QSGMaterialShader.Stage.VertexStage(), prefix ++ ".vert.qsb")
     Qt.QSGMaterialShader.configureShaderFile(value, Qt.QSGMaterialShader.Stage.FragmentStage(), prefix ++ ".frag.qsb")
-    Qt.QSGMaterialShader.setFlag__Flags_QSGMaterialShader__Flag(value, Qt.Flags_QSGMaterialShader__Flag{Qt.QSGMaterialShader.Flag.word(Qt.QSGMaterialShader.Flag.UpdatesGraphicsPipelineState())})
+    Qt.QSGMaterialShader.setFlag__QSGMaterialShader_Flag(value, Qt.QSGMaterialShader.Flag.UpdatesGraphicsPipelineState())
     Qt.QSGMaterialShader.Virtual.updateUniformData.handle(~Qt.QObject, ~update_uniforms, value, host)
     Qt.QSGMaterialShader.Virtual.updateGraphicsPipelineState.handle(~Unit, ~pipeline, value, Unit{})
     return value
@@ -114,7 +114,7 @@ def node(+host: Qt.QObject, tint: Tint, +rectangle: Qt.QRectF, +attributes: Qt.Q
     +material: Qt.QSGMaterial <- Qt.QSGMaterial.newOverride()
     +boxed: Qt.QVariant <- Qt.QVariant.fromData(~Tint, tint)
     stored: Bool <- Qt.QObject.setProperty(host, key(material), boxed)
-    Qt.QSGMaterial.setFlag__Flags_QSGMaterial__Flag(material, Qt.Flags_QSGMaterial__Flag{Qt.QSGMaterial.Flag.word(Qt.QSGMaterial.Flag.Blending())})
+    Qt.QSGMaterial.setFlag__QSGMaterial_Flag(material, Qt.QSGMaterial.Flag.Blending())
     Qt.QSGMaterial.Virtual.type.handle(~Unit, ~identity, material, Unit{})
     Qt.QSGMaterial.Virtual.createShader.handle(~Qt.QObject, ~shader, material, host)
     +value: Qt.QSGGeometryNode <- Qt.QSGGeometryNode.new()

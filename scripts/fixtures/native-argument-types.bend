@@ -18,11 +18,11 @@ def expected(-A: Type, result: Result<&1, &1, U32 & String, A>, code: U32) -> Qt
 
 def numbers() -> Qt.Signal:
   Qt.Signal.define("numbers", [Qt.int8(), Qt.u8(), Qt.int16(), Qt.u16(), Qt.int64(), Qt.u64(),
-    Qt.f32(), Qt.f64(), Qt.Qt.DayOfWeek.arg(), Qt.Flags_Qt__AlignmentFlag.arg(), Qt.QCborTag.arg(), Qt.qchar(), Qt.nullptr()])
+    Qt.f32(), Qt.f64(), Qt.Qt.DayOfWeek.arg(), Qt.Qt.AlignmentFlag.flagsArg(), Qt.QCborTag.arg(), Qt.qchar(), Qt.nullptr()])
 
 def received(probe: Qt.QObject, signed8: Qt.Int32, unsigned8: U32, signed16: Qt.Int32, unsigned16: U32,
   signed64: Qt.Int64, unsigned64: Qt.UInt64, single: Qt.F64, real: Qt.F64,
-  day: Qt.Qt.DayOfWeek, alignment: Qt.Flags_Qt__AlignmentFlag, tag: Qt.QCborTag, character: U32, empty: Unit) -> Qt.Action(Unit):
+  day: Qt.Qt.DayOfWeek, alignment: Qt.Qt.AlignmentFlag, tag: Qt.QCborTag, character: U32, empty: Unit) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +signed: Qt.Int64 = signed64
     +unsigned: Qt.UInt64 = unsigned64
@@ -35,7 +35,7 @@ def received(probe: Qt.QObject, signed8: Qt.Int32, unsigned8: U32, signed16: Qt.
     require(U32.is_eq(Qt.UInt64.lo(unsigned), 4294967295) && U32.is_eq(Qt.UInt64.hi(unsigned), 4294967295), "Unsigned 64-bit signal lost bits")
     require(U32.is_eq(Qt.F64.lo(rounded), 0) && U32.is_eq(Qt.F64.hi(rounded), 1072955392), "Float signal changed")
     require(U32.is_eq(Qt.F64.lo(exact), 1) && U32.is_eq(Qt.F64.hi(exact), 1072693248), "Double signal lost precision")
-    require(U32.is_eq(Qt.Qt.DayOfWeek.word(day), 1) && U32.is_eq(Qt.Flags_Qt__AlignmentFlag.word(alignment), 3), "Enum or flags native signal changed")
+    require(U32.is_eq(Qt.Qt.DayOfWeek.word(day), 1) && U32.is_eq(Qt.Qt.AlignmentFlag.word(alignment), 3), "Enum or flags native signal changed")
     require(U32.is_eq(Qt.QCborTag.lo(wide_enum), 7) && U32.is_eq(Qt.QCborTag.hi(wide_enum), 1), "64-bit native enum signal was truncated")
     require(U32.is_eq(character, 955), "Native QChar signal changed its UTF-16 code unit")
     Qt.QObject.setObjectName(probe, "numbers")
@@ -43,7 +43,7 @@ def received(probe: Qt.QObject, signed8: Qt.Int32, unsigned8: U32, signed16: Qt.
 def emit_payload(object: Qt.QObject, character: U32) -> Qt.Action(Unit):
   Qt.Signal.emit(~numbers(), object, Qt.Int32.neg(128), 255, Qt.Int32.neg(32768), 65535,
     Qt.Int64{1, 2147483648}, Qt.UInt64{4294967295, 4294967295}, Qt.F64{0, 1072955392},
-    Qt.F64{1, 1072693248}, Qt.Qt.DayOfWeek.Monday(), Qt.Flags_Qt__AlignmentFlag{3}, Qt.QCborTag{7, 1}, character, Unit{})
+    Qt.F64{1, 1072693248}, Qt.Qt.DayOfWeek.Monday(), (Qt.Qt.AlignmentFlag.AlignLeft() .|. Qt.Qt.AlignmentFlag.AlignRight() : Qt.Qt.AlignmentFlag), Qt.QCborTag{7, 1}, character, Unit{})
 
 def emit_numbers(+object: Qt.QObject, +probe: Qt.QObject) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -70,7 +70,7 @@ def day() -> Qt.Property:
   Qt.Property.define("day", Qt.Qt.DayOfWeek.arg())
 
 def alignment() -> Qt.Property:
-  Qt.Property.define("alignment", Qt.Flags_Qt__AlignmentFlag.arg())
+  Qt.Property.define("alignment", Qt.Qt.AlignmentFlag.flagsArg())
 
 def items() -> Qt.Property:
   Qt.Property.define("items", Qt.list(~Qt.int32()))
@@ -162,9 +162,9 @@ def property_cases(+self: Qt.QObject) -> Qt.Action(Unit):
     Qt.Property.set(~day(), self, Qt.Qt.DayOfWeek.Monday())
     value: Qt.Qt.DayOfWeek <- Qt.Property.get(~day(), self)
     require(U32.is_eq(Qt.Qt.DayOfWeek.word(value), 1), "Native enum property changed")
-    Qt.Property.set(~alignment(), self, Qt.Flags_Qt__AlignmentFlag{3})
-    flags: Qt.Flags_Qt__AlignmentFlag <- Qt.Property.get(~alignment(), self)
-    require(U32.is_eq(Qt.Flags_Qt__AlignmentFlag.word(flags), 3), "Native QFlags property changed")
+    Qt.Property.set(~alignment(), self, (Qt.Qt.AlignmentFlag.AlignLeft() .|. Qt.Qt.AlignmentFlag.AlignRight() : Qt.Qt.AlignmentFlag))
+    flags: Qt.Qt.AlignmentFlag <- Qt.Property.get(~alignment(), self)
+    require(U32.is_eq(Qt.Qt.AlignmentFlag.word(flags), 3), "Native QFlags property changed")
     Qt.Property.set(~items(), self, [Qt.Int32{1}, Qt.Int32{2}])
     values: List<&2, Qt.Int32> <- Qt.Property.get(~items(), self)
     inspect_items(values)
@@ -188,7 +188,7 @@ def on_clicked(probe: Qt.QObject, checked: Bool) -> Qt.Action(Unit):
 
 def native_emission(+button: Qt.QPushButton, +probe: Qt.QObject) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    connection: Qt.Connection <- Qt.QPushButton.connect_clicked(~Qt.QObject, ~on_clicked, button, probe)
+    connection: Qt.Connection <- Qt.Signal.connect(~Qt.QPushButton.clicked(), ~Qt.QObject, ~on_clicked, button, probe)
     Qt.Signal.emit(~clicked(), Qt.QPushButton.as_QObject(button), True{})
     text: String <- Qt.QObject.objectName(probe)
     require(String.eq(text, "native signal"), "Emitting a native QObject signal failed")

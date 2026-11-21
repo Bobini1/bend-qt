@@ -1868,11 +1868,16 @@ def main():
         original = g.custom_signal_arguments
         keep = {public for public, _, _ in original if public and ('.' not in public or public in required)}
         leaves = {kind['bend'] for public, _, kind in original if public in keep}
+        # The argument types of the native signal declarations this fixture keeps.
+        import signals
+        from conversions import native as native_type
+        declared = {signals.normalized(native_type(t)) for m in g.methods if 'signal' in m
+                    for name, t in m['signal']['args'] if name != signals.IDENTITY}
         def primitive_container(kind):
             children = kind.get('children', [])
             return bool(children) and all(child['bend'] in leaves or primitive_container(child) for child in children)
         g.custom_signal_arguments = [(public, cpp, kind) for public, cpp, kind in original
-            if public in keep or (public is None and primitive_container(kind))]
+            if public in keep or (public is None and (primitive_container(kind) or signals.normalized(cpp) in declared))]
         included = {cpp for _, cpp, _ in g.custom_signal_arguments}
         for _, cpp, _ in original:
             if cpp not in included:
@@ -1891,8 +1896,6 @@ def main():
     named = set(re.findall(r'Qt\.([A-Za-z0-9_.]+)', sources))
     import convenience_apis
     named.update(convenience_apis.dependencies(generator, named))
-    named.update(re.sub(r'(\.connect_[A-Za-z0-9_]+?)With(?=__|$)', r'\1', name)
-                 for name in tuple(named) if '.connect_' in name)
     complete_packages = {'PySide6.' + module for module in args.complete_module}
     complete_classes = {c['name'] for c in api['classes'] if c['package'] in complete_packages}
     generator.methods = [m for m in generator.methods if m['bend_name'] in named or m['class'] in complete_classes or

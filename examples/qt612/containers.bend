@@ -37,7 +37,7 @@ def pairs_result(items: List<&2, Qt.PairValue<String, String>>) -> Qt.Action(Uni
 def pairs(+query: Qt.QUrlQuery) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QUrlQuery.setQueryItems(query, Qt.PairValue{"key", "🎵"} <> Qt.PairValue{"key", "second"} <> Nil{})
-    result: List<&2, Qt.PairValue<String, String>> <- Qt.QUrlQuery.queryItems__Flags_QUrl__ComponentFormattingOption(query, Qt.Flags_QUrl__ComponentFormattingOption{0})
+    result: List<&2, Qt.PairValue<String, String>> <- Qt.QUrlQuery.queryItems__QUrl_ComponentFormattingOption(query, Qt.QUrl.ComponentFormattingOption.PrettyDecoded())
     pairs_result(result)
 
 def roles_result(items: List<&2, Qt.PairValue<Qt.Int32, Qt.QByteArray>>) -> Qt.Action(Unit):
@@ -129,8 +129,8 @@ def urls_result(items: List<&2, Qt.QUrl>) -> Qt.Action(Unit):
   match items:
     case first <> second <> Nil{}:
       do Qt.Action<Unit>:
-        a: String <- Qt.QUrl.toString__Flags_QUrl__ComponentFormattingOption(first, Qt.Flags_QUrl__ComponentFormattingOption{0})
-        b: String <- Qt.QUrl.toString__Flags_QUrl__ComponentFormattingOption(second, Qt.Flags_QUrl__ComponentFormattingOption{0})
+        a: String <- Qt.QUrl.toString__QUrl_ComponentFormattingOption(first, Qt.QUrl.ComponentFormattingOption.PrettyDecoded())
+        b: String <- Qt.QUrl.toString__QUrl_ComponentFormattingOption(second, Qt.QUrl.ComponentFormattingOption.PrettyDecoded())
         require(String.eq(a, "https://example.org/score") && String.eq(b, "https://example.org/score"), "Copied URL list failed")
     case _: Qt.Action.fail(Unit, 1, "Wrong URL list size")
 

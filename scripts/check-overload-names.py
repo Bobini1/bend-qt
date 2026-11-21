@@ -72,7 +72,7 @@ class FakeGenerator:
     @staticmethod
     def base_name(m):
         f = m['function']
-        return 'new' if f['constructor'] else ('connect_' if f['signal'] else '') + f['name']
+        return 'new' if f['constructor'] else f['name']
 
 
 def run(methods, lock=None, **options):
@@ -116,31 +116,51 @@ def synthetic():
     expect(got['find(const QString &)'] == 'QFoo.find__String' and got['find()'] == 'QFoo.find', got)
     cases.append('bare, Bend-typed and own-argument variant names')
 
-    # Direct connectors retire the old descriptors instead of inheriting their
-    # names. Mutable reply contracts must not merge with read-only signals.
-    timeout = fn('QTimer', 'timeout', [], signal=True)
-    old_key = 'signal ' + names.native_operators.identity(timeout)
-    old_lock = names.NameLock(names={'QTimer': {old_key: ('QTimer.on_timeout', 'self () -> Signal_Unit')}})
-    _, migrated, got = run([entry('QTimer', timeout, 'Connection')], old_lock)
-    expect(got['timeout()'] == 'QTimer.connect_timeout', got)
-    expect(migrated.unacknowledged() == [('QTimer', 'QTimer.on_timeout')], migrated.removed)
-    expect(migrated.removed['QTimer'][old_key]['reason'] ==
-           'Replaced by a direct typed connect_<signal> function', migrated.removed)
-    readonly = fn('QFoo', 'changed', STRING, signal=True)
-    mutable = fn('QFoo', 'changed', [('QString *', 'QString', 1, 'String', '')], signal=True)
-    signals = [entry('QFoo', readonly, 'Connection'), entry('QFoo', mutable, 'Connection')]
-    for m, outputs, reply in zip(signals, ([], [(0, {})]), ('Unit', 'SignalReply_String')):
-        m['signal_args'] = m['args']
-        m['signal'] = dict(outputs=outputs, kind=dict(reply=dict(bend=reply)))
-        m['args'] = []
-    g, _, got = run(signals)
-    expect(len(g.methods) == 2 and all(n.startswith('QFoo.connect_changed__') for n in got.values()), got)
+    # A native signal is a Signal declaration named like the signal, with its
+    # own lock identity. Overloads spell their Bend arguments; connectors of
+    # the earlier design are tombstoned with their replacement named.
+    def declaration(owner, f):
+        m = entry(owner, f, 'Signal')
+        m['signal_args'], m['args'], m['signal'] = m['args'], [], dict(args=[])
+        return m
+    INT = ('int', 'int', 0, 'Int32', '')
+    changed = fn('QSlider', 'rangeChanged', [INT, INT], signal=True)
+    connect_key = 'connect-signal ' + names.native_operators.identity(changed)
+    old_lock = names.NameLock(names={'QSlider': {connect_key: ('QSlider.connect_rangeChanged', 'self (Int32, Int32) -> Connection')}})
+    g, lock, got = run([declaration('QSlider', changed)], old_lock)
+    expect(got == {changed['signature']: 'QSlider.rangeChanged'}, got)
+    expect(list(lock.names['QSlider']) == ['signal-descriptor rangeChanged(int,int)'], lock.names['QSlider'])
+    expect(lock.removed['QSlider'][connect_key]['reason'] == 'Replaced by Signal.connect and the signal declaration', lock.removed)
     activated = [fn('QCompleter', 'activated', STRING, signal=True),
                  fn('QCompleter', 'activated', [('const QModelIndex &', 'QModelIndex', 0, 'QModelIndex', '')], signal=True)]
-    _, _, got = run([entry('QCompleter', f, 'Connection') for f in activated])
-    expect(set(got.values()) == {'QCompleter.connect_activated__String',
-                                  'QCompleter.connect_activated__QModelIndex'}, got)
-    cases.append('direct signal connectors: intentional migration, typed overloads and distinct mutable replies')
+    _, _, got = run([declaration('QCompleter', f) for f in activated])
+    expect(set(got.values()) == {'QCompleter.activated__String', 'QCompleter.activated__QModelIndex'}, got)
+    cases.append('signal declarations: names, overloads and replaced connectors')
+
+    # QFlags<E> and E share E's Bend type. A name spelling the retired flags
+    # type is tombstoned and assigned again; names without it stay pinned.
+    def aligned(owner, name, enum, flags, **options):
+        f = fn(owner, name, [(f'QFlags<{enum}>' if flags else enum, enum, 0, 'Qt.AlignmentFlag', '')], **options)
+        f['arguments'][0]['type'].update(enum=not flags, flags=flags)
+        return f
+    paint = aligned('QIcon', 'paint', 'Qt::AlignmentFlag', True)
+    getter = fn('QLabel', 'alignment', [], const=True)
+    old = names.NameLock(names={
+        'QIcon': {names.key(entry('QIcon', paint)): ('QIcon.paint__Flags_Qt__AlignmentFlag', 'self (Flags_Qt__AlignmentFlag) -> Unit')},
+        'QLabel': {names.key(entry('QLabel', getter)): ('QLabel.alignment', 'self () -> Flags_Qt__AlignmentFlag')}})
+    _, lock, got = run([entry('QIcon', paint), entry('QLabel', getter, 'Qt.AlignmentFlag')], old)
+    expect(got == {paint['signature']: 'QIcon.paint', getter['signature']: 'QLabel.alignment'}, got)
+    expect(lock.unacknowledged() == [('QIcon', 'QIcon.paint__Flags_Qt__AlignmentFlag')], lock.removed)
+    expect(lock.removed['QIcon'][names.key(entry('QIcon', paint)) + ' /renamed']['reason'] ==
+           'Renamed: the Bend type Flags_Qt__AlignmentFlag no longer exists', lock.removed)
+    expect(lock.reshaped and lock.names['QLabel'][names.key(entry('QLabel', getter))] ==
+           ('QLabel.alignment', 'self () -> Qt.AlignmentFlag'), lock.names)
+    _, again, got = run([entry('QIcon', paint), entry('QLabel', getter, 'Qt.AlignmentFlag')], lock)
+    expect(got[paint['signature']] == 'QIcon.paint' and len(again.unacknowledged()) == 1, (got, again.removed))
+    single, combined = (aligned('QItem', 'setTextAlignment', 'Qt::AlignmentFlag', flags) for flags in (False, True))
+    g, _, got = run([entry('QItem', single), entry('QItem', combined)])
+    expect(list(got) == [combined['signature']] and g.merged_overloads[0]['signature'] == single['signature'], got)
+    cases.append('flags share their enum type: stale names renamed, QFlags overloads preferred')
 
     # Bend-equivalent overloads collapse to the owning const-reference form.
     variants = [fn('QFoo', 'setText', [(cpp, base, ptr, 'String', '')])
@@ -304,17 +324,20 @@ def package():
     internal_painters = [name for name in defined
                          if name.endswith('.sharedPainter') or '.Virtual.sharedPainter' in name]
     expect(not internal_painters, f'Qt-internal sharedPainter API remains: {internal_painters[:5]}')
-    signals = [m for m in generated if 'signal_handler' in m]
-    expect(signals and all('.connect_' in m['bend_name'] and m['return'] == 'Connection' for m in signals),
-           'Signal connectors lost their direct names or Connection result')
-    signal_types = re.findall(r'^type (Signal_[A-Za-z0-9_]+)\b',
-                              (ROOT / 'packages/qt612/qt.bend').read_text(), re.M)
-    expect(not signal_types, f'Public signal descriptors remain: {signal_types[:5]}')
-    # Internal transport entry points use operation IDs; public overload names
-    # must remain readable, including every callback and convenience adapter.
-    legacy = sorted({n for n in defined if not n.startswith('Internal.') and
-                     re.search(r'_[0-9a-f]{8}(\.|$)|_[0-9]{5,}(\.|$)|_default\d+(\.|$)', n)})
-    expect(not legacy, f'Hash or _defaultN names remain: {legacy[:5]}')
+    # Native signals are Signal declarations named like the signal, as in PySide.
+    signals = {m['bend_name'] for m in generated if 'signal' in m}
+    expect({'QAbstractSlider.rangeChanged', 'QObject.destroyed', 'QCompleter.activated__String'} <= signals
+           and all(m['return'] == 'Signal' for m in generated if 'signal' in m),
+           f'Native signal declarations are missing or misnamed: {sorted(signals)[:5]}')
+    connectors = sorted(n for n in defined if re.search(r'\.(connect|emit)_[A-Za-z]', n)
+                        and not n.startswith(('Signal.', 'Internal.')))
+    expect(not connectors, f'Per-signal connectors or emitters remain: {connectors[:5]}')
+    # Operation IDs stay inside the raw transport calls. Every definition name,
+    # including Internal helpers, callbacks and adapters, is stable and readable.
+    legacy = sorted({n for n in defined if re.search(r'_[0-9a-f]{8}(\.|$)|_[0-9]{5,}(\.|$)|_default\d+(\.|$)', n)})
+    expect(not legacy, f'Hash, operation or _defaultN names remain: {legacy[:5]}')
+    flag_types = sorted(set(re.findall(r'\bFlags_[A-Za-z0-9_]+', (ROOT / 'packages/qt612/qt.bend').read_text())))
+    expect(not flag_types, f'QFlags types must use their enum type: {flag_types[:5]}')
     locked = {name for rows in lock.names.values() for name, _ in rows.values()}
     expect(set(public) <= locked, f'Unlocked names: {sorted(set(public) - locked)[:5]}')
     callbacks = coverage['callbacks']

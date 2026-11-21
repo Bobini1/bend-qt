@@ -38,19 +38,19 @@ def transfer(+probe: Qt.QObject, +first: Qt.QIODevice, +second: Qt.QIODevice) ->
     require(String.eq(seen, "WR"), "Pipe native signals changed delivery order")
 
 def signals(+probe: Qt.QObject, +first: Qt.QIODevice, +second: Qt.QIODevice) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QIODevice.connect_readyRead(~Qt.QObject, ~readable, second, probe), connection =>
-    Qt.Connection.with(Unit, Qt.QIODevice.connect_bytesWritten(~Qt.QObject, ~written, first, probe), connection => transfer(probe, first, second)))
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QIODevice.readyRead(), ~Qt.QObject, ~readable, second, probe), connection =>
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QIODevice.bytesWritten(), ~Qt.QObject, ~written, first, probe), connection => transfer(probe, first, second)))
 
 def opened(+probe: Qt.QObject, +pipe: Qt.QtCoreHelper.QIOPipe) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    ok: Bool <- Qt.QtCoreHelper.QIOPipe.open(pipe, Qt.Flags_QIODeviceBase__OpenModeFlag{3})
+    ok: Bool <- Qt.QtCoreHelper.QIOPipe.open(pipe, Qt.QIODeviceBase.OpenModeFlag.ReadWrite())
     require(ok, "QIOPipe did not open")
     Qt.QIODevice.with(Unit, Qt.QtCoreHelper.QIOPipe.end1(pipe), first =>
       Qt.QIODevice.with(Unit, Qt.QtCoreHelper.QIOPipe.end2(pipe), second => signals(probe, first, second)))
 
 def retained_view(+pipe: Qt.QtCoreHelper.QIOPipe) -> Qt.Action(Qt.QIODevice):
   do Qt.Action<Qt.QIODevice>:
-    ok: Bool <- Qt.QtCoreHelper.QIOPipe.open(pipe, Qt.Flags_QIODeviceBase__OpenModeFlag{3})
+    ok: Bool <- Qt.QtCoreHelper.QIOPipe.open(pipe, Qt.QIODeviceBase.OpenModeFlag.ReadWrite())
     require(ok, "QIOPipe lifetime test did not open")
     Qt.QtCoreHelper.QIOPipe.end1(pipe)
 

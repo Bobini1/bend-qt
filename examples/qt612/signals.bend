@@ -19,9 +19,14 @@ def connected_slider(+slider: Qt.QSlider, +probe: Qt.QObject, connection: Qt.Con
     Qt.QSlider.setRange(slider, Qt.Int32.neg(10), Qt.Int32{42})
     name: String <- Qt.QObject.objectName(probe)
     require(String.eq(name, "range"), "rangeChanged did not run during setRange")
+    # Bend can emit a native signal itself; its handlers have run on return.
+    Qt.QObject.setObjectName(probe, "")
+    Qt.Signal.emit(~Qt.QSlider.rangeChanged(), slider, Qt.Int32.neg(10), Qt.Int32{42})
+    emitted: String <- Qt.QObject.objectName(probe)
+    require(String.eq(emitted, "range"), "Signal.emit did not run the rangeChanged handler")
 
 def slider_case(+probe: Qt.QObject, +slider: Qt.QSlider) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QSlider.connect_rangeChanged(~Qt.QObject, ~range_changed, slider, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QSlider.rangeChanged(), ~Qt.QObject, ~range_changed, slider, probe),
     connection => connected_slider(slider, probe, connection))
 
 def data_changed(probe: Qt.QObject, first: Qt.QModelIndex, last: Qt.QModelIndex, roles: List<&2, Qt.Int32>) -> Qt.Action(Unit):
@@ -47,7 +52,7 @@ def changed_model(+model: Qt.QStandardItemModel, +index: Qt.QModelIndex, +value:
 
 def model_index(+model: Qt.QStandardItemModel, +probe: Qt.QObject, +index: Qt.QModelIndex) -> Qt.Action(Unit):
   Qt.QVariant.with(Unit, Qt.QVariant.fromString("first 🎵"), value =>
-    Qt.Connection.with(Unit, Qt.QStandardItemModel.connect_dataChanged(~Qt.QObject, ~data_changed, model, probe),
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QStandardItemModel.dataChanged(), ~Qt.QObject, ~data_changed, model, probe),
       connection => changed_model(model, index, value, probe, connection)))
 
 def invalid_parent(+model: Qt.QStandardItemModel, +probe: Qt.QObject, parent: Qt.QModelIndex) -> Qt.Action(Unit):
@@ -62,11 +67,20 @@ def activated_text(probe: Qt.QObject, text: String) -> Qt.Action(Unit):
 def activated_index(probe: Qt.QObject, index: Qt.QModelIndex) -> Qt.Action(Unit):
   Qt.QObject.setObjectName(probe, "index")
 
-# Overloaded signals have one connect per argument list.
+# An overloaded signal has one declaration per argument list.
+def emit_activated(+probe: Qt.QObject, +completer: Qt.QCompleter, index: Qt.QModelIndex) -> Qt.Action(Unit):
+  do Qt.Action<Unit>:
+    Qt.Signal.emit(~Qt.QCompleter.activated__String(), completer, "first")
+    text: String <- Qt.QObject.objectName(probe)
+    require(String.eq(text, "text"), "Emitting activated(QString) reached the wrong handler")
+    Qt.Signal.emit(~Qt.QCompleter.activated__QModelIndex(), completer, index)
+    model: String <- Qt.QObject.objectName(probe)
+    require(String.eq(model, "index"), "Emitting activated(QModelIndex) reached the wrong handler")
+
 def completer_case(+probe: Qt.QObject, +completer: Qt.QCompleter) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QCompleter.connect_activated__String(~Qt.QObject, ~activated_text, completer, probe), text =>
-    Qt.Connection.with(Unit, Qt.QCompleter.connect_activated__QModelIndex(~Qt.QObject, ~activated_index, completer, probe),
-      index => Qt.Action.pure(Unit, Unit{})))
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QCompleter.activated__String(), ~Qt.QObject, ~activated_text, completer, probe), text =>
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QCompleter.activated__QModelIndex(), ~Qt.QObject, ~activated_index, completer, probe),
+      index => Qt.QModelIndex.with(Unit, Qt.QModelIndex.new(), invalid => emit_activated(probe, completer, invalid))))
 
 def cases(+probe: Qt.QObject) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -80,7 +94,7 @@ def demo() -> Qt.Action(Unit):
     objects: U32 <- Qt.Runtime.liveObjects()
     connections: U32 <- Qt.Runtime.liveConnections()
     require(U32.is_eq(objects, 0) && U32.is_eq(connections, 0), "Signal connections or arguments leaked handles")
-    Qt.Action.lift(Unit, IO.print("QT612_SIGNALS_OK two_args=1 three_args=1 value_arguments=1 nested_list=1 disconnect=1 overloaded_connect=1 objects=0 connections=0"))
+    Qt.Action.lift(Unit, IO.print("QT612_SIGNALS_OK two_args=1 three_args=1 value_arguments=1 nested_list=1 disconnect=1 overloaded_connect=1 emit=1 overloaded_emit=1 objects=0 connections=0"))
 
 def main() -> IO(Unit):
   IO.try(Unit, Qt.run(Unit, Qt.QApplication.with(Unit, Qt.QApplication.new(), application => demo())))

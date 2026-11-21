@@ -4,7 +4,7 @@
 def handles(f):
     if f['declaring_class'] != 'QCustom3DVolume':
         return False
-    return (f['name'] in ('textureData', 'createTextureData', 'textureDataChanged') or
+    return (f['name'] in ('textureData', 'createTextureData') or
             (f['constructor'] and len(f['arguments']) > 1) or
             f['name'] == 'setSubTextureData' or
             (f['name'] == 'setTextureData' and any(a['type']['pointers'] for a in f['arguments'])))
@@ -29,8 +29,7 @@ def parameters(g, f):
     for a in f['arguments']:
         t = a['type']
         if t['name'] in ('QList', 'QVector') and t['pointers']:
-            value = dict(byte_list(g), native_copy_adoption=True,
-                         pointer_container_snapshot=f['signal'], pointer_snapshot_provenance='QCustom3DVolume::textureDataChanged copied on emission')
+            value = dict(byte_list(g), native_copy_adoption=True)
         elif f['name'] == 'createTextureData':
             image = g.conversions.register(dict(kind='value', name='QImage', cpp='QImage', bend='QImage', raw='U32'))
             value = g.conversions.register(dict(kind='list', name='QList', cpp='QList<QImage>',
@@ -47,8 +46,6 @@ def method_case(g, m):
     f = m['function']
     if not handles(f):
         return None
-    if f['signal']:
-        return None  # signals.connect_case, with signal_arguments below.
     lines = ['NativeCallScope scope;']
     if not f['constructor']:
         lines += [f'auto *self = get<QCustom3DVolume>(r, r->self, {g.ids["QCustom3DVolume"]}, false, {str(not f["const"]).lower()});']
@@ -106,13 +103,6 @@ def method_case(g, m):
         lines += ['const auto *data = self->textureData();',
                   f'r->result = write_{byte_list(g)["native_codec"]}(r, data ? *data : QList<uchar>{{}});']
     return lines + ['return true;']
-
-
-def signal_arguments(g, f):
-    """textureDataChanged passes a pointer Qt owns: the handler gets a copy."""
-    if not (handles(f) and f['signal']):
-        return None
-    return [dict(byte_list(g), signal_expression='{a} ? *{a} : QList<uchar>{{}}')]
 
 
 def override_before(g, f, inputs, expressions):

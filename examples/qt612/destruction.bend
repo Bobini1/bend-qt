@@ -30,7 +30,7 @@ def watched(+object: Qt.QObject, +probe: Qt.QObject, connection: Qt.Connection) 
     expect_error(Unit, ended, 116)
 
 def watch(+probe: Qt.QObject, +object: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QObject.connect_destroyed(~Qt.QObject, ~destroyed, object, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QObject.destroyed(), ~Qt.QObject, ~destroyed, object, probe),
     connection => watched(object, probe, connection))
 
 def parent_watched(+parent: Qt.QObject, +child: Qt.QObject, +probe: Qt.QObject, connection: Qt.Connection) -> Qt.Action(Unit):
@@ -41,7 +41,7 @@ def parent_watched(+parent: Qt.QObject, +child: Qt.QObject, +probe: Qt.QObject, 
     require(String.eq(seen, U32.show(identity)), "Parent destruction did not report the child")
 
 def watch_child(+probe: Qt.QObject, +parent: Qt.QObject, +child: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QObject.connect_destroyed(~Qt.QObject, ~destroyed, child, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QObject.destroyed(), ~Qt.QObject, ~destroyed, child, probe),
     connection => parent_watched(parent, child, probe, connection))
 
 def watch_parent(+probe: Qt.QObject, +parent: Qt.QObject) -> Qt.Action(Unit):

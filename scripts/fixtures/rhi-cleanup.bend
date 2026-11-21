@@ -59,7 +59,7 @@ def external(+root: Qt.QRhi, +buffer: Qt.QRhiBuffer) -> Qt.Action(Unit):
     rejected(U32, 116, stale)
 
 def external_root(+root: Qt.QRhi) -> Qt.Action(Unit):
-  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.Flags_QRhiBuffer__UsageFlag{4}, 4), buffer => external(root, buffer))
+  Qt.QRhiBuffer.with(Unit, Qt.QRhi.newBuffer(root, Qt.QRhiBuffer.Type.Static(), Qt.QRhiBuffer.UsageFlag.UniformBuffer(), 4), buffer => external(root, buffer))
 
 # A failed handler fails the Qt call that deleted the root.
 def native_failed(+root: Qt.QRhi) -> Qt.Action(Unit):

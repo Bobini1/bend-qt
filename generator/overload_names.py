@@ -26,8 +26,10 @@ rules 4 and 5 within their own namespace; see `assign_family`.
 The name lock pins each published name to its C++ identity. Locked entries
 always survive rules 2 and 3. A removed entry leaves a tombstone that keeps
 its name reserved, unless a new entry has exactly the removed Bend shape; that
-entry inherits the name. Tombstones must be acknowledged before verification
-passes, because they break consumers of the published package.
+entry inherits the name. A locked name that spells a Bend type the package no
+longer defines is tombstoned too, and its entry is named again. Tombstones
+must be acknowledged before verification passes, because they break consumers
+of the published package.
 """
 from collections import defaultdict
 import json
@@ -47,7 +49,8 @@ NUMERIC_PENALTY.update({name: 2 for name in ('short', 'ushort', 'unsigned short'
                                              'int16_t', 'uint16_t', 'char16_t')})
 NUMERIC_PENALTY.update({name: 3 for name in BYTE_POINTEES})
 # Lock keys of callback-family entries start with their family. Ordinary
-# entries never do: their keys are C++ identities or `connect-signal ` identities.
+# entries never do: their keys are C++ identities or `signal-descriptor `
+# identities. `signal-with-type ` keys name retired connect_<signal>With entries.
 FAMILIES = ('virtual ', 'callback ', 'with-callback ', 'handler ', 'with-handler ', 'override ', 'schema-constructor ', 'signal-with-type ')
 
 
@@ -56,7 +59,7 @@ def key(m):
     f = m['function']
     text = native_operators.identity(f)
     if f['signal']:
-        text = 'connect-signal ' + text
+        text = 'signal-descriptor ' + text
     if m.get('default_constructor'):
         text += ' /0'
     elif 'omitted_defaults' in m:
@@ -83,14 +86,7 @@ def inputs(m):
 
 def shape(m):
     self_marker, args = inputs(m)
-    result = ('self ' if self_marker else '') + '(' + ', '.join(args) + ') -> ' + m['return']['bend']
-    if 'signal' in m:
-        # Signals with equal input types can have different mutable replies.
-        # Those are distinct handler contracts, even though both return Connection.
-        reply = m['signal']['kind']['reply']['bend']
-        outputs = ', '.join(str(i) for i, _ in m['signal']['outputs'])
-        result += f' [handler reply: {reply}; outputs: {outputs}]'
-    return result
+    return ('self ' if self_marker else '') + '(' + ', '.join(args) + ') -> ' + m['return']['bend']
 
 
 def variant(m):
@@ -100,6 +96,18 @@ def variant(m):
 def bend_token(bend):
     text = re.sub(r'&\d+\s*,?\s*', '', bend)
     return re.sub(r'[^A-Za-z0-9_]+', '_', text).strip('_')
+
+
+def spelled_types(text):
+    """Names of the Bend types in a lock shape such as `self (List<&2, X>) -> Y`."""
+    return set(re.findall(r'[A-Za-z_][A-Za-z0-9_.]*', text)) - {'self'}
+
+
+def defined_types(g, shapes):
+    found = set(getattr(g, 'types', {}))
+    for text in shapes:
+        found |= spelled_types(text)
+    return found
 
 
 def cpp_token(t):
@@ -126,6 +134,8 @@ def penalty(raw, converted):
     """How far an overload's parameter is from Bend's natural representation."""
     name = raw['name']
     cost = 1 if converted.get('rvalue') or '&&' in raw['cpp'] else 0
+    if raw.get('enum'):
+        cost += 1  # E and QFlags<E> share a Bend type; only QFlags takes combined flags.
     if name in VIEWS:
         cost += 1
     elif name in NARROW_TEXT:
@@ -142,8 +152,9 @@ def rank(m):
 
     A real overload beats a default variant. Bend passes owning values, so a
     const reference beats an rvalue copy, an owning string or byte array beats
-    a view, a C string is last, and wider numbers beat narrower ones. A call on
-    a mutable handle resolves to the non-const member in C++.
+    a view, a C string is last, wider numbers beat narrower ones, and a QFlags
+    parameter beats its single enum. A call on a mutable handle resolves to the
+    non-const member in C++.
     """
     cost = sum(penalty(raw, converted) for raw, converted in native_inputs(m))
     return variant(m), cost, bool(m['function']['const']), key(m)
@@ -199,10 +210,30 @@ class NameLock:
         return sorted((owner, row['name']) for owner, rows in self.removed.items()
                       for row in rows.values() if not row['acknowledged'])
 
-    def retire(self, owner, entry_key, reason):
+    def retire(self, owner, entry_key, reason, tombstone=None):
         name, old_shape = self.names[owner].pop(entry_key)
-        self.removed.setdefault(owner, {})[entry_key] = dict(name=name, shape=old_shape, reason=reason, acknowledged=False)
+        tombstone = tombstone or entry_key
+        if tombstone in self.removed.get(owner, {}):
+            raise ValueError(f'A tombstone already holds {owner} {tombstone}')
+        self.removed.setdefault(owner, {})[tombstone] = dict(name=name, shape=old_shape, reason=reason, acknowledged=False)
         self.tombstoned.append((owner, name, reason))
+
+    def rename_stale(self, owner, entry_key, defined):
+        """Retire a live entry's name that spells a Bend type no longer defined.
+
+        The entry is then named again, so no public name spells a type that
+        does not exist. A conversion that changes an argument to another
+        existing type keeps its pinned name.
+        """
+        row = self.names.get(owner, {}).get(entry_key)
+        suffix = row and row[0].rpartition('.')[2].partition('__')[2]
+        if not suffix:
+            return
+        for t in sorted(spelled_types(row[1]) - defined):
+            if re.search(r'(?:^|_)' + re.escape(bend_token(t)) + r'(?:_|$)', suffix):
+                self.retire(owner, entry_key, f'Renamed: the Bend type {t} no longer exists',
+                            tombstone=entry_key + ' /renamed')
+                return
 
     def acknowledge(self):
         for rows in self.removed.values():
@@ -240,14 +271,16 @@ class NameLock:
 
 
 def removal_reason(g, owner, entry_key, present=()):
+    if entry_key.startswith('signal-with-type '):
+        return 'Replaced by Signal.connectWith and the signal declaration'
+    if entry_key.startswith('connect-signal '):
+        # The same in every native module partition (see merged_lock).
+        return 'Replaced by Signal.connect and the signal declaration'
     if entry_key.startswith(FAMILIES):
         signature = entry_key.split(' ', 1)[1]
         return next((item['reason'] for item in getattr(g, 'callback_excluded', [])
                      if item['signature'] == signature and item['class_name'] == owner), 'No longer generated')
-    if entry_key.startswith('signal ') and (owner, 'connect-' + entry_key) in present:
-        return 'Replaced by a direct typed connect_<signal> function'
-    identity = entry_key.removeprefix('connect-signal ').removeprefix('signal ').split(' /')[0]
-    return g.excluded_identities.get((owner, identity), 'No longer generated')
+    return g.excluded_identities.get((owner, entry_key.split(' /')[0]), 'No longer generated')
 
 
 def assign(g, lock):
@@ -255,6 +288,9 @@ def assign(g, lock):
     # Retire vanished identities first so a replacement can inherit the name.
     # Pixel-buffer variants are derived after naming; finalize retires them.
     present = {(m['class'], key(m)) for m in g.methods}
+    defined = defined_types(g, [shape(m) for m in g.methods])
+    for owner, k in sorted(present):
+        lock.rename_stale(owner, k, defined)
     for owner, rows in lock.names.items():
         for k in [k for k in rows if (owner, k) not in present and ' /bufferOffset' not in k
                   and not k.startswith(FAMILIES)]:
@@ -391,6 +427,9 @@ def assign_family(g, lock, entries):
     for owner, rows in lock.names.items():
         for k in [k for k in rows if k.startswith(kinds) and (owner, k) not in present]:
             lock.retire(owner, k, removal_reason(g, owner, k, present))
+    defined = defined_types(g, [family_shape(e) for e in entries] + [shape(m) for m in getattr(g, 'methods', [])])
+    for owner, k in sorted(present):
+        lock.rename_stale(owner, k, defined)
     groups = defaultdict(list)
     for e in entries:
         if not e['key'].startswith(FAMILIES):

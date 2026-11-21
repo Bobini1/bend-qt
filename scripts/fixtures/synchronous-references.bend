@@ -6,14 +6,13 @@ def require(ok: Bool, message: String) -> Qt.Action(Unit):
     case True{}: Qt.Action.pure(Unit, Unit{})
     case False{}: Qt.Action.fail(Unit, 1, message)
 
-def set_value(+record: Qt.QSqlRecord, value: Qt.QVariant) -> Qt.Action(Qt.SignalReply_QSqlRecord):
-  do Qt.Action<Qt.SignalReply_QSqlRecord>:
-    Qt.QSqlRecord.setValue__String_QVariant(record, "score", value)
-    return Qt.SignalReply_QSqlRecord{record}
+def set_value(+record: Qt.QSqlRecord, value: Qt.QVariant) -> Qt.Action(Unit):
+  Qt.QSqlRecord.setValue__String_QVariant(record, "score", value)
 
-# The record is a mutable reference: Qt reads the new value after the signal.
-def before_insert(state: Unit, record: Qt.QSqlRecord) -> Qt.Action(Qt.SignalReply_QSqlRecord):
-  Qt.QVariant.with(Qt.SignalReply_QSqlRecord, Qt.QVariant.fromString("42"), value => set_value(record, value))
+# The record is Qt's own, passed by reference and borrowed for the call:
+# Qt reads the new value after the signal returns.
+def before_insert(state: Unit, record: Qt.QSqlRecord) -> Qt.Action(Unit):
+  Qt.QVariant.with(Unit, Qt.QVariant.fromString("42"), value => set_value(record, value))
 
 def emit_signal(model: Qt.QSqlTableModel, connection: Qt.Connection) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
@@ -21,7 +20,7 @@ def emit_signal(model: Qt.QSqlTableModel, connection: Qt.Connection) -> Qt.Actio
     require(U32.is_eq(changed, 1), "The signal returned before Bend changed the record")
 
 def model_demo(+model: Qt.QSqlTableModel) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QSqlTableModel.connect_beforeInsert(~Unit, ~before_insert, model, Unit{}), connection => emit_signal(model, connection))
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QSqlTableModel.beforeInsert(), ~Unit, ~before_insert, model, Unit{}), connection => emit_signal(model, connection))
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

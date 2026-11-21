@@ -32,7 +32,7 @@ def compression(value: Qt.QByteArray) -> Qt.Action(Unit):
 
 def read_alias(+source: Qt.QByteArray, +device: Qt.QBuffer) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    opened: Bool <- Qt.QBuffer.open(device, Qt.Flags_QIODeviceBase__OpenModeFlag{1})
+    opened: Bool <- Qt.QBuffer.open(device, Qt.QIODeviceBase.OpenModeFlag.ReadOnly())
     require(opened, "Could not open retained input buffer")
     seeked: Bool <- Qt.QBuffer.seek(device, Qt.Int64{1, 0})
     require(seeked, "Could not seek retained input buffer")

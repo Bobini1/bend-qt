@@ -21,7 +21,7 @@ def reader(+value: Qt.QImageReader) -> Qt.Action(Unit):
 
 def buffer(+value: Qt.QBuffer) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    opened: Bool <- Qt.QBuffer.open(value, Qt.Flags_QIODeviceBase__OpenModeFlag{1})
+    opened: Bool <- Qt.QBuffer.open(value, Qt.QIODeviceBase.OpenModeFlag.ReadOnly())
     require(opened, "Image input buffer did not open")
     +format: Qt.QByteArray <- Qt.QByteArray.fromUtf8("bqtrg")
     Qt.QImageReader.with(Unit, Qt.QImageReader.new__QIODevice_QByteArray(Qt.QBuffer.as_QIODevice(value), format), image => reader(image))

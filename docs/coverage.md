@@ -33,8 +33,8 @@ multimaps, multihashes and pairs when their elements have supported conversions.
 The generator also has a set converter. Bend uses Data lists and PairValue
 records; generated scopes recursively release owning value copies. Signal
 handlers accept multiple scalar, string, copied value, QObject pointer and
-container arguments, and overloaded signals have typed connections. Argument
-copies the handler does not keep, and failed output conversions, are released
+container arguments, and an overloaded signal has one declaration per argument
+list. Argument copies the handler does not keep, and failed output conversions, are released
 when the handler returns. Qt integer aliases and
 64-bit enum/flag representations are supported. Binary QByteArray helpers use
 U32 lists with byte-range checks. QByteArrayView inputs borrow checked storage

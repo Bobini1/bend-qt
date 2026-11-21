@@ -32,7 +32,7 @@ def read_bytes(metadata: Qt.QMetaObject, property: Qt.QMetaProperty, target: Qt.
 
 def stream_bytes(+metadata: Qt.QMetaObject, +property: Qt.QMetaProperty, source: Qt.MetaStorage, +target: Qt.MetaStorage, +bytes: Qt.QByteArray) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    Qt.QDataStream.with(Unit, Qt.QDataStream.new__QByteArray_Flags_QIODeviceBase__OpenModeFlag(bytes, Qt.Flags_QIODeviceBase__OpenModeFlag{3}), stream =>
+    Qt.QDataStream.with(Unit, Qt.QDataStream.new__QByteArray_QIODeviceBase_OpenModeFlag(bytes, Qt.QIODeviceBase.OpenModeFlag.ReadWrite()), stream =>
       Qt.QtRemoteObjects.copyStoredProperties__QMetaObject_MetaStorage_QDataStream(metadata, source, stream))
     read_bytes(metadata, property, target, bytes)
 

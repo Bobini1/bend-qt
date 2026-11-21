@@ -32,7 +32,7 @@ def armed(+timer: Qt.QTimer, model: Qt.QAbstractListModel) -> Qt.Action(Unit):
 def nested_event(+model: Qt.QAbstractListModel, +timer: Qt.QTimer) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QAbstractItemModel.Virtual.rowCount.handle(~Unit, ~counted, Qt.QAbstractListModel.as_QAbstractItemModel(model), Unit{})
-    Qt.Connection.with(Unit, Qt.QTimer.connect_timeout(~U32, ~timed_out, timer, 47), connection => armed(timer, model))
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QTimer.timeout(), ~U32, ~timed_out, timer, 47), connection => armed(timer, model))
 
 def stop(code: U32) -> Qt.Action(Unit):
   Qt.QCoreApplication.exit__Int32(Qt.Int32{code})
@@ -51,10 +51,10 @@ def looped(+timer: Qt.QTimer, +stopper: Qt.QTimer) -> Qt.Action(Unit):
     expect_error(Qt.Int32, result, 47)
 
 def stopping(+timer: Qt.QTimer, +stopper: Qt.QTimer) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QTimer.connect_timeout(~U32, ~stop, stopper, 0), connection => looped(timer, stopper))
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QTimer.timeout(), ~U32, ~stop, stopper, 0), connection => looped(timer, stopper))
 
 def loop_event(+timer: Qt.QTimer) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QTimer.connect_timeout(~U32, ~timed_out, timer, 47), connection =>
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QTimer.timeout(), ~U32, ~timed_out, timer, 47), connection =>
     Qt.QTimer.with(Unit, Qt.QTimer.new(), stopper => stopping(timer, stopper)))
 
 def checks() -> Qt.Action(Unit):

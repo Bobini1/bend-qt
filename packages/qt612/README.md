@@ -60,7 +60,7 @@ def run_button(+button: Qt.QPushButton) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QPushButton.setText(button, "Click to exit")
     Qt.QPushButton.show(button)
-    Qt.Connection.with(Unit, Qt.QPushButton.connect_clicked(~U32, ~clicked, button, 0), run_loop)
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QPushButton.clicked(), ~U32, ~clicked, button, 0), run_loop)
 
 def main() -> IO(Unit):
   IO.try(Unit, Qt.run(Unit, Qt.QPushButton.with(Unit, Qt.QPushButton.new(), button => run_button(button))))
@@ -252,49 +252,54 @@ See [main](../../examples/qt612/main.bend),
 
 ### Signals
 
-`X.connect_signal(~S, ~f, object, state)` connects the Bend handler `f` and
-returns `Action(Connection)`. The generated function checks the handler's
-argument types: `f: S -> A1 -> A2 ... -> Action(Unit)`. No signal descriptor
-type is needed. Overloaded signals have type suffixes, for example
-`QCompleter.connect_activated__String` and
-`QCompleter.connect_activated__QModelIndex`. For example:
+As in PySide, a native Qt signal and one declared in Bend are the same kind of
+value. `QSlider.rangeChanged()` is the `Signal` declaration of QSlider's native
+signal. `Signal.connect(~signal, ~S, ~f, object, state)` connects the Bend
+handler `f` and returns `Action(Connection)`; `Signal.emit(~signal, object,
+arguments...)` emits it. The declaration determines the handler's type, `f: S
+-> A1 -> A2 ... -> Action(Unit)`, and the sender's: `object` must be a QSlider
+here. An overloaded signal has one declaration per argument list, such as
+`QCompleter.activated__String()` and `QCompleter.activated__QModelIndex()`.
+For example:
 
 ```python
 def range_changed(probe: Qt.QObject, low: Qt.Int32, high: Qt.Int32) -> Qt.Action(Unit):
   Qt.QObject.setObjectName(probe, "range")
 
 def slider_case(+probe: Qt.QObject, +slider: Qt.QSlider) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QSlider.connect_rangeChanged(~Qt.QObject, ~range_changed, slider, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QSlider.rangeChanged(), ~Qt.QObject, ~range_changed, slider, probe),
     connection => connected_slider(slider, probe, connection))
 ```
 
-A signal emitted on the main thread runs its handlers during the call that
-emits it: `QSlider.setRange` returns after `range_changed` has run.
+The runtime finds the signal by name and argument types in the object's
+meta-object. A signal emitted on the main thread runs its handlers during the
+call that emits it: `QSlider.setRange`, or `Signal.emit`, returns after
+`range_changed` has run. `Signal.connectWith` takes a `Qt.ConnectionType`.
 `Connection.disconnect` closes a connection, and `Connection.with` scopes it.
 `Runtime.liveConnections()` counts open connections; the registry grows up to
 65,535 slots. Destroying the sender closes its connections.
 
-For signals with mutable reference arguments, the handler returns
-`Action(SignalReply_<types>)` with the new values, which Qt reads before the
-signal returns. For example, a handler connected through
-`QNetworkAccessManager.connect_authenticationRequired` returns
-`Qt.SignalReply_QAuthenticator{authenticator}` after filling in the
-credentials.
+Arguments are copied, except a value passed by non-const reference or pointer,
+such as the QAuthenticator of `QNetworkAccessManager.authenticationRequired()`.
+As in PySide, the handler gets Qt's own object, borrowed for the call, and
+fills it in: `Qt.QAuthenticator.setUser(authenticator, "user")`. The handle is
+invalid after the handler returns. Such a signal is delivered synchronously;
+when another thread emits it, that thread waits for the main thread, which must
+be running a Qt event loop. A QObject passed by reference arrives as its handle.
 
-If a signal with mutable arguments is emitted on another thread, that thread
-waits for the main thread to run the handler and fill the reply. The main
-thread must be running a Qt event loop. Supported temporary pointer payloads,
-such as volume texture data, are copied during emission and queued for the
-main thread. Closing the connection discards a pending pointer snapshot.
+`QObject.destroyed()` passes an `ObjectIdentity`, the handle word of the
+destroyed object, without access to the dying object. Its connection closes
+itself after that one delivery, so a later `Connection.disconnect` fails with
+ESTALE, which `Connection.with` accepts. Copied values such as QModelIndex
+retain their native validity rules: model changes or destruction can make a
+received value stale. See [object signals](../../examples/qt612/object-signals.bend)
+and [destruction](../../examples/qt612/destruction.bend).
 
-`QObject.connect_destroyed` takes a handler receiving an `ObjectIdentity`, the
-handle word of the destroyed object, without access to the dying object. The
-connection closes itself after that one delivery, so a later
-`Connection.disconnect` fails with ESTALE, which `Connection.with` accepts.
-Copied values such as QModelIndex retain their native validity rules: model
-changes or destruction can make a received value stale. See
-[object signals](../../examples/qt612/object-signals.bend) and
-[destruction](../../examples/qt612/destruction.bend).
+`Signal.emit` uses Qt's meta-object, as PySide does, so it also reaches signals
+Qt declares private to their class, such as `QTimer.timeout`. It refuses with
+EPERM the signals the runtime observes to release resources or to schedule
+Bend, such as `QObject.destroyed`. `coverage.json` lists them, and the signals
+that have no declaration with their reasons, under `native_signals`.
 
 ### Signals declared in Bend
 
@@ -340,7 +345,8 @@ def ready(state: Unit, button: Qt.QPushButton) -> Qt.Action(Unit):
 The handler receives `QPushButton` directly and the native signature contains
 `QPushButton*`. QObject subclasses and public, copyable Qt metatype values have
 these generated descriptors; unsupported class reasons are in `coverage.json`.
-Use `Qt.QColor.arg()` for QColor, `Qt.variant()` for QVariant,
+An enum `E` uses `E.arg()`, and `E.flagsArg()` declares Qt's `QFlags<E>`
+type. Use `Qt.QColor.arg()` for QColor, `Qt.variant()` for QVariant,
 `Qt.variantMap()` for a string/QVariant entry list
 (`List<&2, Qt.PairValue<String, Qt.QVariant>>`), and `Qt.variantList()` for
 `List<&2, Qt.QVariant>`. QML can inspect the native object properties and map
@@ -586,6 +592,12 @@ overloads with the binding that serves them, removed names, excluded classes
 and signatures, and Shiboken extraction omissions. Inherited methods also
 appear on derived classes, while their native wrappers are shared.
 
+Bend has no private definitions, so an importing file can name everything in
+`qt.bend`. Names under `Qt.Internal` and the shared `raw_*` effects are
+implementation: they are not pinned and can change in any generation. The
+native side checks each effect call's operation, argument layout and handles,
+so a direct call can fail but cannot skip those checks.
+
 Mutable QString, scalar and supported container references return their updated
 values in generated `Outputs_*` Data records. The ordinary return value is
 `arg0` when the native method is non-void, followed by updated/output arguments
@@ -619,9 +631,14 @@ through the same generated API and consumer build command.
 Qt's signed `int` is represented by `Int32{bits: U32}` because Bend has no
 built-in signed integer. Use `Int32{42}` for a nonnegative value,
 `Int32.neg(7)` for -7, and `Int32.word` to read its two's-complement bits.
-Enums and flags have distinct types with 32-bit or 64-bit storage according to
-their native representation. Qt integer aliases are converted with range
-checks for 8-bit and 16-bit inputs. `QCborTag{lo, hi}` preserves 64-bit tags.
+Each enum has a distinct type with 32-bit or 64-bit storage according to its
+native representation. As in PySide, a `QFlags<E>` argument or result uses `E`
+itself, and a value of `E` may hold several flags. Bend's bit operators combine
+them: `(Qt.Qt.AlignmentFlag.AlignLeft() .|. Qt.Qt.AlignmentFlag.AlignTop() :
+Qt.Qt.AlignmentFlag)` calls `E.or`, and `.&.` and `.^.` call `E.and` and
+`E.xor`. `E.without(value, flags)` clears flags, `E.has(value, flag)` is Qt's
+`testFlag`, and `E{0}` is the empty set. Qt integer aliases are converted with
+range checks for 8-bit and 16-bit inputs. `QCborTag{lo, hi}` preserves 64-bit tags.
 Strings and string views are copied through UTF-8. `QByteArray.fromBytes` and
 `toBytes` use `List<&2, U32>` and preserve every byte, including embedded zeros.
 `fromBytes` rejects values outside 0 to 255. A native `QByteArrayView` input uses

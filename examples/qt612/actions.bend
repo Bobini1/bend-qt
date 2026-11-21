@@ -100,7 +100,7 @@ def fail_clicked(+button: Qt.QPushButton, connection: Qt.Connection) -> Qt.Actio
     Qt.QPoint.with(Unit, Qt.QPoint.new(), fail_point)
 
 def fail_button(+button: Qt.QPushButton) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QPushButton.connect_clicked(~U32, ~ignore_click, button, 0),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QPushButton.clicked(), ~U32, ~ignore_click, button, 0),
     connection => fail_clicked(button, connection))
 
 def wrong_type(button: Qt.QPushButton) -> Qt.Action(Unit):
@@ -115,7 +115,7 @@ def refused_click(+button: Qt.QPushButton, connection: Qt.Connection) -> Qt.Acti
   Qt.QPushButton.click(button)
 
 def refusing_button(+button: Qt.QPushButton) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QPushButton.connect_clicked(~U32, ~refuse_click, button, 44),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QPushButton.clicked(), ~U32, ~refuse_click, button, 44),
     connection => refused_click(button, connection))
 
 def checks() -> Qt.Action(Unit):

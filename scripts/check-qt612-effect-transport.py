@@ -57,6 +57,7 @@ def main():
     g.api = dict(qt_headers=json.loads((args.package / 'coverage.json').read_text())['minimum_qt'])
     g.bend, g.effects = [], []
     g.types, g.selected, g.enums = {'Int32': 'scalar', 'UInt64': 'wide'}, [], {}
+    g.flag_types = set()
     g.argument_capacity = 8
     # This synthetic payload has no object registry. Resource lifetimes are
     # exercised by action-scopes against the real native runtime.

@@ -17,7 +17,7 @@ def noop(state: Unit) -> Qt.Action(Unit):
 type WorkerState is Data:
   WorkerState{thread: Qt.QThread, probe: Qt.QObject}
 
-def process(state: WorkerState, flags: Qt.Flags_QEventLoop__ProcessEventsFlag) -> Qt.Action(Bool):
+def process(state: WorkerState, flags: Qt.QEventLoop.ProcessEventsFlag) -> Qt.Action(Bool):
   match state:
     case WorkerState{thread, probe}:
       do Qt.Action<Bool>:

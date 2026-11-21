@@ -52,11 +52,11 @@ def write_only(+view: Qt.MemoryView, source: Qt.QByteArray) -> Qt.Action(Unit):
 
 def mapping(+buffer: Qt.QOpenGLBuffer, +source: Qt.QByteArray) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    bad: Result<&1, &1, U32 & String, Qt.MemoryView> <- Qt.Action.attempt(Qt.MemoryView, Qt.QOpenGLBuffer.mapRange(buffer, Qt.Int32{3}, Qt.Int32{2}, Qt.Flags_QOpenGLBuffer__RangeAccessFlag{3}))
+    bad: Result<&1, &1, U32 & String, Qt.MemoryView> <- Qt.Action.attempt(Qt.MemoryView, Qt.QOpenGLBuffer.mapRange(buffer, Qt.Int32{3}, Qt.Int32{2}, (Qt.QOpenGLBuffer.RangeAccessFlag.RangeRead() .|. Qt.QOpenGLBuffer.RangeAccessFlag.RangeWrite() : Qt.QOpenGLBuffer.RangeAccessFlag)))
     error(Qt.MemoryView, bad, 34)
     Qt.MemoryView.with(Unit, Qt.QOpenGLBuffer.map(buffer, Qt.QOpenGLBuffer.Access.ReadWrite()), view => mapped(buffer, view, source))
     # Previous scope unmapped automatically, so a new map succeeds.
-    Qt.MemoryView.with(Unit, Qt.QOpenGLBuffer.mapRange(buffer, Qt.Int32{1}, Qt.Int32{2}, Qt.Flags_QOpenGLBuffer__RangeAccessFlag{18}), view => write_only(view, source))
+    Qt.MemoryView.with(Unit, Qt.QOpenGLBuffer.mapRange(buffer, Qt.Int32{1}, Qt.Int32{2}, (Qt.QOpenGLBuffer.RangeAccessFlag.RangeWrite() .|. Qt.QOpenGLBuffer.RangeAccessFlag.RangeFlushExplicit() : Qt.QOpenGLBuffer.RangeAccessFlag)), view => write_only(view, source))
     Qt.MemoryView.with(Unit, Qt.QOpenGLBuffer.map(buffer, Qt.QOpenGLBuffer.Access.ReadOnly()), view => read_only(view, source))
 
 def buffer(+value: Qt.QOpenGLBuffer) -> Qt.Action(Unit):

@@ -106,7 +106,7 @@ def burst_counter(+group: Qt.QActionGroup, +action: Qt.QAction, +counter: Qt.QTi
   do Qt.Action<Unit>:
     named_action(group, action)
     Qt.QTimer.setInterval__Int32(counter, Qt.Int32{0})
-    Qt.Connection.with(Unit, Qt.QActionGroup.connect_triggered(~Qt.QTimer, ~count_trigger, group, counter),
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QActionGroup.triggered(), ~Qt.QTimer, ~count_trigger, group, counter),
       connection => burst_connected(action, counter, connection))
 
 def burst_action(+group: Qt.QActionGroup, +action: Qt.QAction) -> Qt.Action(Unit):
@@ -122,7 +122,7 @@ def after_scope(+group: Qt.QActionGroup, +probe: Qt.QObject, +action: Qt.QAction
 
 def group_probe(+group: Qt.QActionGroup, +probe: Qt.QObject) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    Qt.Connection.with(Unit, Qt.QActionGroup.connect_triggered(~Qt.QObject, ~triggered, group, probe),
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QActionGroup.triggered(), ~Qt.QObject, ~triggered, group, probe),
       connection => watching(group, probe, connection))
     Qt.QAction.with(Unit, Qt.QAction.new(), action => burst_action(group, action))
     Qt.QAction.with(Unit, Qt.QAction.new(), action => after_scope(group, probe, action))
@@ -186,7 +186,7 @@ def qml_events(+engine: Qt.QQmlApplicationEngine, +probe: Qt.QObject, connection
     same_count(baseline, "Null mixed arguments leaked a value")
 
 def qml_probe(+engine: Qt.QQmlApplicationEngine, +probe: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QQmlApplicationEngine.connect_objectCreated(~Qt.QObject, ~created, engine, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QQmlApplicationEngine.objectCreated(), ~Qt.QObject, ~created, engine, probe),
     connection => qml_events(engine, probe, connection))
 
 def qml_case(+engine: Qt.QQmlApplicationEngine) -> Qt.Action(Unit):
@@ -206,7 +206,7 @@ def stale_qml_events(+engine: Qt.QQmlApplicationEngine, +probe: Qt.QObject, conn
     require(String.ends_with(recorded_name, "|Object signal🎵|file:///bend-object-signal.qml"), "Handler did not run after a root expired")
 
 def stale_qml_probe(+engine: Qt.QQmlApplicationEngine, +probe: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QQmlApplicationEngine.connect_objectCreated(~Qt.QObject, ~created, engine, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QQmlApplicationEngine.objectCreated(), ~Qt.QObject, ~created, engine, probe),
     connection => stale_qml_events(engine, probe, connection))
 
 def stale_qml_case(+engine: Qt.QQmlApplicationEngine) -> Qt.Action(Unit):

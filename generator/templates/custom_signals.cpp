@@ -50,6 +50,7 @@ namespace BendSignalApi {
 // BQT_RUNTIME_BODY_BEGIN meta_type
 static QMetaType meta_type(int type) {
     if (type == INT_MAX) return OpaqueData::meta_type();
+    if (type == (1 << 30) - 1) return QMetaType::fromType<QObject *>();  // object_identity_type
     switch (type) {
 @META_TYPES@
     }
@@ -179,9 +180,39 @@ static bool qml_name(const QByteArray &value) {
 struct Declaration {
     QByteArray name, signature;
     std::vector<int> types;
+    // A native signal's `X&` parameter: the value is Qt's own object, passed
+    // as the X* descriptor's value. `spellings` holds the declared names.
+    std::vector<bool> references;
+    QList<QByteArray> spellings;
     QList<QByteArray> parameter_names;
     uint32_t revision = 0;
+    bool identity = false;  // QObject.destroyed() with its ObjectIdentity argument
+    // Qt lends an argument for the call (Internal.Signal.native flag 2): the
+    // handler runs synchronously, and another emitting thread waits for it.
+    bool blocking = false;
 };
+// The runtime's code for the identity QObject.destroyed passes (signals.py).
+// Static descriptors count up from 0 and value types from 0x10000000; runtime
+// enums count down from INT_MAX - 1 to 1 << 30. This code is below them all.
+constexpr int object_identity_type = (1 << 30) - 1;
+static int declared_type(BqtRequest *r, const BqtValue &argument, Declaration &result) {
+    const BqtValue *name = argument.tag == 2 && argument.count == 2 ? &argument.items[0] : &argument;
+    QByteArray text = name->tag == 1 ? QByteArray(name->text, qsizetype(name->size)) : QByteArray();
+    result.spellings.append(QMetaObject::normalizedType(text.constData()));
+    result.references.push_back(false);
+    if (text == "BendObjectIdentity") { result.identity = true; return object_identity_type; }
+    if (!text.endsWith('&') || text.endsWith("&&")) return argument_type(r, argument);
+    result.references.back() = true;
+    QByteArray pointer = text.chopped(1).trimmed() + '*';
+    BqtValue renamed = *name;
+    renamed.text = pointer.data();
+    renamed.size = size_t(pointer.size());
+    if (name == &argument) return argument_type(r, renamed);
+    BqtValue items[2] = {renamed, argument.items[1]};
+    BqtValue described = argument;
+    described.items = items;
+    return argument_type(r, described);
+}
 static std::optional<Declaration> declaration(BqtRequest *r, const BqtValue &wire) {
     // Two fields are used internally to resolve a named Method signature.
     if (wire.tag != 2 || (wire.count != 2 && wire.count != 3) || wire.items[0].tag != 1 || wire.items[1].tag != 2) {
@@ -196,7 +227,7 @@ static std::optional<Declaration> declaration(BqtRequest *r, const BqtValue &wir
     result.signature = result.name + '(';
     for (size_t i = 0; i < arguments.count; ++i) {
         const auto &argument = arguments.items[i];
-        int found = argument_type(r, argument);
+        int found = declared_type(r, argument, result);
         if (r->error || found == -1) { if (!r->error) fail(r, EINVAL, "A signal argument cannot be void"); return {}; }
         QByteArray type = meta_type(found).name();
         if (!meta_type(found).isCopyConstructible()) { fail(r, ENOTSUP, "Signal argument metatype is not copyable"); return {}; }
@@ -208,7 +239,7 @@ static std::optional<Declaration> declaration(BqtRequest *r, const BqtValue &wir
     if (wire.count == 3) {
         const auto &attributes = wire.items[2];
         if (!wire_shape(r, attributes, 2, 3) || attributes.items[0].tag != 2 ||
-            attributes.items[1].tag || attributes.items[1].high || (attributes.items[1].word & ~1u) || attributes.items[2].tag) {
+            attributes.items[1].tag || attributes.items[1].high || (attributes.items[1].word & ~3u) || attributes.items[2].tag) {
             if (!r->error) fail(r, EINVAL, "Invalid Qt signal attributes");
             return {};
         }
@@ -223,6 +254,7 @@ static std::optional<Declaration> declaration(BqtRequest *r, const BqtValue &wir
             if (!text.isEmpty() && !identifier(text)) { fail(r, EINVAL, "Invalid Qt signal argument name"); return {}; }
             result.parameter_names.append(text);
         }
+        result.blocking = attributes.items[1].word & 2u;
         if (attributes.items[1].word & 1u) {
             const auto major = attributes.items[2].word, minor = attributes.items[2].high;
             if ((major != 65535 && major > 254) || minor > 254) { fail(r, ERANGE, "Invalid Qt signal revision"); return {}; }
@@ -360,7 +392,11 @@ struct Snapshot {
                 return false;
             }
             if (r->error) return false;
-            capture = native_pointer_capture(capture.pointer, capture.type);
+            // Still inside the emitting call: a value Qt lends (no observed
+            // identity) keeps its call-scoped capture.
+            const bool read_only = capture.read_only;
+            capture = native_pointer_capture(capture.pointer, capture.type, true);
+            capture.read_only = read_only;
         }
         return true;
     }
@@ -380,9 +416,14 @@ public:
             snapshot.values.reserve(types.size());
             for (size_t i = 0; i < types.size(); ++i) {
                 const auto type = metatypes[i];
+                // A reference parameter's slot holds the object itself; its
+                // descriptor's value is the pointer to it.
+                const void *source = arguments[i + 1];
+                const void *pointer = source;
+                if (declaration.references[i]) source = &pointer;
                 snapshot.values.push_back(native_owned_snapshot(type.id() == QMetaType::QVariant
-                    ? *static_cast<const QVariant *>(arguments[i + 1]) : QVariant(type, arguments[i + 1])));
-                snapshot.guard(snapshot.values.back(), 0, synchronous_native_arguments(mode));
+                    ? *static_cast<const QVariant *>(source) : QVariant(type, source)));
+                snapshot.guard(snapshot.values.back(), 0, declaration.blocking || synchronous_native_arguments(mode));
             }
             BqtRequest capture{};
             if (!snapshot.capture_origins(&capture, object)) {
@@ -419,7 +460,7 @@ public:
                   catch (const std::system_error &error) { callback_report_error(error.code().value(), error.what()); }
                   catch (...) { callback_report_error(EFAULT); }
             };
-            if (!callback_signal_call_with_type(connection_id, std::move(deliver), mode, false)) callback_signal_error(connection_id, EPIPE);
+            if (!callback_signal_call_with_type(connection_id, std::move(deliver), mode, declaration.blocking)) callback_signal_error(connection_id, EPIPE);
         } catch (const std::bad_alloc &) { callback_signal_error(connection_id, ENOMEM); }
           catch (const std::length_error &) { callback_signal_error(connection_id, E2BIG); }
           catch (const std::system_error &error) { callback_signal_error(connection_id, error.code().value()); }
@@ -456,9 +497,15 @@ static bool create(BqtRequest *r) {
 }
 static bool matches(const QMetaMethod &method, const Declaration &declaration) {
     if (method.parameterCount() != int(declaration.types.size())) return false;
-    for (size_t i = 0; i < declaration.types.size(); ++i)
-        if (!BendQualifiedTypes::compatible(method.parameterMetaType(int(i)), meta_type(declaration.types[i]))) return false;
+    for (size_t i = 0; i < declaration.types.size(); ++i) {
+        if (declaration.references[i]) {
+            if (QMetaObject::normalizedType(method.parameterTypeName(int(i)).constData()) != declaration.spellings[qsizetype(i)]) return false;
+        } else if (!BendQualifiedTypes::compatible(method.parameterMetaType(int(i)), meta_type(declaration.types[i]))) return false;
+    }
     return true;
+}
+static bool destroyed_signal(const QMetaMethod &method) {
+    return method.enclosingMetaObject() == &QObject::staticMetaObject && method.name() == "destroyed";
 }
 static std::optional<QMetaMethod> find_member(BqtRequest *r, const QMetaObject *meta, const Declaration &declaration, bool signal_only) {
     const int index = signal_only ? meta->indexOfSignal(declaration.signature) : meta->indexOfMethod(declaration.signature);
@@ -487,10 +534,47 @@ static std::optional<QMetaMethod> find_member(BqtRequest *r, const QMetaObject *
 static std::optional<QMetaMethod> find(BqtRequest *r, QObject *object, const Declaration &signal, bool native_destination = false) {
     auto method = find_member(r, object->metaObject(), signal, true);
     if (!method) return {};
-    if (!native_destination && method->enclosingMetaObject() == &QObject::staticMetaObject && method->name() == "destroyed") {
-        fail(r, ENOTSUP, "Use QObject.connect_destroyed for terminal object identities"); return {};
+    if (signal.identity != destroyed_signal(*method) && !(native_destination && !signal.identity)) {
+        fail(r, signal.identity ? EINVAL : ENOTSUP, signal.identity ? "Only QObject.destroyed passes an ObjectIdentity"
+             : "Connect QObject.destroyed() for the identity of a destroyed object"); return {};
     }
     return method;
+}
+// QObject.destroyed(): the registry forgets the sender, and closes its other
+// connections, before Qt reaches this slot. This connection outlives that
+// step, passes the sender's identity and closes after its single delivery.
+static bool connect_destroyed(BqtRequest *r, QObject *object, uint32_t type, uint32_t handler) {
+    CallbackConnectionGuard guard;
+    guard.id = new_connection(r, handler);
+    if (r->error) return true;
+    const uint32_t id = guard.id, sender = r->self;
+    connection(id)->sender = 0;
+    connection(id)->context = new QObject;
+    auto made = QObject::connect(object, &QObject::destroyed, connection(id)->context, [handler, id, sender, type] {
+        auto deliver = [handler, id, sender] {
+            try {
+                CallbackOwnedArguments arguments{sequence_value(1)};
+                arguments.value.items[0].word = sender;
+                int error = callback_invoke(handler, 0, arguments.take(), callback_decode_unit, nullptr);
+                if (error) callback_report_error(error);
+            } catch (const std::bad_alloc &) { callback_report_error(ENOMEM); }
+              catch (...) { callback_report_error(EFAULT); }
+            if (auto *c = connection(id)) close_connection(*c);
+        };
+        if (!callback_signal_call_with_type(id, std::move(deliver), type, false)) callback_signal_error(id, EPIPE);
+    }, Qt::DirectConnection);
+    if (!made) return fail(r, EINVAL, "Qt signal connection failed");
+    connection(id)->connection = new QMetaObject::Connection(made);
+    r->result.word = id;
+    guard.keep = true;
+    return true;
+}
+// The runtime observes these signals (signals.RESERVED_EMISSIONS).
+static bool reserved_emission(const QMetaMethod &method) {
+    static const struct { const char *owner, *name; } reserved[] = {@RESERVED_EMISSIONS@};
+    for (const auto &item : reserved)
+        if (method.name() == item.name && qstrcmp(method.enclosingMetaObject()->className(), item.owner) == 0) return true;
+    return false;
 }
 static bool connect_common(BqtRequest *r, bool typed) {
     NativeCallScope scope;
@@ -503,6 +587,9 @@ static bool connect_common(BqtRequest *r, bool typed) {
     const uint32_t type = typed ? r->arguments[1].word : uint32_t(Qt::AutoConnection);
     if (!callback_connection_type(r, type, true)) return true;
     const uint32_t handler = r->arguments[typed ? 2 : 1].word;
+    if (signal->identity) return connect_destroyed(r, object, type, handler);
+    if (signal->blocking && (type & 3u) == Qt::QueuedConnection)
+        return fail(r, ENOTSUP, "Qt lends this signal's arguments for the call; it cannot be delivered asynchronously");
     CallbackConnectionGuard guard;
     guard.id = new_connection(r, handler);
     if (r->error) return true;
@@ -582,8 +669,12 @@ static bool emit_signal(BqtRequest *r) {
     if (r->error) return true;
     auto signal = declaration(r, r->arguments[0]);
     if (!signal) return true;
-    auto method = find(r, object, *signal);
+    if (signal->identity) return fail(r, EINVAL, "Only QObject.destroyed passes an ObjectIdentity");
+    // As PySide does, emit through the meta-object, which also reaches
+    // QPrivateSignal signals; only the runtime's own observers are refused.
+    auto method = find_member(r, object->metaObject(), *signal, true);
     if (!method) return true;
+    if (reserved_emission(*method)) return fail(r, EPERM, "The runtime observes this Qt signal, so Bend cannot emit it");
     const auto &wire = r->arguments[1];
     if (!wire_shape(r, wire, 2, signal->types.size())) return true;
     std::vector<QVariant> values;
@@ -593,8 +684,12 @@ static bool emit_signal(BqtRequest *r) {
         if (r->error) return true;
     }
     std::vector<void *> arguments(values.size() + 1, nullptr);
-    for (size_t i = 0; i < values.size(); ++i) arguments[i + 1] = meta_type(signal->types[i]).id() == QMetaType::QVariant
-        ? &values[i] : const_cast<void *>(values[i].constData());
+    for (size_t i = 0; i < values.size(); ++i) {
+        void *value = meta_type(signal->types[i]).id() == QMetaType::QVariant ? &values[i] : const_cast<void *>(values[i].constData());
+        // A reference parameter's slot holds the object the pointer names.
+        arguments[i + 1] = signal->references[i] ? *static_cast<void **>(value) : value;
+        if (signal->references[i] && !arguments[i + 1]) return fail(r, EINVAL, "A reference signal argument cannot be null");
+    }
     QMetaObject::activate(object, method->enclosingMetaObject(), method->methodIndex() - method->enclosingMetaObject()->methodOffset(), arguments.data());
     return true;
 }

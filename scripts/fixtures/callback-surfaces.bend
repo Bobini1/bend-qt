@@ -117,7 +117,7 @@ def rest() -> Qt.Action(Unit):
     bytes: Qt.QByteArray <- Qt.QByteArray.fromUtf8("post-body")
     +device: Qt.QBuffer <- Qt.QBuffer.new()
     Qt.QBuffer.setData__QByteArray(device, bytes)
-    opened: Bool <- Qt.QBuffer.open(device, Qt.Flags_QIODeviceBase__OpenModeFlag{1})
+    opened: Bool <- Qt.QBuffer.open(device, Qt.QIODeviceBase.OpenModeFlag.ReadOnly())
     require(opened, "Cannot open the REST upload body")
     +posted: Qt.QNetworkReply <- Qt.QRestAccessManager.postWithHandler__QNetworkRequest_QIODevice_QObject(~Qt.QObject, ~completed, manager, request, Qt.QBuffer.as_QIODevice(device), state, state)
     held: Result<&1, &1, U32 & String, Unit> <- Qt.Action.attempt(Unit, Qt.QBuffer.destroy(device))

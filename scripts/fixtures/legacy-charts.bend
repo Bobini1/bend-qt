@@ -33,7 +33,7 @@ def charts() -> Qt.Action(Unit):
     +chart: Qt.Charts.QChart <- Qt.Charts.QChart.new()
     +series: Qt.Charts.QLineSeries <- Qt.Charts.QLineSeries.new()
     +probe: Qt.QObject <- Qt.QObject.new()
-    connection: Qt.Connection <- Qt.Charts.QLineSeries.connect_pointAdded(~Qt.QObject, ~count_changed, series, probe)
+    connection: Qt.Connection <- Qt.Signal.connect(~Qt.Charts.QLineSeries.pointAdded(), ~Qt.QObject, ~count_changed, series, probe)
     Qt.Charts.QXYSeries.append__F64_F64(Qt.Charts.QLineSeries.as_QXYSeries(series), Qt.F64{0, 0}, Qt.F64{0, 1072693248})
     Qt.Charts.QXYSeries.append__F64_F64(Qt.Charts.QLineSeries.as_QXYSeries(series), Qt.F64{0, 1072693248}, Qt.F64{0, 1073741824})
     count: Qt.Int32 <- Qt.Charts.QXYSeries.count(Qt.Charts.QLineSeries.as_QXYSeries(series))
@@ -49,7 +49,7 @@ def scatter() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +proxy: Qt.DataVisualization.QScatterDataProxy <- Qt.DataVisualization.QScatterDataProxy.new()
     +probe: Qt.QObject <- Qt.QObject.new()
-    connection: Qt.Connection <- Qt.DataVisualization.QScatterDataProxy.connect_itemCountChanged(~Qt.QObject, ~count_changed, proxy, probe)
+    connection: Qt.Connection <- Qt.Signal.connect(~Qt.DataVisualization.QScatterDataProxy.itemCountChanged(), ~Qt.QObject, ~count_changed, proxy, probe)
     +position: Qt.QVector3D <- Qt.QVector3D.new()
     +item: Qt.DataVisualization.QScatterDataItem <- Qt.DataVisualization.QScatterDataItem.new__QVector3D(position)
     index: Qt.Int32 <- Qt.DataVisualization.QScatterDataProxy.addItem(proxy, item)

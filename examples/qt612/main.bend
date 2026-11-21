@@ -23,7 +23,7 @@ def button_demo(+button: Qt.QPushButton) -> Qt.Action(Unit):
     Qt.QPushButton.setText(button, "Bend → Qt 6.12: Zażółć 🎵")
     text: String <- Qt.QPushButton.text(button)
     Qt.Action.lift(Unit, IO.print(text))
-    Qt.Connection.with(Unit, Qt.QPushButton.connect_clicked(~Qt.QPushButton, ~clicked, button, button),
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QPushButton.clicked(), ~Qt.QPushButton, ~clicked, button, button),
       connection => click_demo(button, connection))
 
 # The timer fires inside the application's event loop and ends it.
@@ -39,7 +39,7 @@ def timer_demo(+timer: Qt.QTimer) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QTimer.setSingleShot(timer, True{})
     Qt.QTimer.start__Int32(timer, Qt.Int32{10})
-    Qt.Connection.with(Unit, Qt.QTimer.connect_timeout(~U32, ~timeout, timer, 7), run_loop)
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QTimer.timeout(), ~U32, ~timeout, timer, 7), run_loop)
 
 def point_demo(point: Qt.QPoint) -> Qt.Action(Unit):
   do Qt.Action<Unit>:

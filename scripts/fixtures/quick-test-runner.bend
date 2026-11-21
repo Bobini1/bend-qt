@@ -39,7 +39,7 @@ def finished(object: Qt.QObject) -> Qt.Action(Unit):
 def write(path: String) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     +file: Qt.QFile <- Qt.QFile.new__String(path)
-    opened: Bool <- Qt.QFile.open__Flags_QIODeviceBase__OpenModeFlag(file, Qt.Flags_QIODeviceBase__OpenModeFlag{2})
+    opened: Bool <- Qt.QFile.open__QIODeviceBase_OpenModeFlag(file, Qt.QIODeviceBase.OpenModeFlag.WriteOnly())
     require(opened, "Quick Test fixture file did not open")
     source: Qt.QByteArray <- Qt.QByteArray.fromUtf8("import QtQuick\nimport QtTest\nTestCase { name: 'BendRunner'; function test_value() { compare(typeof bendAnswer === 'undefined' ? 42 : bendAnswer, 42) } }\n")
     size: Qt.Int64 <- Qt.QFile.write__QByteArray(file, source)

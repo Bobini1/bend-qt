@@ -90,7 +90,7 @@ def timer(+value: Qt.QTimer) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QTimer.setSingleShot(value, True{})
     Qt.QTimer.setInterval__Int32(value, Qt.Int32{5})
-    Qt.Connection.with(Unit, Qt.QTimer.connect_timeout(~U32, ~timed_out, value, 6), connection => wait_timer(value, connection))
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QTimer.timeout(), ~U32, ~timed_out, value, 6), connection => wait_timer(value, connection))
 
 def demo() -> Qt.Action(Unit):
   do Qt.Action<Unit>:

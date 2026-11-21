@@ -10,11 +10,11 @@ def QTest.QTouchEventSequence.wrap(result: Result<&1, &1, U32 & String, U32>) ->
     case Fail{error}: Fail{error}
     case Done{word}: Done{QTest.QTouchEventSequence{word}}
 
-def QTest.createTouchDeviceWith(deviceType: QInputDevice.DeviceType, capabilities: Flags_QInputDevice__Capability) -> Action(QPointingDevice):
-  Internal.TouchSequence.createDevice(QInputDevice.DeviceType.word(deviceType), Flags_QInputDevice__Capability.word(capabilities))
+def QTest.createTouchDeviceWith(deviceType: QInputDevice.DeviceType, capabilities: QInputDevice.Capability) -> Action(QPointingDevice):
+  Internal.TouchSequence.createDevice(QInputDevice.DeviceType.word(deviceType), QInputDevice.Capability.word(capabilities))
 
 def QTest.createTouchDevice() -> Action(QPointingDevice):
-  QTest.createTouchDeviceWith(QInputDevice.DeviceType.TouchScreen(), Flags_QInputDevice__Capability{QInputDevice.Capability.word(QInputDevice.Capability.Position())})
+  QTest.createTouchDeviceWith(QInputDevice.DeviceType.TouchScreen(), QInputDevice.Capability.Position())
 
 def QTest.touchEventWithAutoCommit(window: QWindow, device: QPointingDevice, autoCommit: Bool) -> Action(QTest.QTouchEventSequence):
   do Action<QTest.QTouchEventSequence>:

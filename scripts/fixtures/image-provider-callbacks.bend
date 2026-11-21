@@ -36,7 +36,7 @@ def provider_demo(+provider: Qt.QQuickImageProvider) -> Qt.Action(Unit):
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    Qt.QQuickImageProvider.with(Unit, Qt.QQuickImageProvider.newOverride(Qt.QQmlImageProviderBase.ImageType.Image(), Qt.Flags_QQmlImageProviderBase__Flag{0}), provider => provider_demo(provider))
+    Qt.QQuickImageProvider.with(Unit, Qt.QQuickImageProvider.newOverride(Qt.QQmlImageProviderBase.ImageType.Image(), Qt.QQmlImageProviderBase.Flag{0}), provider => provider_demo(provider))
     objects: U32 <- Qt.Runtime.liveObjects()
     require(U32.is_eq(objects, 0), "The image provider handler leaked handles")
     Qt.Action.lift(Unit, IO.print("QT612_IMAGE_PROVIDER_CALLBACKS_OK image=1 output_size=1 null_preserved=1 invalid_reply_rejected=1 objects=0"))

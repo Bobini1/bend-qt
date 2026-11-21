@@ -1,65 +1,138 @@
-"""Direct typed signal connectors, sharing internal handler decoders.
+"""Native Qt signals as Signal declarations, and shared handler decoders.
 
-`QPushButton.connect_clicked(~S, ~f, button, state)` connects the Bend handler
-`f`, which Qt then calls like a slot: at once, on Qt's own stack, when the
-signal is emitted on the main thread, and through Qt's queued delivery when it
-is emitted on another thread. Arguments are valid during the call, and a
-handler may change a mutable reference argument by returning its new value.
+As in PySide, a native signal and one declared in Bend are the same kind of
+value. `QSlider.rangeChanged()` declares the native signal of QSlider, and
+`Signal.connect`, `Signal.connectWith`, `Signal.emit` and the signal
+destinations find it by name and argument types in the object's meta-object.
+The declaration carries the sender's class, so
+`Signal.connect(~Qt.QSlider.rangeChanged(), ~S, ~f, slider, state)` takes a
+QSlider and `f: S -> Int32 -> Int32 -> Action(Unit)`.
 
-`QObject.destroyed` passes the identity of the destroyed object: its handle
-is already invalid when Qt emits the signal.
+Arguments are copied, except a value class passed by non-const reference or
+pointer, such as the QAuthenticator of authenticationRequired. The handler then
+gets a borrowed handle to Qt's own object, valid during the call, as PySide
+passes it, and such an argument is delivered only synchronously. A QObject
+passed by reference arrives as its usual handle. `QObject.destroyed()` passes
+the identity of the destroyed object, whose handle is already invalid.
+
+Signal.emit uses QMetaObject::activate, as PySide does, so it also reaches
+signals Qt declares with QPrivateSignal. The runtime refuses to emit the
+signals in RESERVED_EMISSIONS, which it observes itself.
 """
 import re
 
-from callbacks import _conversion, _record, _decode_output, native
-import effect_transport
-import volume_data
+from conversions import native as native_type
 
 UNIT = dict(kind='void', bend='Unit', raw='Unit')
 CONNECTION = dict(kind='connection', bend='Connection', raw='U32')
+SIGNAL = dict(kind='signal', bend='Signal', raw='Unit')
+# The runtime's descriptor name for the identity QObject.destroyed passes.
+IDENTITY = 'BendObjectIdentity'
+
+# The runtime observes these signals to release native resources or to run
+# Bend's scheduler. An emission from Bend would free resources that are still
+# in use or re-enter the scheduler, so Signal.emit refuses them.
+RESERVED_EMISSIONS = {
+    'QObject::destroyed': 'The runtime releases handles and retained values when this signal reports destruction',
+    'QQuickWindow::beforeSynchronizing': 'The runtime collects released scene graph resources on this render-thread signal',
+    'QQuickWindow::afterSynchronizing': 'The runtime finishes render factory work on this render-thread signal',
+    'QQuickWindow::sceneGraphInvalidated': 'The runtime releases scene graph resources when this signal reports invalidation',
+    'QOpenGLContext::aboutToBeDestroyed': 'The runtime releases GL resources when this signal reports context destruction',
+    'QAbstractEventDispatcher::aboutToBlock': "The runtime runs Bend's scheduler from this signal",
+    'QAbstractEventDispatcher::awake': "The runtime runs Bend's scheduler from this signal",
+}
 
 
-def c_ident(name):
-    return re.sub(r'[^a-zA-Z0-9_]', '_', name)
+def ident(name):
+    return name.replace('::', '.')
 
 
-def describe(g, f, overloaded):
-    """The public entry of signal `f`: its arguments and its payload shape."""
-    terminal = f['declaring_class'] == 'QObject' and f['name'] == 'destroyed'
-    if overloaded and any('QPrivateSignal' in s for s in f['source_signatures']):
-        raise ValueError('Overloaded private-marker signal needs a signature adapter')
-    args, outputs = [], []
-    if terminal:
+def normalized(cpp):
+    """A C++ type spelling as Qt normalizes it, such as `QAction*`."""
+    return re.sub(r'\s*([*&,<>])\s*', r'\1', cpp.strip())
+
+
+def argument(g, a):
+    """The runtime descriptor name and Bend conversion of one signal argument."""
+    if a.get('removed') or a.get('array'):
+        raise ValueError('Signal array or removed argument needs an explicit converter')
+    source = a['type']
+    if source['reference'] == 2:
+        raise ValueError('A signal cannot pass an rvalue reference')
+    cls = g.classes.get(source['name'])
+    identity = cls and (cls['qobject'] or cls.get('native_object'))
+    borrowed = cls and not identity and cls.get('value') and source['name'] in g.ids
+    if source['pointers'] or (source['reference'] and (identity or (borrowed and not source['const']))):
+        if source['pointers'] > 1 or not (identity or borrowed):
+            raise ValueError('A signal pointer argument needs an explicit lifetime policy')
+        if identity:
+            t = g.type(dict(source, pointers=1, reference=0, cpp=source['name'] + ' *'))
+        else:
+            # Qt's own value, borrowed for the call (see the module doc).
+            const = 'const ' if source['const'] else ''
+            t = dict(kind='object', name=source['name'], bend=ident(source['name']), raw='U32',
+                     cpp=const + source['name'] + ' *', pointer=True, native_const=bool(source['const']))
+        g.conversions.register(t)
+        name = normalized(native_type(t))
+        return (name.removesuffix('*') + '&' if source['reference'] else name), t
+    if source['reference'] and not source['const']:
+        raise ValueError('A mutable signal argument of this type needs a reply policy')
+    t = g.type(source)
+    if t['kind'] == 'void' or g.conversions.contains(t, ('string_view', 'byte_view', 'latin1_view', 'std_string')):
+        raise ValueError('Signal arguments require owning representations')
+    if t['kind'] == 'value' and not g.classes[t['name']].get('copyable', False):
+        raise ValueError('Signal value arguments must be copyable')
+    enum = g.enums.get(t['name'][7:-1] if t['kind'].startswith('flags') else t.get('name'))
+    if t['kind'].startswith(('enum', 'flags')) and enum and not enum.get('public', True):
+        raise ValueError('A protected enum signal argument has no public native metatype name')
+    g.conversions.register(t)
+    return normalized(native_type(t)), t
+
+
+def describe(g, f):
+    """The arguments of native signal `f`: (descriptor name, conversion) pairs."""
+    if f['declaring_class'] == 'QObject' and f['name'] == 'destroyed':
         g.types['ObjectIdentity'] = 'scalar'
-        args = [g.conversions.register(dict(kind='u32', bend='ObjectIdentity', raw='U32'))]
-    elif volume_data.signal_arguments(g, f) is not None:
-        args = volume_data.signal_arguments(g, f)
-    else:
-        for i, a in enumerate(f['arguments']):
-            if a.get('removed') or a.get('array'):
-                raise ValueError('Signal array or removed argument needs an explicit converter')
-            source = a['type']
-            value = g.classes.get(source['name'])
-            pointer_copy = source['pointers'] == 1 and value and value.get('value') and value.get('copyable')
-            t = _conversion(g, dict(source, pointers=0, reference=0, const=False, cpp=source['name']) if pointer_copy else source)
-            t['callback_pointer_copy'] = bool(pointer_copy)
-            args.append(t)
-            if not source['const'] and (source['reference'] == 1 or pointer_copy) and t['kind'] != 'object':
-                outputs.append((i, t))
-    payload = _record(g, args, 'SignalArgs_')
-    reply = _record(g, [t for _, t in outputs], 'SignalReply_') if outputs else UNIT
-    name = 'SignalHandler_' + ('_'.join(c_ident(t['bend']) for t in args) or 'Unit')
-    if outputs:
-        name += '_Reply_' + '_'.join(str(i) for i, _ in outputs)
-    kind = g.signal_kinds.get(name)
-    if kind is None:
-        kind = g.signal_kinds[name] = dict(name=name, payload=payload, reply=reply,
-                                           arguments=[t['bend'] for t in args], mutable=bool(outputs))
-    elif (kind['payload']['bend'], kind['reply']['bend']) != (payload['bend'], reply['bend']):
-        raise ValueError('Two signal payload shapes share the name ' + name)
-    return dict(args=args, outputs=outputs, kind=kind, terminal=terminal, overloaded=overloaded,
-                private_marker=any('QPrivateSignal' in s for s in f.get('source_signatures', [])),
-                result=CONNECTION)
+        return dict(args=[(IDENTITY, dict(kind='identity', bend='ObjectIdentity', raw='U32'))])
+    return dict(args=[argument(g, a) for a in f['arguments']])
+
+
+def descriptor(g, m, doc):
+    """The Bend declaration of native signal `m` for its receiver class."""
+    from module_partitions import schema_dependency
+    owner = ident(m['class'])
+    arguments = []
+    flags = 2 if any(borrowed(g, t) for _, t in m['signal']['args']) else 0
+    for name, t in m['signal']['args']:
+        if name == IDENTITY:
+            arguments.append('ObjectIdentity.arg()')
+        else:
+            arguments.append(f'TypeDescriptor{{{t["bend"]}, "{name}", value => {t["codec"]}.encode(value), '
+                             f'wire => {t["codec"]}.decode(wire), {schema_dependency(g)}}}')
+    g.bend += [doc, f'def {m["bend_name"]}() -> Signal:',
+               f'  Internal.Signal.native("{m["function"]["name"]}", [{", ".join(arguments)}], {flags}, '
+               f'SignalSender{{{owner}, value => {owner}.word(value)}})', '']
+
+
+def borrowed(g, t):
+    """Whether the argument is Qt's own value, borrowed for the call."""
+    return t['kind'] == 'object' and not g.classes[t['name']]['qobject'] and not g.classes[t['name']].get('native_object')
+
+
+def reserved_cpp():
+    return ', '.join('{"' + owner + '", "' + name + '"}'
+                     for owner, name in (key.split('::') for key in sorted(RESERVED_EMISSIONS)))
+
+
+def inventory(g):
+    excluded = {}
+    for e in g.excluded:
+        if e.get('signal'):
+            excluded[e['reason']] = excluded.get(e['reason'], 0) + 1
+    return dict(declarations=sum('signal' in m for m in g.methods), excluded=dict(sorted(excluded.items())),
+                reserved_emissions=RESERVED_EMISSIONS,
+                borrowed_arguments=sorted({name for m in g.methods if 'signal' in m
+                                           for name, t in m['signal']['args'] if borrowed(g, t)}))
 
 
 def handler_type(arguments, result):
@@ -118,189 +191,9 @@ def invoke_value(g, public, value, decode):
 
 
 def emit(g):
-    """Connection scope and shared internal handler functions."""
-    g.signal_connection_method_names = {method['bend_name'] for method in g.methods}
+    """The Connection handle and its scope."""
     g.types['Connection'] = 'handle'
     g.emit_effect('Connection.disconnect', [('self', CONNECTION)], UNIT, 2, has_self=True)
     g.emit_scope('Connection', 'disconnect')
     import scope_actions
     scope_actions.escapes(g, 'Connection', 1)
-    for name, kind in sorted(g.signal_kinds.items()):
-        invoke(g, name, kind['arguments'], kind['payload'], kind['reply'])
-
-
-def entry(g, m, operation, doc=None):
-    """Connect a checked Bend handler to signal `m` of one object."""
-    owner = m['class'].replace('::', '.')
-    kind = m['signal']['kind']
-    function = handler_type(kind['arguments'], kind['reply']['bend'])
-    g.emit_effect(m['bend_name'], [('self', dict(bend=owner, raw='U32')),
-                  ('state', effect_transport.handler(function, kind['name'] + '.invoke'))],
-                  CONNECTION, operation, has_self=True, doc=doc)
-    public = m['connection_type_name']
-    if public in g.signal_connection_method_names:
-        raise ValueError('Native method conflicts with a connection-type helper: ' + public)
-    variants = getattr(g, 'signal_connection_type_operations', None)
-    if variants is None:
-        variants = g.signal_connection_type_operations = {}
-    with_operation = variants.get(operation)
-    if with_operation is None:
-        with_operation = g.next_id
-        g.next_id += 1
-        variants[operation] = with_operation
-        g.method_case(dict(m, signal_connection_type=True), with_operation)
-    g.emit_effect(public, [('self', dict(bend=owner, raw='U32')),
-                  ('connectionType', dict(bend='Qt.ConnectionType', raw='U32')),
-                  ('state', effect_transport.handler(function, kind['name'] + '.invoke'))],
-                  CONNECTION, with_operation, has_self=True, doc=doc)
-
-
-def connect_case(g, m):
-    """Native code connecting a handler to signal `m`; `self` is checked."""
-    f, signal = m['function'], m['signal']
-    args, outputs = signal['args'], signal['outputs']
-    object_references = {i for i, t in enumerate(args)
-                         if t['kind'] == 'object' and not t.get('pointer')
-                         and g.classes[t['name']]['qobject']}
-    # Qt queues pointer values, not temporary pointees. Snapshot inputs on
-    # emission; mutable replies instead keep that emitting thread waiting.
-    snapshot = not outputs and any(t.get('signal_expression') or t.get('callback_pointer_copy') for t in args)
-    with_type = m.get('signal_connection_type', False)
-    # Capture while the emitter still owns raw text/byte storage. Qt's queued
-    # argument copy can otherwise retain a fromRawData alias until too late.
-    forwarded = True
-    owner = f['declaring_class']
-    parameters = ', '.join(a['type']['cpp'] + f' a{i}' for i, a in enumerate(f['arguments']))
-    types = ', '.join(a['type']['cpp'] for a in f['arguments'])
-    member = f'&{owner}::{f["name"]}'
-    # Inherited overloads can be absent from the declaring class's extracted
-    # function list. Always select the exact member type unless Qt
-    # deliberately hides QPrivateSignal.
-    if not signal['private_marker']:
-        qualifier = ' const' if f['const'] else ''
-        member = f'static_cast<void ({owner}::*)({types}){qualifier}>({member})'
-    import protected_members
-    member = protected_members.member(g, f) or member
-    lines = [f'uint32_t handler = r->arguments[{1 if with_type else 0}].word;',
-             f'uint32_t requested_type = {"r->arguments[0].word" if with_type else "0"};',
-             'if (!callback_connection_type(r, requested_type)) return true;',
-             'CallbackConnectionGuard guard;',
-             'guard.id = new_connection(r, handler);',
-             'if (r->error) return true;',
-             'uint32_t id = guard.id, sender = r->self;',
-             # The context object lives on the main thread, so Qt delivers
-             # there: directly for an emission on the main thread, queued
-             # otherwise.
-             'connection(id)->context = new QObject;']
-    if outputs:
-        lines.insert(3, 'if ((requested_type & 3u) == Qt::QueuedConnection) return fail(r, ENOTSUP, "A mutable signal reply cannot be delivered asynchronously");')
-    if signal['terminal']:
-        # The registry forgets a destroyed sender, and closes its connections,
-        # before Qt reaches this slot. This one outlives that step and closes
-        # itself after its single delivery.
-        lines += ['connection(id)->sender = 0;',
-                  f'auto made = QObject::connect(self, {member}, connection(id)->context, [handler, id, sender, requested_type]({parameters}) {{',
-                  '    auto deliver = [handler, id, sender] {',
-                  '    try {',
-                  '        CallbackOwnedArguments arguments{sequence_value(1)};',
-                  '        arguments.value.items[0].word = sender;',
-                  '        int error = callback_invoke(handler, 0, arguments.take(), callback_decode_unit, nullptr);',
-                  '        if (error) callback_report_error(error);',
-                  '    } catch (const std::bad_alloc &) { callback_report_error(ENOMEM); }',
-                  '      catch (...) { callback_report_error(EFAULT); }',
-                  '    if (auto *c = connection(id)) close_connection(*c);',
-                  '    };',
-                  '    if (!callback_signal_call_with_type(id, std::move(deliver), requested_type, false)) callback_signal_error(id, EPIPE);',
-                  '}, Qt::DirectConnection);']
-    else:
-        captures = 'handler, sender, id, requested_type' if forwarded else 'handler, sender'
-        lines += [f'auto made = QObject::connect(self, {member}, connection(id)->context, [{captures}]({parameters}) {{']
-        if forwarded:
-            lines += ['    try {']
-            captures = ['handler', 'sender']
-            if not outputs:
-                lines += ['    BendSignalApi::Snapshot snapshots;']
-            for i, t in enumerate(args):
-                expression = f'a{i}'
-                if snapshot and t.get('signal_expression'):
-                    expression = t['signal_expression'].format(a=f'a{i}')
-                elif snapshot and t.get('callback_pointer_copy'):
-                    expression = f'a{i} ? std::make_optional(*a{i}) : std::nullopt'
-                if not outputs:
-                    # QObject references preserve the object's identity. They
-                    # cannot be copied, even when the slot returns no reply.
-                    if i in object_references:
-                        expression = f'&a{i}'
-                    lines += [f'    auto copied{i} = native_owned_snapshot({expression});',
-                              f'    snapshots.guard(QVariant::fromValue(copied{i}), 0, BendSignalApi::synchronous_native_arguments(requested_type));']
-                    expression = f'std::move(copied{i})'
-                captures.append(f'a{i} = {expression}')
-            if not outputs:
-                lines += ['    BqtRequest capture{};',
-                          '    if (!snapshots.capture_origins(&capture, sender)) { callback_signal_error(id, capture.error); return; }']
-                captures.append('snapshots = std::move(snapshots)')
-            capture = '&' if outputs else ', '.join(captures)
-            lines += [f'    auto deliver = [{capture}]() mutable {{']
-            if not outputs:
-                lines += ['    if (!snapshots.live()) { callback_report_error(ESTALE, "A signal argument QObject was destroyed before delivery"); return; }']
-        lines += ['    try {', '        BqtRequest conversion{};', '        NativeCallScope native_scope;', '        CallbackNativeArguments native_arguments;',
-                  f'        CallbackOwnedArguments arguments{{sequence_value({len(args)})}};',
-                  '        { NativeAggregateInputScope native_fields(&conversion);']
-        if not outputs:
-            lines += ['        if (!snapshots.stage_native_arguments(&conversion, native_arguments, sender)) { callback_report_error(conversion.error, conversion.message); return; }',
-                      '        if (!snapshots.capture_origins(&conversion, sender)) { callback_report_error(conversion.error, conversion.message); return; }']
-        for i, t in enumerate(args):
-            if t.get('signal_expression'):
-                expression = f'a{i}' if snapshot else t['signal_expression'].format(a=f'a{i}')
-                lines += [f'        arguments.value.items[{i}] = write_{t["native_codec"]}(&conversion, {expression});']
-            elif t.get('callback_pointer_copy'):
-                lines += [f'        if (a{i}) arguments.value.items[{i}] = write_{t["native_codec"]}(&conversion, *a{i});']
-            elif t['kind'] == 'object' and not g.classes[t['name']]['qobject']:
-                value = f'a{i}' if t.get('pointer') else f'&a{i}'
-                lines += [f'        arguments.value.items[{i}] = native_arguments.borrow_argument(&conversion, {value}, {g.ids[t["name"]]}, sender);']
-            elif t.get('callback_enum'):
-                expression = f'a{i}.toInt()' if t['kind'].startswith('flags') else f'a{i}'
-                lines += [f'        arguments.value.items[{i}] = wide_value(uint64_t({expression}));']
-            else:
-                captured_pointer = forwarded and not outputs and i in object_references
-                value = f'&a{i}' if t['kind'] == 'object' and not t.get('pointer') and not captured_pointer else f'a{i}'
-                lines += [f'        arguments.value.items[{i}] = write_{t["native_codec"]}(&conversion, {value});']
-        if not outputs:
-            lines += ['        if (!conversion.error) snapshots.finish_output(&conversion, arguments.value);']
-        lines += ['        }', '        if (conversion.error) { callback_report_error(conversion.error, conversion.message); return; }']
-        if outputs:
-            lines += ['        struct Reply {', *[f'            {native(t)} *out{i};' for i, t in outputs], '        };',
-                      '        Reply result{' + ', '.join(f'a{i}' if t.get('callback_pointer_copy') else f'&a{i}' for i, t in outputs) + '};',
-                      '        auto decode = [](BqtRequest *r, const BqtValue &wire, void *destination) {',
-                      f'            if (!wire_shape(r, wire, 2, {len(outputs)})) return false;',
-                      '            auto *target = static_cast<Reply *>(destination);']
-            for n, (i, t) in enumerate(outputs):
-                lines += ['            ' + line for line in _decode_output(i, t, f'wire.items[{n}]')]
-            lines += [f'            if (target->out{i}) *target->out{i} = std::move(*out{i});' for i, t in outputs]
-            lines += ['            return true;', '        };',
-                      '        int error = callback_invoke(handler, sender, arguments.take(), decode, &result);']
-        else:
-            lines += ['        int error = callback_invoke(handler, sender, arguments.take(), callback_decode_unit, nullptr);']
-        lines += ['        if (error) callback_report_error(error);',
-                  '    } catch (const std::bad_alloc &) { callback_report_error(ENOMEM); }',
-                  '      catch (const std::system_error &error) { callback_report_error(error.code().value()); }',
-                  '      catch (...) { callback_report_error(EFAULT); }']
-        if forwarded:
-            lines += ['    };',
-                      f'    if (!callback_signal_call_with_type(id, std::move(deliver), requested_type, {str(bool(outputs)).lower()})) callback_signal_error(id, EPIPE);',
-                      '    } catch (const std::bad_alloc &) { callback_signal_error(id, ENOMEM); }',
-                      '      catch (const std::system_error &error) { callback_signal_error(id, error.code().value()); }',
-                      '      catch (...) { callback_signal_error(id, EFAULT); }',
-                      '}, Qt::ConnectionType(uint32_t(Qt::DirectConnection) | (requested_type & uint32_t(Qt::SingleShotConnection))));']
-        else:
-            lines += ['});']
-    lines += ['if (!made) return fail(r, EINVAL, "Qt signal connection failed");',
-              'if (auto *value = connection(id)) value->connection = new QMetaObject::Connection(made);',
-              'guard.keep = true;', 'r->result.word = id;']
-    return lines
-
-
-def inventory(g):
-    return [dict(handler=name, arguments=kind['arguments'], payload=kind['payload']['bend'],
-                 reply=kind['reply']['bend'], mutable_reply=kind['mutable'])
-            for name, kind in sorted(g.signal_kinds.items())]

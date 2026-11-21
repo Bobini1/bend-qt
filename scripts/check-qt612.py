@@ -668,11 +668,6 @@ def native(c):
                          env, ROOT, timeout=600)
     print(signal_shards.stdout.strip())
     receipt['native_signal_shards'] = json.loads((OUT / 'native-signal-shards/receipt.json').read_text())
-    qobject_reference_signals = run(['python3', ROOT / 'scripts/check-qt-qobject-reference-signals.py',
-                                    '--qt-root', args.qt_prefix, '--work', OUT / 'qobject-reference-signals'],
-                                   env, ROOT, timeout=180)
-    print(qobject_reference_signals.stdout.strip())
-    receipt['qobject_reference_signals'] = json.loads((OUT / 'qobject-reference-signals/receipt.json').read_text())
     audio_buffer_bytes = run(['python3', ROOT / 'scripts/check-qt-audio-buffer-bytes.py',
                               '--qt-root', args.qt_prefix, '--work', OUT / 'audio-buffer-native-bytes'],
                              env, ROOT, timeout=180)

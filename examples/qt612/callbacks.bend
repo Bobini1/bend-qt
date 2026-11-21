@@ -92,7 +92,7 @@ def connected(+probe: Qt.QObject, connection: Qt.Connection) -> Qt.Action(Unit):
 def registration(+probe: Qt.QObject, +object: Qt.QObject) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
     Qt.QObject.Virtual.connectNotify.handle(~Qt.QObject, ~notified, object, probe)
-    Qt.Connection.with(Unit, Qt.QObject.connect_objectNameChanged(~Unit, ~ignore_name, object, Unit{}),
+    Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QObject.objectNameChanged(), ~Unit, ~ignore_name, object, Unit{}),
       connection => connected(probe, connection))
 
 def empty() -> Qt.Action(Unit):

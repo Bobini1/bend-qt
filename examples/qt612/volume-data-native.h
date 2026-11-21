@@ -37,58 +37,6 @@ static void volume_data_checks()
     BQT_VOLUME_SLICE(&request);
     assert(request.error == ERANGE);
     discard_value(snapshot); release(slice);
-    request = {}; request.self = volume; request.arguments[0].word = 92;
-    BQT_VOLUME_SIGNAL(&request);
-    assert(!request.error);
-    const auto connection = request.result.word;
-    // The emitting thread's data is copied before it can change; the handler
-    // runs later on the main thread with that copy.
-    unsigned delivered = 0;
-    uint32_t expected_handler = 92;
-    test_handler = [&](uint32_t handler, const BqtValue *call) {
-        assert(handler == expected_handler && QThread::currentThread() == main_thread);
-        assert(call && call->tag == 2 && call->count == 2);
-        const BqtValue &arguments = call->items[1];
-        assert(arguments.tag == 2 && arguments.count == 1);
-        const BqtValue &bytes = arguments.items[0];
-        assert(bytes.count == 3 && bytes.items[1].word == 7);
-        ++delivered;
-        return int(BQT_HANDLER_DONE);
-    };
-    std::thread other([value] {
-        QList<uchar> local{1, 7, 9};
-        emit value->textureDataChanged(&local);
-        local.fill(0);
-    });
-    other.join();
-    assert(!delivered);
-    QCoreApplication::sendPostedEvents();
-    assert(delivered == 1);
-    // Disconnect releases the handler even if an emission is already queued.
-    // Reusing its slot must not redirect the old emission to the new handler.
-    std::thread cancelled([value] {
-        QList<uchar> local{1, 7, 9};
-        emit value->textureDataChanged(&local);
-    });
-    cancelled.join();
-    const auto releases = test_releases;
-    request = {}; request.self = connection;
-    disconnect_signal(&request);
-    assert(!request.error && test_releases == releases + 1);
-    request = {}; request.self = volume; request.arguments[0].word = 93;
-    BQT_VOLUME_SIGNAL(&request);
-    assert(!request.error && request.result.word != connection);
-    const auto replacement = request.result.word;
-    expected_handler = 93;
-    QCoreApplication::sendPostedEvents();
-    assert(delivered == 1);
-    QList<uchar> immediate{1, 7, 9};
-    emit value->textureDataChanged(&immediate);
-    assert(delivered == 2);
-    request = {}; request.self = replacement;
-    disconnect_signal(&request);
-    assert(!request.error && test_releases == releases + 2);
-    test_handler = nullptr;
     request = {};
     auto *first = new QImage(2, 1, QImage::Format_ARGB32); first->fill(qRgb(1, 2, 3));
     auto *second = new QImage(2, 1, QImage::Format_ARGB32); second->fill(qRgb(4, 5, 6));
@@ -109,6 +57,6 @@ static void volume_data_checks()
     assert(request.error == EINVAL && value->textureWidth() == 2);
     discard_value(request.arguments[0]);
     release(one); release(two); release(volume);
-    std::puts("QT612_NATIVE_VOLUME_DATA_OK owning_bytes=1 snapshots=1 slice_extent=1 image_planes=1 dimensions_rejected=1 other_thread_signal_copy=1 disconnect_queued=1 reuse_guard=1 direct_handler=1 cleanup=1");
+    std::puts("QT612_NATIVE_VOLUME_DATA_OK owning_bytes=1 snapshots=1 slice_extent=1 image_planes=1 dimensions_rejected=1 cleanup=1");
 }
 #endif

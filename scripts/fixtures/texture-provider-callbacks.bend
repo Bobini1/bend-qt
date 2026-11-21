@@ -27,7 +27,7 @@ def provider_demo(+provider: Qt.QQuickImageProvider) -> Qt.Action(Unit):
 
 def checks() -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    Qt.QQuickImageProvider.with(Unit, Qt.QQuickImageProvider.newOverride(Qt.QQmlImageProviderBase.ImageType.Texture(), Qt.Flags_QQmlImageProviderBase__Flag{0}), provider => provider_demo(provider))
+    Qt.QQuickImageProvider.with(Unit, Qt.QQuickImageProvider.newOverride(Qt.QQmlImageProviderBase.ImageType.Texture(), Qt.QQmlImageProviderBase.Flag{0}), provider => provider_demo(provider))
     objects: U32 <- Qt.Runtime.liveObjects()
     require(U32.is_eq(objects, 0), "The texture factory handler leaked handles")
     Qt.Action.lift(Unit, IO.print("QT612_TEXTURE_PROVIDER_CALLBACKS_OK native_factory=1 output_size=1 ownership_transfer=1 native_destruction=1 objects=0"))

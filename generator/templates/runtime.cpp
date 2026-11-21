@@ -1418,6 +1418,21 @@ template<class T, class Derived> static uint32_t own_derived(BqtRequest *r, Deri
     return id;
 }
 
+// A value class Qt lends to a signal handler for one call, such as the
+// QAuthenticator of authenticationRequired. CallbackNativeArguments registered
+// it before the handler runs and invalidates it when the call returns.
+template<class T> static uint32_t __attribute__((noinline)) borrowed_value(BqtRequest *r, T *value, uint16_t type)
+{
+    if (!value) return 0;
+    const void *address = value;
+    for (uint32_t i = 1; i < capacity; ++i) {
+        auto &e = entries[i];
+        if (e.value == address && e.type == type && !e.object && !e.owned) return token(i, e.generation);
+    }
+    fail(r, ESTALE, "A borrowed Qt value is valid only during its call");
+    return 0;
+}
+
 template<class T> static uint32_t __attribute__((noinline)) borrow(BqtRequest *r, T *value, uint16_t type)
 {
     if (!value) return 0;

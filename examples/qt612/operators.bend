@@ -69,7 +69,7 @@ def binary_prefix(bytes: List<&2, U32>) -> Qt.Action(Unit):
 
 def binary(+bytes: Qt.QByteArray) -> Qt.Action(Unit):
   do Qt.Action<Unit>:
-    Qt.QDataStream.with(Unit, Qt.QDataStream.new__QByteArray_Flags_QIODeviceBase__OpenModeFlag(bytes, Qt.Flags_QIODeviceBase__OpenModeFlag{2}), write)
+    Qt.QDataStream.with(Unit, Qt.QDataStream.new__QByteArray_QIODeviceBase_OpenModeFlag(bytes, Qt.QIODeviceBase.OpenModeFlag.WriteOnly()), write)
     data: List<&2, U32> <- Qt.QByteArray.toBytes(bytes)
     binary_prefix(data)
     Qt.QDataStream.with(Unit, Qt.QDataStream.new__QByteArray(bytes), stream => read(stream))

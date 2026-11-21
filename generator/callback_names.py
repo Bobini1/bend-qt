@@ -15,7 +15,6 @@ and pinned in the same name lock as ordinary entries:
 import re
 
 import overload_names
-import native_operators
 from callbacks import bend_ident, ident
 
 FAMILY_PATTERN = re.compile(r'(.+)\.(Virtual|Handler)\.(\w+?)_(\d+)')
@@ -90,12 +89,6 @@ def assign(g):
     methods = _method_entries(g)
     functions = _function_entries(g)
     overrides = _override_entries(g)
-    signal_types = [(method, dict(owner=method['class'],
-                     base='connect_' + ident(method['function']['name']) + 'With',
-                     key='signal-with-type ' + native_operators.identity(method['function']),
-                     inputs=tuple(t['bend'] for t in method['signal']['args']), result='Connection',
-                     cpp=[a['type'] for a in method['function']['arguments']]))
-                    for method in g.methods if method['function']['signal']]
     import qt_objects
     eligible = {c['name'] for c in g.callback_classes if qt_objects.eligible(g, c)}
     schemas = [(constructor, entry, dict(entry, base='newAs',
@@ -103,9 +96,7 @@ def assign(g):
                 result='ObjectType.Instance(schema)'))
                for constructor, _, entry in overrides if entry['owner'] in eligible]
     overload_names.assign_family(g, g.name_lock, list(methods.values()) + [e for _, e in functions]
-                                + [e for _, _, e in overrides] + [e for _, _, e in schemas] + [e for _, e in signal_types])
-    for method, entry in signal_types:
-        method['connection_type_name'] = entry['name']
+                                + [e for _, _, e in overrides] + [e for _, _, e in schemas])
     rename = {old: e['name'] for old, e in methods.items()}
     rename.update({item['public']: e['name'] for item, e in functions})
     for constructor, inputs, e in overrides:

@@ -71,7 +71,7 @@ def emitted(+model: Qt.QStandardItemModel, +index: Qt.QModelIndex, value: Qt.QVa
     expired_argument(U32.read(recorded))
 
 def signal_probe(+model: Qt.QStandardItemModel, +index: Qt.QModelIndex, +value: Qt.QVariant, +probe: Qt.QObject) -> Qt.Action(Unit):
-  Qt.Connection.with(Unit, Qt.QStandardItemModel.connect_dataChanged(~Qt.QObject, ~data_changed, model, probe),
+  Qt.Connection.with(Unit, Qt.Signal.connect(~Qt.QStandardItemModel.dataChanged(), ~Qt.QObject, ~data_changed, model, probe),
     connection => emitted(model, index, value, probe, connection))
 
 def signal_index(+model: Qt.QStandardItemModel, +index: Qt.QModelIndex, +value: Qt.QVariant) -> Qt.Action(Unit):
